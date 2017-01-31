@@ -20,7 +20,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"Koldy": "src/Koldy"
+			"Koldy\\": "src/Koldy/"
 		}
 	}
 }
