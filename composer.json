@@ -1,0 +1,26 @@
+{
+	"name": "koldy/framework",
+	"type": "framework",
+	"description": "Koldy PHP framework for simple and rapid development",
+	"keywords": [
+		"framework"
+	],
+	"homepage": "http://koldy.net",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Vlatko Koudela",
+			"email": "vlatko@koldy.net",
+			"homepage": "http://vlatko.koudela.org",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"php": ">=7.1.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Koldy": "src/Koldy"
+		}
+	}
+}
