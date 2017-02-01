@@ -5,7 +5,7 @@ namespace Koldy\Mail\Adapter;
 use Koldy\Mail\Exception;
 
 /**
- * This mail driver class will use just internal mail() function to send an e-mail.
+ * This mail adapter class will use just internal mail() function to send an e-mail.
  *
  * @link http://koldy.net/docs/mail/mail
  * @link http://php.net/manual/en/function.mail.php

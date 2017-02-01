@@ -185,7 +185,7 @@ abstract class Model implements Serializable
     }
 
     /**
-     * Manually set the connection
+     * Manually set the adapter
      *
      * @param string $adapter
      */

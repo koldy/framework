@@ -3,7 +3,7 @@
 namespace Koldy\Cache\Adapter;
 
 /**
- * Abstract class for making any kind of new cache driver. If you want to create your own cache driver, then extend this class.
+ * Abstract class for making any kind of new cache adapter. If you want to create your own cache adapter, then extend this class.
  *
  * @link http://koldy.net/docs/cache#custom
  */
@@ -27,7 +27,7 @@ abstract class AbstractCacheAdapter
     /**
      * Construct the object by array of config properties. Config keys are set
      * in config/cache.php and this array will contain only block for the
-     * requested cache driver. Yes, you can also build this manually, but that
+     * requested cache adapter. Yes, you can also build this manually, but that
      * is not recommended.
      *
      * @param array $config

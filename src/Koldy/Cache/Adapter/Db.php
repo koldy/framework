@@ -10,7 +10,7 @@ use Koldy\Db\Query\{
 use Koldy\Cache\Exception as CacheException;
 
 /**
- * This cache driver will store your cache data into database.
+ * This cache adapter will store your cache data into database.
  *
  * @link http://koldy.net/docs/cache/db
  */

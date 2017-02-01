@@ -54,7 +54,7 @@ class Email extends AbstractLogAdapter
         }
 
         if (isset($config[self::FN_CONFIG_KEY]) && !is_callable($config[self::FN_CONFIG_KEY])) {
-            throw new ConfigException('get_data_fn in DB writer options is not callable');
+            throw new ConfigException(self::FN_CONFIG_KEY . ' in DB writer options is not callable');
         }
 
         if (!isset($config['adapter'])) {
@@ -74,7 +74,7 @@ class Email extends AbstractLogAdapter
             $mail = call_user_func($this->config[self::FN_CONFIG_KEY], $this->messages);
 
             if (!($mail instanceof AbstractMailAdapter)) {
-                throw new Exception('get_data_fn function must return instance of \Koldy\Mail\Adapter\AbstractMailAdapter; ' . gettype($mail) . ' given');
+                throw new Exception('Function defined in mail config under ' . self::FN_CONFIG_KEY . ' must return instance of \Koldy\Mail\Adapter\AbstractMailAdapter; ' . gettype($mail) . ' given');
             }
 
             return $mail;

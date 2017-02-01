@@ -3,7 +3,7 @@
 use Koldy\Mail\Exception;
 
 /**
- * If you want to create your own driver for sending e-mails, then please
+ * If you want to create your own adapter for sending e-mails, then please
  * extend this class. Thank you!
  *
  */

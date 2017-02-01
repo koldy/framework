@@ -6,7 +6,7 @@ use Koldy\Exception;
 use Koldy\Log;
 
 /**
- * This is mail driver class that won't do anything. Instead of actually sending the mail, this class will dump email data into log [INFO].
+ * This is mail adapter class that won't do anything. Instead of actually sending the mail, this class will dump email data into log [INFO].
  *
  * @link http://koldy.net/docs/mail/simulate
  */

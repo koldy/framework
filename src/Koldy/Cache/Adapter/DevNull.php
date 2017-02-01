@@ -3,9 +3,9 @@
 namespace Koldy\Cache\Adapter;
 
 /**
- * If you don't want to use your cache driver, you can redirect all cache data into black whole! Learn more at http://en.wikipedia.org/wiki//dev/null
+ * If you don't want to use your cache adapter, you can redirect all cache data into black whole! Learn more at http://en.wikipedia.org/wiki//dev/null
  *
- * This class handles the cache driver instance, but using it, nothing will happen. This class will be initialized if you try to use driver that is disabled.
+ * This class handles the cache adapter instance, but using it, nothing will happen. This class will be initialized if you try to use adapter that is disabled.
  *
  * @link http://koldy.net/docs/cache/devnull
  */

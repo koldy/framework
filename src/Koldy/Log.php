@@ -17,7 +17,7 @@ use Koldy\Log\Message;
  * If you have enabled email logging, then this script will send you log message(s) to your error mail. To reduce
  * SPAM, if there are a lot of error messages to send, all other log messages will be mailed at once as well. Lets
  * say you have 5 info log messages, 1 notice and 1 error - you'll receive error mail with all messages logged
- * with Log class even if those message won't be written to your Log driver.
+ * with Log class even if those message won't be written to your Log adapter.
  *
  * @link http://koldy.net/docs/log
  *
@@ -100,9 +100,9 @@ class Log
 
                     static::$adapters[$count] = new $adapter($config['options']);
 
-                    // Log class must be instance of AbstractLogWriter
+                    // Log class must be instance of AbstractLogAdapter
                     if (!(static::$adapters[$count] instanceof AbstractLogAdapter)) {
-                        throw new Exception("Log driver {$adapter} must extend AbstractLogWriter");
+                        throw new Exception("Log adapter {$adapter} must extend AbstractLogAdapter");
                     }
 
                     static::$enabledAdapters[$config['adapter_class']] = true;
@@ -118,7 +118,7 @@ class Log
     }
 
     /**
-     * Is there any log driver enabled in this moment?
+     * Is there any log adapter enabled in this moment?
      *
      * @return boolean
      */

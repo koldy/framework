@@ -8,7 +8,7 @@ use Koldy\Filesystem\Directory;
 use Koldy\Mail\Exception;
 
 /**
- * This mail driver class will create nice file where all email details will be printed
+ * This mail adapter class will create nice file where all email details will be printed
  *
  * @link http://koldy.net/docs/mail/file
  * @link http://php.net/manual/en/function.mail.php

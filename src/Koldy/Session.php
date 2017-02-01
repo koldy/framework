@@ -49,15 +49,15 @@ class Session
 
             session_name($config->get('session_name', 'koldy'));
 
-            if (($driverClass = $config->get('driver')) !== null) {
+            if (($adapterClass = $config->get('adapter')) !== null) {
                 if (($module = $config->get('module')) !== null) {
                     Application::registerModule($module);
                 }
 
-                $handler = new $driverClass($config->get('options', []));
+                $handler = new $adapterClass($config->get('options', []));
 
                 if (!($handler instanceof \SessionHandlerInterface)) {
-                    throw new SessionException("Your session driver={$driverClass} doesn't implement \\SessionHandlerInterface, which is a must");
+                    throw new SessionException("Your session adapter={$adapterClass} doesn't implement \\SessionHandlerInterface, which is a must");
                 }
 
                 session_set_save_handler($handler);

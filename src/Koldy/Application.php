@@ -204,12 +204,13 @@ class Application
      */
     public static function useConfig($data): void
     {
+        defined('KOLDY_START') || define('KOLDY_START', microtime(true));
+        defined('KOLDY_CLI') || define('KOLDY_CLI', PHP_SAPI == 'cli');
+        defined('DS') || define('DS', DIRECTORY_SEPARATOR); // this is just shorthand for Directory Separator
+
         if (!is_string($data) && !is_array($data)) {
             static::terminateWithError('Can not start application, expected array or string (path to config file) when useConfig is called; got ' . gettype($data));
         }
-
-        defined('DS') || define('DS', DIRECTORY_SEPARATOR); // this is just shorthand for Directory Separator
-        defined('KOLDY_CLI') || define('KOLDY_CLI', PHP_SAPI == 'cli');
 
         $koldyFrameworkPath = dirname(dirname(__FILE__));
         set_include_path($koldyFrameworkPath . PATH_SEPARATOR . get_include_path());
@@ -593,9 +594,14 @@ class Application
      * or somehow different so the real request URI will be overridden.
      *
      * @return string
+     * @throws ApplicationException
      */
     public static function getUri(): string
     {
+        if (static::$uri == null) {
+            throw new ApplicationException('Can not get URI when URI is not set; check site_url in application config');
+        }
+
         return static::$uri;
     }
 

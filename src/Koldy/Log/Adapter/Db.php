@@ -7,6 +7,7 @@ use Koldy\Log\Exception;
 use Koldy\Db\Query\Insert;
 use Koldy\Db as KoldyDb;
 use Koldy\Log;
+use Koldy\Log\Message;
 
 /**
  * This log writer will insert your log messages into database.
@@ -38,6 +39,8 @@ class Db extends AbstractLogAdapter
      */
     private $inserting = false;
 
+    private const FN_CONFIG_KEY = 'get_insert_fn';
+
     /**
      * Construct the DB writer
      *
@@ -50,65 +53,42 @@ class Db extends AbstractLogAdapter
         $config['table'] = $config['table'] ?? 'log';
         $config['adapter'] = $config['adapter'] ?? null;
 
-        if (isset($config['get_data_fn']) && !is_callable($config['get_data_fn'])) {
-            throw new ConfigException('get_data_fn in DB writer options is not callable');
+        if (isset($config[self::FN_CONFIG_KEY]) && !is_callable($config[self::FN_CONFIG_KEY])) {
+            throw new ConfigException(self::FN_CONFIG_KEY . ' in DB log adapter options is not callable');
         }
 
         parent::__construct($config);
     }
 
     /**
-     * Get array of field=>value to be inserted in log table
-     *
-     * @param string $level
-     * @param string $message
+     * @param Message $message
      *
      * @throws Exception
-     * @return array
      */
-    protected function getFieldsData(string $level, string $message): array
+    public function logMessage(Message $message): void
     {
-        if (isset($this->config['get_data_fn'])) {
-            $data = call_user_func($this->config['get_data_fn'], $level, $message);
+        if (in_array($message->getLevel(), $this->config['log']) && !$this->inserting) {
+            if (isset($this->config[self::FN_CONFIG_KEY])) {
+                $insert = call_user_func($this->config[self::FN_CONFIG_KEY], $message);
 
-            if (!is_array($data)) {
-                throw new Exception('DB driver config get_data_fn function must return an array; ' . gettype($data) . ' given');
+                if (!($insert instanceof Insert)) {
+                    throw new Exception('DB log adapter config ' . self::FN_CONFIG_KEY . ' function must return an array; ' . gettype($insert) . ' given');
+                }
+            } else {
+                $insert = new Insert($this->config['table'], [
+                  'time' => $message->getTime()->format('Y-m-d H:i:s'),
+                  'level' => $message->getLevel(),
+                  'who' => $message->getWho() ?? Log::getWho(),
+                  'message' => $message->getMessage()
+                ], $this->config['adapter']);
             }
 
-            return $data;
-        }
-
-        return array(
-          'time' => time(),
-          'level' => $level,
-          'who' => Log::getWho(),
-          'message' => $message
-        );
-    }
-
-    /**
-     * @param Log\Message $message
-     *
-     * @internal param string $level
-     */
-    public function logMessage(Log\Message $message): void
-    {
-        if ($this->inserting) {
-            return;
-        }
-
-        $data = $this->getFieldsData($level, $message);
-
-        if ($data !== false) {
-            if (in_array($level, $this->config['log'])) {
+            if ($insert !== null) {
                 $this->inserting = true;
-
-                $insert = new Insert($this->config['table'], $data, $this->config['adapter']);
                 $insert->exec();
-                // @todo test failures
+                // @todo write tests for failures
+                $this->inserting = false;
             }
-
-            $this->inserting = false;
         }
     }
 

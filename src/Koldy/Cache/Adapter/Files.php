@@ -8,7 +8,7 @@ use Koldy\Cache\Exception as CacheException;
 use Koldy\Log;
 
 /**
- * This cache driver will store all of your data into files somewhere on the server's filesystem. Every stored key represents one file on filesystem.
+ * This cache adapter will store all of your data into files somewhere on the server's filesystem. Every stored key represents one file on filesystem.
  *
  * @link http://koldy.net/docs/cache/files
  */
@@ -39,7 +39,7 @@ class Files extends AbstractCacheAdapter
     /**
      * Construct the object by array of config properties. Config keys are set
      * in config/cache.php and this array will contain only block for the
-     * requested cache driver. Yes, you can also build this manually, but that
+     * requested cache adapter. Yes, you can also build this manually, but that
      * is not recommended.
      *
      * @param array $config
