@@ -66,44 +66,46 @@ class ResponseExceptionHandler
     {
         if (View::exists('error')) {
             $view = View::create('error');
-            $view->set('e', $e);
 
             if ($e instanceof BadRequestException) {
-                Log::debug($e);
                 $view->statusCode(400);
 
             } else if ($e instanceof NotFoundException) {
-                Log::debug($e);
                 $view->statusCode(404);
 
             } else if ($e instanceof ForbiddenException) {
-                Log::notice($e);
                 $view->statusCode(403);
 
             } else {
-                Log::emergency($e);
+                try {
+                    Log::emergency($e);
+                } catch (Log\Exception $e) {
+                    // we can't handle this
+                }
                 $view->statusCode(503);
 
             }
 
+            $view->set('e', $e);
             $view->flush();
         } else {
             // we don't have a view for exception handling, let's return something
 
             if ($e instanceof BadRequestException) {
-                Log::debug($e);
                 http_send_status(400);
 
             } else if ($e instanceof NotFoundException) {
-                Log::debug($e);
                 http_send_status(404);
 
             } else if ($e instanceof ForbiddenException) {
-                Log::debug($e);
                 http_send_status(403);
 
             } else {
-                Log::emergency($e);
+                try {
+                    Log::emergency($e);
+                } catch (Log\Exception $e) {
+                    // we can't handle this
+                }
                 http_send_status(503);
 
             }

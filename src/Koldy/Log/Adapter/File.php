@@ -161,7 +161,7 @@ class File extends AbstractLogAdapter
             }
 
             if (!$this->fp || $this->fp === null) {
-                throw new Exception('Can not write to log file');
+                throw new Exception("Can not write to log file: {$fpFile}");
             }
 
             if ($this->getMessageFunction !== null) {
