@@ -5,7 +5,6 @@ namespace Koldy;
 use Koldy\Application\Exception as ApplicationException;
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Cli\Exception as CliException;
-use Koldy\Log\Message;
 use Koldy\Response\AbstractResponse;
 use Koldy\Route\AbstractRoute;
 use Throwable;
@@ -182,7 +181,8 @@ class Application
     }
 
     /**
-     * Method used in spl_autoload_register
+     * Calling Koldy\Autoloader::register() will just register framework itself to be used as library. Calling this
+     * autoload() method will allow controllers and other root clases to load properly
      *
      * @param string $className
      */
@@ -211,9 +211,6 @@ class Application
         if (!is_string($data) && !is_array($data)) {
             static::terminateWithError('Can not start application, expected array or string (path to config file) when useConfig is called; got ' . gettype($data));
         }
-
-        $koldyFrameworkPath = dirname(dirname(__FILE__));
-        set_include_path($koldyFrameworkPath . PATH_SEPARATOR . get_include_path());
 
         $configInstance = new Config('application');
 
@@ -834,7 +831,7 @@ class Application
 
             switch ($errorNumber) {
                 case E_USER_ERROR:
-                    $logMessage = new Message('error');
+                    $logMessage = new \Koldy\Log\Message('error');
                     $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
                     Log::message($logMessage);
                     break;
@@ -842,20 +839,20 @@ class Application
                 case E_USER_WARNING:
                 case E_DEPRECATED:
                 case E_STRICT:
-                    $logMessage = new Message('warning');
+                    $logMessage = new \Koldy\Log\Message('warning');
                     $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
                     Log::message($logMessage);
                     break;
 
                 case E_USER_NOTICE:
-                    $logMessage = new Message('notice');
+                    $logMessage = new \Koldy\Log\Message('notice');
                     $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
                     Log::message($logMessage);
                     break;
 
 
                 default:
-                    $logMessage = new Message('warning');
+                    $logMessage = new \Koldy\Log\Message('warning');
                     $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
                     Log::message($logMessage);
                     break;
@@ -879,7 +876,7 @@ class Application
                     $errorFile = $fatalError['file'];
                     $errorLine = $fatalError['line'];
 
-                    $logMessage = new Message('error');
+                    $logMessage = new \Koldy\Log\Message('error');
                     $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
 
                     Log::error($logMessage);
@@ -1019,7 +1016,7 @@ class Application
                 }
 
             } catch (Throwable $e) {
-                if (!Log::isEnabledLogger('\Koldy\Log\Writer\Out')) {
+                if (!Log::isEnabledLogger('\Koldy\Log\Adapter\Out')) {
                     echo "{$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n\n{$e->getTraceAsString()}";
                 }
                 Log::critical($e);

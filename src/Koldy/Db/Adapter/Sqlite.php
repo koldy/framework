@@ -3,6 +3,7 @@
 namespace Koldy\Db\Adapter;
 
 use Koldy\Application;
+use Koldy\Filesystem\Directory;
 use PDO;
 use Koldy\Db\Adapter\Exception as AdapterException;
 use Koldy\Config\Exception as ConfigException;
@@ -35,7 +36,7 @@ class Sqlite extends AbstractAdapter
             $this->pdo = null;
 
             // todo: implement backup connections
-            throw new AdapterException($firstException->getMessage(), $firstException->getCode(), $firstException);
+            throw new AdapterException($firstException->getMessage(), (int) $firstException->getCode(), $firstException);
         }
     }
 
@@ -65,6 +66,11 @@ class Sqlite extends AbstractAdapter
             }
         } else {
             $path = Application::getStoragePath('data/database.sqlite');
+        }
+
+        $directory = dirname($path);
+        if (!is_dir($directory)) {
+            Directory::mkdir($directory, 0755);
         }
 
         $this->pdo = new PDO('sqlite:' . $path);

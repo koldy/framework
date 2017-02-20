@@ -2,6 +2,7 @@
 
 namespace Koldy\Db\Adapter;
 
+use Koldy\Log;
 use PDO;
 use Koldy\Db\Adapter\Exception as AdapterException;
 use Koldy\Config\Exception as ConfigException;
@@ -35,7 +36,7 @@ class PostgreSQL extends AbstractAdapter
             $this->pdo = null;
 
             // todo: implement backup connections
-            throw new AdapterException($firstException->getMessage(), $firstException->getCode(), $firstException);
+            throw new AdapterException($firstException->getMessage(), (int) $firstException->getCode(), $firstException);
         }
     }
 
@@ -60,16 +61,20 @@ class PostgreSQL extends AbstractAdapter
             }
         }
 
-        $charset = $config['charset'] ?? 'utf8';
-
         if (!isset($config['socket'])) {
             // not a socket
-            $port = $config['port'] ?? 3306;
+            $port = $config['port'] ?? 5432;
 
-            $this->pdo = new PDO("mysql:host={$config['host']};port={$port};dbname={$config['database']};charset={$charset}", $config['username'], $config['password'], $pdoConfig);
+            $this->pdo = new PDO("pgsql:host={$config['host']};port={$port};dbname={$config['database']}", $config['username'], $config['password'], $pdoConfig);
         } else {
             // the case with unix_socket
-            $this->pdo = new PDO("mysql:unix_socket={$config['socket']};dbname={$config['database']};charset={$charset}", $config['username'], $config['password'], $pdoConfig);
+            $this->pdo = new PDO("pgsql:dbname={$config['database']}", $config['username'], $config['password'], $pdoConfig);
+        }
+
+        if (isset($config['schema'])) {
+            $schemaSql = 'SET search_path TO ' . $config['schema'];
+            $this->pdo->exec($schemaSql);
+            Log::sql($schemaSql);
         }
     }
 

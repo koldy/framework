@@ -2,6 +2,7 @@
 
 namespace Koldy\Db;
 
-class Exception extends \Koldy\Exception {
+class Exception extends \Koldy\Exception
+{
 
 }
