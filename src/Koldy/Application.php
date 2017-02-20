@@ -791,15 +791,7 @@ class Application
         return $key;
     }
 
-    /**
-     * Run the application with given URI. If URI is not set, then application
-     * will try to detect it automatically.
-     *
-     * @param string $uri [optional]
-     *
-     * @throws Exception
-     */
-    public static function run($uri = null): void
+    public static function init(string $uri = null): void
     {
         if (!defined('KOLDY_CLI')) {
             // KOLDY_CLI is not defined, which probably means useConfig() wasn't called
@@ -876,7 +868,8 @@ class Application
         // register PHP fatal errors
         register_shutdown_function(function () {
             if (!defined('KOLDY_FATAL_ERROR_HANDLER')) {
-                define('KOLDY_FATAL_ERROR_HANDLER', true); // to prevent possible recursion if you run into problems with logger
+                // to prevent possible recursion if you run into problems with logger
+                define('KOLDY_FATAL_ERROR_HANDLER', true);
 
                 $fatalError = error_get_last();
 
@@ -909,6 +902,20 @@ class Application
             // TODO: Don't init if we don't have to and let's do the "post" work after request
             Log::init();
         }
+    }
+
+    /**
+     * Run the application with given URI. If URI is not set, then application
+     * will try to detect it automatically.
+     *
+     * @param string $uri [optional]
+     *
+     * @throws Exception
+     */
+    public static function run(string $uri = null): void
+    {
+        static::init($uri);
+        $config = static::getConfig('application');
 
         if (!KOLDY_CLI) {
             // this is normal HTTP request that came from Web Server, so we'll handle it
@@ -985,7 +992,17 @@ class Application
                             static::registerModule($module);
                         }
                     } else {
-                        $cliScriptPath = static::$scriptsPath . $script . '.php';
+                        if ($script == 'koldy') {
+                            $script = static::$cliName = Cli::getParameterOnPosition(2);
+
+                            if ($script === null) {
+                                throw new CliException('Unable to run Koldy script; script name not passed after \'koldy\' part');
+                            }
+
+                            $cliScriptPath = __DIR__ . '/Cli/Scripts/' . $script . '.php';
+                        } else {
+                            $cliScriptPath = static::$scriptsPath . $script . '.php';
+                        }
                     }
 
                     static::$cliScriptPath = $cliScriptPath;

@@ -41,13 +41,13 @@ trait Statement
     }
 
     /**
-     * @param string $adapter
+     * @param string|null $adapter
      *
      * @return Statement
      */
-    public function setAdapter(string $adapter)
+    public function setAdapter(string $adapter = null)
     {
-        $this->adapter = $adapter;
+        $this->adapter = $adapter ?? Db::getDefaultAdapterKey();
         return $this;
     }
 

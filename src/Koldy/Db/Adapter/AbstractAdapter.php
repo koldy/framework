@@ -149,8 +149,9 @@ abstract class AbstractAdapter
         try {
             $this->stmt = $this->getPDO()->prepare($queryStatement);
         } catch (PDOException $e) {
-            Log::error("Can't prepare query statement: {$queryStatement}");
-            throw new QueryException($e->getMessage(), $e->getCode(), $e);
+            $dashes = str_repeat('=', 50);
+            Log::notice("Can't prepare query statement ({$this->getConfigKey()}):\n{$dashes}\n{$queryStatement}\n{$dashes}");
+            throw new QueryException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
 
@@ -244,6 +245,16 @@ abstract class AbstractAdapter
     public function delete(string $table = null)
     {
         return new Query\Delete($table, $this->getConfigKey());
+    }
+
+    /**
+     * @param string|null $keyName
+     *
+     * @return string
+     */
+    public function getLastInsertId(string $keyName = null)
+    {
+        return $this->getPDO()->lastInsertId($keyName);
     }
 
 }

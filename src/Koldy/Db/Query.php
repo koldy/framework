@@ -179,7 +179,7 @@ class Query
             Log::sql("{$this->adapter}>>>\n{$this->debug()}");
         } catch (PDOException $e) {
             Log::error("Tried and failed to execute SQL query:\n{$this->debug()}");
-            throw new QueryException($e->getMessage(), $e->getCode(), $e);
+            throw new QueryException($e->getMessage(), (int) $e->getCode(), $e);
         }
 
         $this->queryExecuted = true;
@@ -289,7 +289,7 @@ class Query
                 }
 
             } else {
-                $query = str_replace(":{$key}", ("'" . addslashes($value) . "'"), $query);
+                $query = str_replace(":{$key}", ("'" . addslashes((string) $value) . "'"), $query);
             }
         }
 

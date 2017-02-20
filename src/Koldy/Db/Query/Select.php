@@ -2,6 +2,7 @@
 
 namespace Koldy\Db\Query;
 
+use Koldy\Db;
 use Koldy\Db\{
   Where, Query, Expr
 };
@@ -551,7 +552,7 @@ class Select extends Where
             $this->exec();
         }
 
-        return $this->getAdapter()->getStatement()->fetch(PDO::FETCH_ASSOC);
+        return $this->getAdapter()->getStatement()->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

@@ -283,7 +283,7 @@ abstract class Model implements Serializable
      *
      * @param null|string $keyName
      *
-     * @return int
+     * @return int|string
      * @throws Exception
      * @example
      *
@@ -291,7 +291,7 @@ abstract class Model implements Serializable
      *      echo User::getLastInsertId();
      *    }
      */
-    public static function getLastInsertId(string $keyName = null): int
+    public static function getLastInsertId(string $keyName = null)
     {
         if (static::$autoIncrement) {
             if (is_string(static::$autoIncrement)) {

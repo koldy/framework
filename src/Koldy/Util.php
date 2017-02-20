@@ -351,4 +351,28 @@ class Util
         return $s;
     }
 
+    /**
+     * Make a camel case string out of given string
+     *
+     * @param string $string
+     * @param array|null $noStrip
+     * @param bool|null $lowerCaseFirstLetter
+     *
+     * @return mixed|string
+     */
+    public static function camelCase(string $string, array $noStrip = null, bool $lowerCaseFirstLetter = null)
+    {
+        // non-alpha and non-numeric characters become spaces
+        $string = preg_replace('/[^a-z0-9' . implode('', $noStrip ?? []) . ']+/i', ' ', $string);
+        $string = trim($string);
+        $string = ucwords($string);
+        $string = str_replace(' ', '', $string);
+
+        if ($lowerCaseFirstLetter === null || $lowerCaseFirstLetter === true) {
+            $string = lcfirst($string);
+        }
+
+        return $string;
+    }
+
 }

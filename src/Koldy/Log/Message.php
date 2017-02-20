@@ -143,7 +143,8 @@ class Message
         foreach ($messages as $part) {
             if (is_array($part)) {
 
-                if (!isset($part['type']) && !in_array($part['type'], [self::TYPE_PHP])) {
+                $type = $part['type'] ?? '';
+                if (!in_array($type, [self::TYPE_PHP])) {
                     $return[] = print_r($part, true);
                 } else {
                     $return[] = "PHP [{$part['number']}] {$part['message']} in file {$part['file']}:{$part['line']}";

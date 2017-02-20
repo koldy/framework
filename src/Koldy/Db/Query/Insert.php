@@ -3,8 +3,10 @@
 namespace Koldy\Db\Query;
 
 use Koldy\Db\{
-  Query, Expr
+  Exception, Query, Expr
 };
+use Koldy\Json;
+use Koldy\Log;
 
 /**
  * Use this class if you want to insert multiple rows at once
@@ -63,6 +65,10 @@ class Insert
                 $this->addRows($rowValues);
             } else {
                 foreach ($rowValues as $field => $value) {
+                    if (is_numeric($field)) {
+                        $json = Json::encode($rowValues);
+                        throw new Exception("Unable to add field name to Insert SQL statement; please check the 2nd argument; framework got: {$json}");
+                    }
                     $this->field($field);
                 }
                 $this->add($rowValues);
