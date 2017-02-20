@@ -61,10 +61,10 @@ class Mail
                 Application::registerModule($configArray['module']);
             }
 
-            $className = $configArray['class'] ?? null;
+            $className = $configArray['adapter_class'] ?? null;
 
             if ($className === null) {
-                throw new ConfigException("Key 'class' is not set in mail config={$key}");
+                throw new ConfigException("Key 'adapter_class' is not set in mail config={$key}");
             }
 
             if (!class_exists($className, true)) {
@@ -91,7 +91,7 @@ class Mail
      */
     public static function create(string $adapter = null): AbstractMailAdapter
     {
-        static::getAdapter($adapter);
+        return static::getAdapter($adapter);
     }
 
     /**
