@@ -101,4 +101,28 @@ class PostgreSQL extends AbstractAdapter
         }
     }
 
+    /**
+     * Helper for Postgres determining if there's a boolean value in database. This is useful because PDO on Postgres
+     * returns string for boolean values.
+     *
+     * @param null|string $input
+     *
+     * @return bool|null
+     * @throws LanguageException
+     */
+    public static function isBool(?string $input): ?bool
+    {
+        if ($input === null) {
+            return null;
+        }
+
+        if ((string)$input == 'true' || (bool)$input == true) {
+            return true;
+        } else if ((string)$input == 'false' || (bool)$input == false) {
+            return false;
+        }
+
+        throw new LanguageException('Unable to determine if given $input is boolean');
+    }
+
 }
