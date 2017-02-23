@@ -228,4 +228,17 @@ class Csrf
         return sprintf('<input type="hidden" name="%s" value="%s"/>', $parameterName, $csrfValue);
     }
 
+    /**
+     * Get prepared prepared meta tags from where you can read your CSRF values
+     *
+     * @return string
+     */
+    public static function getMetaTags(): string
+    {
+        static::init();
+        $parameterName = static::getParameterName();
+        $csrfValue = static::getStoredToken()->getToken();
+        return sprintf('<meta name="csrf_name" content="%s"/><meta name="csrf_value" content="%s"/>', $parameterName, $csrfValue);
+    }
+
 }

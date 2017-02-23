@@ -89,4 +89,9 @@ class Token implements \Serializable
         $this->cookieToken = $data['cookie_token'];
     }
 
+    public function __toString()
+    {
+        return $this->getToken();
+    }
+
 }
