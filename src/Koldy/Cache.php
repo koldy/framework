@@ -57,10 +57,10 @@ class Cache
                 Application::registerModule($configArray['module']);
             }
 
-            $className = $configArray['class'] ?? null;
+            $className = $configArray['adapter_class'] ?? null;
 
             if ($className === null) {
-                throw new ConfigException("Cache config under key={$key} doesn\'t have defined 'class'; please set the 'class' with the name of class that extends \\Koldy\\Cache\\Adapter\\AbstractCacheAdapter");
+                throw new ConfigException("Cache config under key={$key} doesn\'t have defined 'adapter_class'; please set the 'adapter_class' with the name of class that extends \\Koldy\\Cache\\Adapter\\AbstractCacheAdapter");
             }
 
             if (!class_exists($className, true)) {

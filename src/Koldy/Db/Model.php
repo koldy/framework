@@ -4,6 +4,7 @@ namespace Koldy\Db;
 
 use Koldy\Db;
 use Koldy\Db\Adapter\AbstractAdapter;
+use Koldy\Db\Exception\NotFoundException;
 use Koldy\Db\Query\{
   Select, Insert, Update, Delete, ResultSet
 };
@@ -535,6 +536,7 @@ abstract class Model implements Serializable
      * @param array $fields
      *
      * @throws Exception
+     * @throws NotFoundException
      * @return Model|null null will be returned if record is not found
      * @link http://koldy.net/docs/database/models#fetchOne
      */
@@ -570,7 +572,15 @@ abstract class Model implements Serializable
         }
 
         $record = $select->fetchFirst();
-        return ($record === null) ? null : new static($record);
+
+        if ($record === null) {
+            if (static::getAdapter()->shouldThrowNotFoundException()) {
+                throw new NotFoundException('Record not found');
+            }
+            return null;
+        } else {
+            return new static($record);
+        }
     }
 
     /**
@@ -754,6 +764,7 @@ abstract class Model implements Serializable
      * @param string|null $orderDirection
      *
      * @return mixed|null
+     * @throws NotFoundException
      */
     public static function fetchOneValue(string $field, $where = null, $orderField = null, $orderDirection = null)
     {
@@ -777,6 +788,9 @@ abstract class Model implements Serializable
 
         $records = $select->fetchAll();
         if (count($records) == 0) {
+            if (static::getAdapter()->shouldThrowNotFoundException()) {
+                throw new NotFoundException('Value not found');
+            }
             return null;
         }
 

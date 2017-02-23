@@ -68,6 +68,16 @@ abstract class AbstractAdapter
     }
 
     /**
+     * Should this adapter throw exceptions instead of returning null when record wasn't found in database?
+     *
+     * @return bool
+     */
+    public function shouldThrowNotFoundException(): bool
+    {
+        return isset($this->config['throw_not_found']) && (bool)$this->config['throw_not_found'] === true;
+    }
+
+    /**
      * @return PDO
      */
     public function getPDO(): PDO
@@ -151,7 +161,7 @@ abstract class AbstractAdapter
         } catch (PDOException $e) {
             $dashes = str_repeat('=', 50);
             Log::notice("Can't prepare query statement ({$this->getConfigKey()}):\n{$dashes}\n{$queryStatement}\n{$dashes}");
-            throw new QueryException($e->getMessage(), (int) $e->getCode(), $e);
+            throw new QueryException($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 
