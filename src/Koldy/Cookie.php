@@ -51,7 +51,7 @@ class Cookie
      * @example Cookie::set('last_visited', date('r'));
      * @return string
      */
-    public static function set(string $name, string $value, int $expire = 0, string $path = '/', string $domain = null, bool $secure = false, bool $httpOnly = false): string
+    public static function set(string $name, string $value, int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httpOnly = false): string
     {
         $encryptedValue = Crypt::encrypt($value);
         setcookie($name, $encryptedValue, $expire, $path, $domain, $secure, $httpOnly);
