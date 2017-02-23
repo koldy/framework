@@ -45,7 +45,7 @@ class Session
         if (!static::$initialized) {
             $config = Application::getConfig('session');
 
-            session_set_cookie_params($config->get('cookie_life'), $config->get('cookie_path'), (string) $config->get('cookie_domain'), $config->get('cookie_secure', false), $config->get('http_only', false));
+            session_set_cookie_params($config->get('cookie_life'), $config->get('cookie_path'), $config->get('cookie_domain'), $config->get('cookie_secure', false), $config->get('http_only', false));
 
             session_name($config->get('session_name', 'koldy'));
 
