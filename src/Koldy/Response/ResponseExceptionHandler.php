@@ -8,6 +8,7 @@ use Koldy\Json;
 use Koldy\Response\Exception\BadRequestException;
 use Koldy\Response\Exception\ForbiddenException;
 use Koldy\Response\Exception\NotFoundException;
+use Koldy\Validator\Exception as ValidatorException;
 use Throwable;
 
 /**
@@ -43,16 +44,20 @@ class ResponseExceptionHandler
         ];
 
         if ($e instanceof BadRequestException) {
-            http_send_status(400);
+            http_response_code(400);
+
+        } else if ($e instanceof ValidatorException) {
+            http_response_code(400);
+            $data['messages'] = $e->getValidator()->getMessages();
 
         } else if ($e instanceof NotFoundException) {
-            http_send_status(404);
+            http_response_code(404);
 
         } else if ($e instanceof ForbiddenException) {
-            http_send_status(403);
+            http_response_code(403);
 
         } else {
-            http_send_status(503);
+            http_response_code(503);
 
         }
 
@@ -67,7 +72,7 @@ class ResponseExceptionHandler
         if (View::exists('error')) {
             $view = View::create('error');
 
-            if ($e instanceof BadRequestException) {
+            if ($e instanceof BadRequestException || $e instanceof ValidatorException) {
                 $view->statusCode(400);
 
             } else if ($e instanceof NotFoundException) {
@@ -91,14 +96,14 @@ class ResponseExceptionHandler
         } else {
             // we don't have a view for exception handling, let's return something
 
-            if ($e instanceof BadRequestException) {
-                http_send_status(400);
+            if ($e instanceof BadRequestException || $e instanceof ValidatorException) {
+                http_response_code(400);
 
             } else if ($e instanceof NotFoundException) {
-                http_send_status(404);
+                http_response_code(404);
 
             } else if ($e instanceof ForbiddenException) {
-                http_send_status(403);
+                http_response_code(403);
 
             } else {
                 try {
@@ -106,7 +111,7 @@ class ResponseExceptionHandler
                 } catch (Log\Exception $e) {
                     // we can't handle this
                 }
-                http_send_status(503);
+                http_response_code(503);
 
             }
 
