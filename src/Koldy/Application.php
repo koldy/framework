@@ -7,6 +7,7 @@ use Koldy\Config\Exception as ConfigException;
 use Koldy\Cli\Exception as CliException;
 use Koldy\Response\AbstractResponse;
 use Koldy\Route\AbstractRoute;
+use Koldy\Security\Csrf;
 use Throwable;
 
 /**
@@ -934,6 +935,10 @@ class Application
 
             try {
                 static::$routing->prepareHttp(static::$uri);
+
+                if (Csrf::isEnabled() && (!Csrf::hasTokenStored() || !Csrf::hasCookieToken())) {
+                    Csrf::generate();
+                }
 
                 $response = static::$routing->exec();
 
