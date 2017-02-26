@@ -200,13 +200,43 @@ class Validator
     /**
      * Validate all
      *
+     * @param bool $reValidate
+     *
      * @return bool
+     * @throws InvalidDataException
      * @throws ValidatorConfigException
      */
-    public function validate(): bool
+    public function validate(bool $reValidate = false): bool
     {
-        if ($this->validated !== null) {
+        if ($this->validated !== null || $reValidate) {
             return $this->validated;
+        }
+
+        if ($this->only) {
+            $requiredParameters = array_keys($this->rules);
+            $gotParameters = array_keys($this->data);
+
+            $missingRequiredParameters = array_diff($requiredParameters, $gotParameters);
+            $extraParameters = array_diff($gotParameters, $requiredParameters);
+
+            $itFailedHere = false;
+
+            if (count($missingRequiredParameters) > 0) {
+                Log::debug('Missing the following required parameters:', implode(',', $missingRequiredParameters));
+                $itFailedHere = true;
+            }
+
+            if (count($extraParameters) > 0) {
+                Log::debug('Got extra parameters that we don\'t need:', implode(', ', $extraParameters));
+                $itFailedHere = true;
+            }
+
+            if ($itFailedHere) {
+                $exception = new InvalidDataException('Invalid number of parameters were sent to server');
+                $exception->setValidator($this);
+                $this->validated = true;
+                throw $exception;
+            }
         }
 
         $this->valid = $this->invalid = [];
