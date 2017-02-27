@@ -85,7 +85,7 @@ class Redirect extends AbstractResponse
     }
 
     /**
-     * Redirect user to the URL generated with Url::href
+     * Redirect user to the URL generated with Route::href method
      *
      * @param string $controller [optional]
      * @param string $action [optional]

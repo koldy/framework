@@ -176,6 +176,19 @@ class Validator
     }
 
     /**
+     * @return \stdClass
+     */
+    public function getDataObj(): \stdClass
+    {
+        $obj = new \stdClass();
+        foreach ($this->getData() as $key => $value) {
+            $obj->$key = $value;
+        }
+
+        return $obj;
+    }
+
+    /**
      * Get the value for needed parameter
      *
      * @param string $parameter
