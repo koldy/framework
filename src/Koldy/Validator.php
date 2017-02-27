@@ -172,7 +172,24 @@ class Validator
      */
     public function getData(): array
     {
-        return $this->data;
+        $data = $this->data;
+
+        foreach ($data as $key => $value) {
+            if (array_key_exists($key, $this->rules)) {
+                if ($value === '') {
+                    // convert empty strings into nulls
+                    $data[$key] = null;
+                }
+            }
+        }
+
+        foreach ($this->rules as $rule => $value) {
+            if ($rule != Csrf::getParameterName() && !array_key_exists($rule, $data)) {
+                $data[$rule] = null;
+            }
+        }
+
+        return $data;
     }
 
     /**
