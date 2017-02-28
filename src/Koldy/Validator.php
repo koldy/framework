@@ -460,12 +460,20 @@ class Validator
             ]);
         }
 
+        $value = trim((string)$value);
+
+        if ($value == '') {
+            return null;
+        }
+
         if (!is_numeric($value)) {
             return Message::getMessage(Message::NUMERIC, [
               'param' => $parameter,
               'value' => $value
             ]);
         }
+
+        $value += 0;
 
         if ($value < $args[0]) {
             return Message::getMessage(Message::MIN_VALUE, [
@@ -510,12 +518,20 @@ class Validator
             ]);
         }
 
+        $value = trim((string)$value);
+
+        if ($value == '') {
+            return null;
+        }
+
         if (!is_numeric($value)) {
             return Message::getMessage(Message::NUMERIC, [
               'param' => $parameter,
               'value' => $value
             ]);
         }
+
+        $value += 0;
 
         if ($value > $args[0]) {
             return Message::getMessage(Message::MAX_VALUE, [
