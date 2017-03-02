@@ -289,6 +289,34 @@ class Config
     }
 
     /**
+     * Checks the presence of given config keys; if any of required keys is missing, exception will be thrown. If you
+     * want to know which keys are missing, then pass false as second argument and you'll get the array of missing keys.
+     *
+     * @param array $keys
+     * @param bool $throwException
+     *
+     * @return array
+     * @throws ConfigException
+     */
+    public function checkPresence(array $keys, bool $throwException = true): array
+    {
+        $missingKeys = [];
+
+        foreach ($keys as $key) {
+            if (!array_key_exists($key, $this->data)) {
+                $missingKeys[] = $key;
+            }
+        }
+
+        if ($throwException && count($missingKeys) > 0) {
+            $missingKeys = implode(', ', $missingKeys);
+            throw new ConfigException("Following keys are missing in {$this}: {$missingKeys}");
+        }
+
+        return $missingKeys;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
