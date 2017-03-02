@@ -74,7 +74,12 @@ class Memcached extends AbstractCacheAdapter
     {
         $key = $this->getKeyName($key);
         $value = $this->getInstance()->get($key);
-        return ($value === false) ? null : $value;
+
+        if ($this->getInstance()->getResultCode() == NativeMemcached::RES_NOTFOUND) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**

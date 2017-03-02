@@ -333,8 +333,8 @@ class Request
     protected function getCurlOptions(): array
     {
         $options = [
-          CURLOPT_CUSTOMREQUEST => $this->getMethod(),
-          CURLOPT_URL => $this->getUrl()
+          CURLOPT_CUSTOMREQUEST => $this->getMethod()
+            //CURLOPT_URL => $this->getUrl() // not setting it here
         ];
 
         if (count($this->headers) > 0) {
@@ -385,7 +385,7 @@ class Request
      */
     public function exec(): Response
     {
-        $ch = curl_init();
+        $ch = curl_init($this->getUrl());
         curl_setopt_array($ch, $this->getCurlOptions());
         $body = curl_exec($ch);
 

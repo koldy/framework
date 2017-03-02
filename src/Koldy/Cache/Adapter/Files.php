@@ -121,7 +121,7 @@ class Files extends AbstractCacheAdapter
      *
      * @return mixed|null
      */
-    public function get(string $key): ?\stdClass
+    public function get(string $key)
     {
         $this->checkKey($key);
 
