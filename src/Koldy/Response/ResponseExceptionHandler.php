@@ -57,6 +57,11 @@ class ResponseExceptionHandler
             http_response_code(403);
 
         } else {
+            try {
+                Log::emergency($e);
+            } catch (Log\Exception $e) {
+                // we can't handle this
+            }
             http_response_code(503);
 
         }
