@@ -157,6 +157,16 @@ class Response
     }
 
     /**
+     * Get the object that was used for Request
+     *
+     * @return Request
+     */
+    public function getRequest(): Request
+    {
+        return $this->request;
+    }
+
+    /**
      * @param bool $allDetails
      *
      * @return string
