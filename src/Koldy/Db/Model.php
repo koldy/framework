@@ -536,7 +536,6 @@ abstract class Model implements Serializable
      * @param array $fields
      *
      * @throws Exception
-     * @throws NotFoundException
      * @return Model|null null will be returned if record is not found
      * @link http://koldy.net/docs/database/models#fetchOne
      */
@@ -572,15 +571,34 @@ abstract class Model implements Serializable
         }
 
         $record = $select->fetchFirst();
+        return ($record === null) ? null : new static($record);
+    }
+
+    /**
+     * Fetch one record from database. You can pass one or two parameters.
+     * If you pass only one parameter, framework will assume that you want to
+     * fetch the record from database according to primary key defined in
+     * model. Otherwise, you can fetch the record by any other field you have.
+     * If your criteria returns more then one records, only first record will
+     * be taken.
+     *
+     * @param  mixed $field primaryKey value, single field or assoc array of arguments for query
+     * @param  mixed $value
+     * @param array $fields
+     *
+     * @throws Exception
+     * @return Model|null null will be returned if record is not found
+     * @link http://koldy.net/docs/database/models#fetchOne
+     */
+    public static function fetchOneOrFail($field, $value = null, array $fields = null): Model
+    {
+        $record = static::fetchOne($field, $value, $fields);
 
         if ($record === null) {
-            if (static::getAdapter()->shouldThrowNotFoundException()) {
-                throw new NotFoundException('Record not found');
-            }
-            return null;
-        } else {
-            return new static($record);
+            throw new NotFoundException('Record not found');
         }
+
+        return $record;
     }
 
     /**
@@ -764,7 +782,6 @@ abstract class Model implements Serializable
      * @param string|null $orderDirection
      *
      * @return mixed|null
-     * @throws NotFoundException
      */
     public static function fetchOneValue(string $field, $where = null, $orderField = null, $orderDirection = null)
     {
@@ -788,13 +805,32 @@ abstract class Model implements Serializable
 
         $records = $select->fetchAll();
         if (count($records) == 0) {
-            if (static::getAdapter()->shouldThrowNotFoundException()) {
-                throw new NotFoundException('Value not found');
-            }
             return null;
         }
 
         return $records[0]['key_field'];
+    }
+
+    /**
+     * Fetch only one record and return value from given column
+     *
+     * @param string $field
+     * @param mixed|null $where
+     * @param string|null $orderField
+     * @param string|null $orderDirection
+     *
+     * @return mixed|null
+     * @throws NotFoundException
+     */
+    public static function fetchOneValueOrFail(string $field, $where = null, $orderField = null, $orderDirection = null)
+    {
+        $value = static::fetchOneValue($field, $where, $orderField, $orderDirection);
+
+        if ($value === null) {
+            throw new NotFoundException('Value not found');
+        }
+
+        return $value;
     }
 
     /**
