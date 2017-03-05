@@ -178,7 +178,7 @@ class Query
 
             Log::sql("{$this->adapter}>>>\n{$this->debug()}");
         } catch (PDOException $e) {
-            Log::error("Tried and failed to execute SQL query:\n{$this->debug()}");
+            Log::debug("Tried and failed to execute SQL query:\n{$this->debug()}");
             throw new QueryException($e->getMessage(), (int) $e->getCode(), $e);
         }
 
@@ -307,7 +307,7 @@ class Query
         try {
             return $this->debug(true);
         } catch (QueryException $e) {
-            return 'Query [not set]';
+            return 'Query [NOT SET]';
         }
     }
 

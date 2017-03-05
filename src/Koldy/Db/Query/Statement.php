@@ -106,6 +106,14 @@ trait Statement
     }
 
     /**
+     * Reset information about last executed query, which will allow query to run again (needed when cloning)
+     */
+    protected function resetLastQuery(): void
+    {
+        $this->lastQuery = null;
+    }
+
+    /**
      * @return Query|null
      */
     public function getLastQuery(): ?Query

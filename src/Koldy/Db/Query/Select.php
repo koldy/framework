@@ -617,4 +617,10 @@ class Select extends Where
         return new $class($data);
     }
 
+    public function __clone()
+    {
+        $this->resetLastQuery();
+        $this->bindings = [];
+    }
+
 }

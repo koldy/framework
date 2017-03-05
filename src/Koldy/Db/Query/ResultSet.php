@@ -39,6 +39,32 @@ class ResultSet extends Select
     protected $searchFields = null;
 
     /**
+     * The model's class name
+     *
+     * @var string|null
+     */
+    protected $modelClass = null;
+
+    /**
+     * @param string $modelClass
+     *
+     * @return ResultSet
+     */
+    public function setModelClass(string $modelClass): ResultSet
+    {
+        $this->modelClass = $modelClass;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getModelClass(): ?string
+    {
+        return $this->modelClass;
+    }
+
+    /**
      * Set the custom count query. If you're working with custom count query,
      * then you must handle the search terms by yourself. Think about overriding this method.
      *
@@ -119,19 +145,19 @@ class ResultSet extends Select
      */
     public function count(): int
     {
-        $result = $this->getCountQuery()->fetchAll();
+        $result = $this->getCountQuery()->fetchFirst();
 
-        if (count($result) == 1) {
-            return (int)$result[0]['total'];
+        if ($result === null) {
+            return 0;
         }
 
-        return 0;
+        return (int)$result['total'];
     }
 
     /**
      * @return Query
      */
-    protected function getQuery(): Query
+    public function getQuery(): Query
     {
         if ($this->searchTerm !== null) {
 
@@ -174,6 +200,38 @@ class ResultSet extends Select
         }
 
         return parent::getQuery();
+    }
+
+    /**
+     * Fetch all records as array of objects
+     *
+     * @param string|null $class the name of class on which you want the instance of - class has to be able to accept array in constructor
+     *
+     * @return array
+     */
+    public function fetchAllObj(string $class = null): array
+    {
+        if ($class == null && $this->modelClass !== null) {
+            return parent::fetchAllObj($this->modelClass);
+        } else {
+            return parent::fetchAllObj($class);
+        }
+    }
+
+    /**
+     * Fetch only first record as object
+     *
+     * @param string $class
+     *
+     * @return null|object
+     */
+    public function fetchFirstObj(string $class = null): ?object
+    {
+        if ($class == null && $this->modelClass !== null) {
+            return parent::fetchFirstObj($this->modelClass);
+        } else {
+            return parent::fetchFirstObj($class);
+        }
     }
 
 }

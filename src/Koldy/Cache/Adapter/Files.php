@@ -239,8 +239,10 @@ class Files extends AbstractCacheAdapter
         $this->checkKey($key);
 
         if (!isset($this->data[$key])) {
-            $object = $this->load($key);
-            if ($object === false) {
+
+            try {
+                $object = $this->load($key);
+            } catch (CacheException $e) {
                 return false;
             }
         } else {
