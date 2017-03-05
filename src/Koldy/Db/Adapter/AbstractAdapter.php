@@ -68,16 +68,6 @@ abstract class AbstractAdapter
     }
 
     /**
-     * Should this adapter throw exceptions instead of returning null when record wasn't found in database?
-     *
-     * @return bool
-     */
-    public function shouldThrowNotFoundException(): bool
-    {
-        return isset($this->config['throw_not_found']) && (bool)$this->config['throw_not_found'] === true;
-    }
-
-    /**
      * @return PDO
      */
     public function getPDO(): PDO
