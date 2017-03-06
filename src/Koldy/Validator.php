@@ -578,6 +578,10 @@ class Validator
 
         $value = (string)$value;
 
+        if ($value === '') {
+            return null;
+        }
+
         if (strlen($value) < (int)$args[0]) {
             return Message::getMessage(Message::MIN_LENGTH, [
               'param' => $parameter,
@@ -623,6 +627,10 @@ class Validator
         }
 
         $value = (string)$value;
+
+        if ($value === '') {
+            return null;
+        }
 
         if (strlen($value) > (int)$args[0]) {
             return Message::getMessage(Message::MAX_LENGTH, [
