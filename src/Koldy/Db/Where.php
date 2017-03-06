@@ -36,13 +36,13 @@ class Where
      * Add condition to where statements
      *
      * @param string $link
-     * @param string $field
+     * @param mixed $field
      * @param mixed $value
      * @param string $operator
      *
      * @return $this
      */
-    private function addCondition(string $link, string $field, $value, string $operator)
+    private function addCondition(string $link, $field, $value, string $operator)
     {
         $this->where[] = array(
           'link' => $link,
