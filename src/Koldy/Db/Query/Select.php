@@ -602,7 +602,7 @@ class Select extends Where
      *
      * @return null|object
      */
-    public function fetchFirstObj(string $class = null): ?object
+    public function fetchFirstObj(string $class = null)
     {
         if (!$this->wasExecuted()) {
             $this->exec();
@@ -614,7 +614,17 @@ class Select extends Where
             return null;
         }
 
-        return new $class($data);
+        if ($class == null) {
+            $obj = new \stdClass();
+
+            foreach ($data as $field => $value) {
+                $obj->$field = $value;
+            }
+
+            return $obj;
+        } else {
+            return new $class($data);
+        }
     }
 
     public function __clone()
