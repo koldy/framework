@@ -79,10 +79,10 @@ class Select extends Where
      */
     public function from(string $table, string $alias = null, $field = null): Select
     {
-        $this->from[] = array(
+        $this->from[] = [
           'table' => $table,
           'alias' => $alias
-        );
+        ];
 
         if ($field !== null) {
             if (is_array($field)) {
@@ -110,13 +110,13 @@ class Select extends Where
      */
     public function innerJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
     {
-        $this->joins[] = array(
+        $this->joins[] = [
           'type' => 'INNER JOIN',
           'table' => $table,
           'first' => $firstTableField,
           'operator' => $operator,
-          'second' => $secondTableField,
-        );
+          'second' => $secondTableField
+        ];
         return $this;
     }
 
@@ -130,20 +130,20 @@ class Select extends Where
      *
      * @return Select
      * @example leftJoin('user u', 'u.id', '=', 'r.user_role_id')
-     * @example leftJoin('user u', array(
-     *   array('u.id', '=', 'r.user_role_id'),
-     *   array('u.group_id', '=', 2)
-     * ))
+     * @example leftJoin('user u', [
+     *   ['u.id', '=', 'r.user_role_id'],
+     *   ['u.group_id', '=', 2]
+     * ])
      */
     public function leftJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
     {
-        $this->joins[] = array(
+        $this->joins[] = [
           'type' => 'LEFT JOIN',
           'table' => $table,
           'first' => $firstTableField,
           'operator' => $operator,
-          'second' => $secondTableField,
-        );
+          'second' => $secondTableField
+        ];
         return $this;
     }
 
@@ -160,13 +160,13 @@ class Select extends Where
      */
     public function rightJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
     {
-        $this->joins[] = array(
+        $this->joins[] = [
           'type' => 'RIGHT JOIN',
           'table' => $table,
           'first' => $firstTableField,
           'operator' => $operator,
-          'second' => $secondTableField,
-        );
+          'second' => $secondTableField
+        ];
         return $this;
     }
 
@@ -196,10 +196,10 @@ class Select extends Where
      */
     public function field(string $field, string $as = null): Select
     {
-        $this->fields[] = array(
+        $this->fields[] = [
           'name' => $field,
           'as' => $as
-        );
+        ];
 
         return $this;
     }
@@ -255,9 +255,9 @@ class Select extends Where
      */
     public function groupBy(string $field): Select
     {
-        $this->groupBy[] = array(
+        $this->groupBy[] = [
           'field' => $field
-        );
+        ];
         return $this;
     }
 
@@ -282,12 +282,12 @@ class Select extends Where
      */
     public function having(string $field, string $operator = null, $value = null): Select
     {
-        $this->having[] = array(
+        $this->having[] = [
           'link' => 'AND',
           'field' => $field,
           'operator' => $operator,
           'value' => $value
-        );
+        ];
         return $this;
     }
 
@@ -302,12 +302,12 @@ class Select extends Where
      */
     public function orHaving(string $field, string $operator = null, $value = null): Select
     {
-        $this->having[] = array(
+        $this->having[] = [
           'link' => 'OR',
           'field' => $field,
           'operator' => $operator,
           'value' => $value
-        );
+        ];
         return $this;
     }
 
@@ -342,10 +342,10 @@ class Select extends Where
             throw new Exception("Can not use invalid direction order ({$direction}) in ORDER BY statement");
         }
 
-        $this->orderBy[] = array(
+        $this->orderBy[] = [
           'field' => $field,
           'direction' => $direction
-        );
+        ];
         return $this;
     }
 
@@ -629,8 +629,15 @@ class Select extends Where
 
     public function __clone()
     {
-        $this->resetLastQuery();
+        foreach ($this->where as $index => $where) {
+            if (isset($where['field']) && $where['field'] instanceof Where) {
+                // reset bindings in nested Where statements
+                $this->where[$index]['field']->resetBindings();
+            }
+        }
+
         $this->bindings = [];
+        $this->resetLastQuery();
     }
 
 }

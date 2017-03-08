@@ -11,7 +11,7 @@ class Where
      * The array of where statements
      * @var array
      */
-    private $where = [];
+    protected $where = [];
 
     /**
      * @var array
@@ -44,12 +44,12 @@ class Where
      */
     private function addCondition(string $link, $field, $value, string $operator)
     {
-        $this->where[] = array(
+        $this->where[] = [
           'link' => $link,
           'field' => $field,
           'operator' => $operator,
           'value' => $value
-        );
+        ];
 
         return $this;
     }
@@ -154,7 +154,7 @@ class Where
      */
     public function whereBetween(string $field, $value1, $value2)
     {
-        return $this->addCondition('AND', $field, array($value1, $value2), 'BETWEEN');
+        return $this->addCondition('AND', $field, [$value1, $value2], 'BETWEEN');
     }
 
     /**
@@ -168,7 +168,7 @@ class Where
      */
     public function orWhereBetween($field, $value1, $value2)
     {
-        return $this->addCondition('OR', $field, array($value1, $value2), 'BETWEEN');
+        return $this->addCondition('OR', $field, [$value1, $value2], 'BETWEEN');
     }
 
     /**
@@ -182,7 +182,7 @@ class Where
      */
     public function whereNotBetween($field, $value1, $value2)
     {
-        return $this->addCondition('AND', $field, array($value1, $value2), 'NOT BETWEEN');
+        return $this->addCondition('AND', $field, [$value1, $value2], 'NOT BETWEEN');
     }
 
     /**
@@ -196,7 +196,7 @@ class Where
      */
     public function orWhereNotBetween($field, $value1, $value2)
     {
-        return $this->addCondition('OR', $field, array($value1, $value2), 'NOT BETWEEN');
+        return $this->addCondition('OR', $field, [$value1, $value2], 'NOT BETWEEN');
     }
 
     /**
@@ -319,6 +319,14 @@ class Where
     public function getBindings(): array
     {
         return $this->bindings;
+    }
+
+    /**
+     * Reset currently set bindings
+     */
+    public function resetBindings(): void
+    {
+        $this->bindings = [];
     }
 
     /**
