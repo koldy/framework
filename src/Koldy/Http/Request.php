@@ -38,11 +38,7 @@ class Request
      *
      * @var array
      */
-    protected $options = [
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_HEADER => true,
-      CURLOPT_FOLLOWLOCATION => true
-    ];
+    protected $options = [];
 
     /**
      * Request headers
@@ -71,7 +67,21 @@ class Request
      */
     public function getUrl(): string
     {
-        return $this->url;
+        $url = $this->url;
+
+        if ($this->getMethod() == self::GET) {
+            if (count($this->params) > 0) {
+                $params = http_build_query($this->getParams());
+
+                if (strpos('?', $url) !== false && substr($url, -1) != '?') {
+                    // just add "&"
+                    $url .= $params;
+                } else {
+                    $url .= '?' . $params;
+                }
+            }
+        }
+        return $url;
     }
 
     /**
@@ -325,57 +335,41 @@ class Request
         return [];
     }
 
-    /**
-     * Get the cURL options
-     *
-     * @return array
-     */
     protected function getCurlOptions(): array
     {
-        $options = [
-          CURLOPT_CUSTOMREQUEST => $this->getMethod()
-            //CURLOPT_URL => $this->getUrl() // not setting it here
-        ];
-
-        if (count($this->headers) > 0) {
-            $options[CURLOPT_HTTPHEADER] = $this->getPreparedHeaders();
-        }
+        $options = [];
 
         switch ($this->getMethod()) {
-            case self::GET:
-                if (count($this->params)) {
-                    $url = $this->getUrl();
-
-                    if (strpos('?', $url) !== false && substr($url, -1) != '?') {
-                        // just add "&"
-                        $url .= http_build_query($this->params);
-                    } else {
-                        $url .= '?' . http_build_query($this->params);
-                    }
-
-                    $options[CURLOPT_URL] = $url;
-                }
-                break;
-
             case self::POST:
+                $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
+
                 if (!$this->hasOption(CURLOPT_POSTFIELDS)) {
-                    $options[CURLOPT_POSTFIELDS] = count($this->params) > 0 ? http_build_query($this->params) : '';
+                    $options[CURLOPT_POSTFIELDS] = count($this->getParams()) > 0 ? http_build_query($this->getParams()) : '';
                 }
 
                 if ($this->hasHeader('Content-Type') && $this->getHeader('Content-Type') == 'application/json') {
-                    $options[CURLOPT_POSTFIELDS] = Json::encode($this->params);
+                    $options[CURLOPT_POSTFIELDS] = Json::encode($this->getParams());
                 }
                 break;
 
             case self::PUT:
             case self::DELETE:
+                $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
+
                 if (!$this->hasOption(CURLOPT_POSTFIELDS)) {
                     $options[CURLOPT_POSTFIELDS] = count($this->params) > 0 ? http_build_query($this->params) : '';
                 }
                 break;
         }
 
-        return array_merge($options, $this->options);
+        if (count($this->headers) > 0) {
+            $options[CURLOPT_HTTPHEADER] = $this->getPreparedHeaders();
+        }
+
+        $options[CURLOPT_RETURNTRANSFER] = true;
+        $options[CURLOPT_HEADER] = true;
+
+        return $options;
     }
 
     /**
@@ -385,8 +379,11 @@ class Request
      */
     public function exec(): Response
     {
-        $ch = curl_init($this->getUrl());
+        $url = $this->getUrl();
+
+        $ch = curl_init($url);
         curl_setopt_array($ch, $this->getCurlOptions());
+
         $body = curl_exec($ch);
 
         if (curl_errno($ch)) {
@@ -396,8 +393,13 @@ class Request
         return new Response($ch, $body, $this);
     }
 
-    private static function quickRequest(string $url, string $method, array $params = null, array $headers = null): Response
-    {
+    private static function quickRequest(
+      string $url,
+      string $method,
+      array $params = null,
+      array $headers = null
+    ): Response {
+        /** @var Request $self */
         $self = new static();
         $self->setUrl($url)->setMethod($method);
 
