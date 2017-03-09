@@ -395,7 +395,7 @@ class Where
                             $query .= $value[1];
                         } else {
                             //$key = Query::getBindFieldName($field);
-                            $key = $this->bindField($field, $value[0]);
+                            $key = $this->bindField($field, $value[1]);
                             $query .= ":{$key}";
                             //$this->bindings[':' . $key] = $value[1];
                         }
