@@ -168,10 +168,13 @@ class Validator
     /**
      * Get the data we're going to validate
      *
+     * @param bool $trimStrings
+     *
      * @return array
      */
-    public function getData(): array
+    public function getData(bool $trimStrings = null): array
     {
+        $trimStrings = ($trimStrings === null) ? true : $trimStrings;
         $data = $this->data;
 
         foreach ($data as $key => $value) {
@@ -180,6 +183,10 @@ class Validator
                     // convert empty strings into nulls
                     $data[$key] = null;
                 }
+            }
+
+            if ($trimStrings && is_string($data[$key])) {
+                $data[$key] = trim($data[$key]);
             }
         }
 
@@ -193,13 +200,20 @@ class Validator
     }
 
     /**
+     * @param bool $trimStrings
+     *
      * @return \stdClass
      */
-    public function getDataObj(): \stdClass
+    public function getDataObj(bool $trimStrings = null): \stdClass
     {
+        $trimStrings = ($trimStrings === null) ? true : $trimStrings;
         $obj = new \stdClass();
         foreach ($this->getData() as $key => $value) {
-            $obj->$key = $value;
+            if ($trimStrings) {
+                $obj->$key = is_string($value) ? trim($value) : $value;
+            } else {
+                $obj->$key = $value;
+            }
         }
 
         return $obj;

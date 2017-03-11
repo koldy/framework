@@ -87,12 +87,17 @@ abstract class Model implements Serializable
     public function __construct(array $data = null)
     {
         if ($data !== null) {
-            $setOriginalData = false;
+            // let's detect if $data contains primary keys, if it does, then $setOriginalData should be true
+            if (is_array(static::$primaryKey)) {
+                $setOriginalData = true;
 
-            foreach ($data as $key => $value) {
-                if (!is_array(static::$primaryKey) && $key === static::$primaryKey) {
-                    $setOriginalData = true;
+                foreach (static::$primaryKey as $pk) {
+                    if (!array_key_exists($pk, $data)) {
+                        $setOriginalData = false;
+                    }
                 }
+            } else {
+                $setOriginalData = array_key_exists(static::$primaryKey, $data);
             }
 
             if ($setOriginalData) {
@@ -365,7 +370,20 @@ abstract class Model implements Serializable
         } else {
             foreach ($data as $field => $value) {
                 if (array_key_exists($field, $originalData)) {
+                    $doUpdate = false;
+
                     if ($value !== $originalData[$field]) {
+                        // might need to update
+                        if (is_scalar($value) && is_scalar($originalData[$field])) {
+                            if ((string)$value !== (string)$originalData[$field]) {
+                                $doUpdate = true;
+                            }
+                        } else {
+                            $doUpdate = true;
+                        }
+                    }
+
+                    if ($doUpdate) {
                         $toUpdate[$field] = $value;
                     }
                 } else {
@@ -957,11 +975,19 @@ abstract class Model implements Serializable
     /**
      * Get the initialized Select object with populated FROM part
      *
+     * @param string $tableAlias
+     *
      * @return Select
      */
-    public static function select(): Select
+    public static function select(string $tableAlias = null): Select
     {
-        return new Select(static::getTableName(), static::getAdapterConnection());
+        if ($tableAlias === null) {
+            return new Select(static::getTableName(), static::getAdapterConnection());
+        } else {
+            $select = new Select(null, static::getAdapterConnection());
+            $select->from(static::getTableName(), $tableAlias);
+            return $select;
+        }
     }
 
     /**

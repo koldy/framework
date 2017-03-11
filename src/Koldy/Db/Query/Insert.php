@@ -53,6 +53,7 @@ class Insert
      * @param array $rowValues is key => value array to insert into database
      * @param string|null $adapter
      *
+     * @throws Exception
      * @link http://koldy.net/docs/database/query-builder#insert
      */
     public function __construct(string $table = null, array $rowValues = null, string $adapter = null)
@@ -130,6 +131,16 @@ class Insert
 
         $this->data[] = $data;
         return $this;
+    }
+
+    /**
+     * Return if there's any data added using add(), addRows() or through constructor on $rowValues
+     *
+     * @return bool
+     */
+    public function hasDataToInsert(): bool
+    {
+        return count($this->data) > 0;
     }
 
     /**
