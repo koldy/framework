@@ -173,7 +173,8 @@ class Response
      */
     public function debug($allDetails = false)
     {
-        $msg = "KoldyHttpResponse ({$this->getHttpCode()}) {$this->request->getMethod()}={$this->getUrl()} IN {$this->getTotalTime()}s";
+        $className = get_class($this);
+        $msg = "{$className} ({$this->getHttpCode()}) {$this->request->getMethod()}={$this->getUrl()} IN {$this->getTotalTime()}s";
 
         if ($allDetails) {
             if ($this->headersText != null) {

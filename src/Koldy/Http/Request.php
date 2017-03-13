@@ -491,7 +491,8 @@ class Request
             }
         }
 
-        $msg = "KoldyHttpRequest to {$this->getMethod()}={$this->getUrl()}";
+        $className = get_class($this);
+        $msg = "[{$className}] to {$this->getMethod()}={$this->getUrl()}";
 
         if (count($this->params) > 0) {
             $params = $this->getParams();
