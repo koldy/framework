@@ -62,6 +62,16 @@ class Config
     }
 
     /**
+     * Get full path to config file on file system (if config was loaded from file, null otherwise)
+     *
+     * @return null|string
+     */
+    public function getFullPath(): ?string
+    {
+        return $this->path;
+    }
+
+    /**
      * @param string $path
      *
      * @throws Exception
