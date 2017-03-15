@@ -210,12 +210,12 @@ abstract class AbstractRoute
                 Log::warning("Asset site {$assetSite} is used in {$caller}, but not set in application config; using first asset site if any");
 
                 if (count($assets) > 0) {
-                    $url = $assets[0];
+                    $url = array_values($assets)[0];
                 }
             }
         } else {
             if (count($assets) > 0) {
-                $url = $assets[0];
+                $url = array_values($assets)[0];
             }
         }
 
