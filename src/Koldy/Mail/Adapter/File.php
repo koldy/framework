@@ -78,7 +78,7 @@ class File extends CommonMailAdapter
             $content .= $this->alternativeText;
         }
 
-        $now = DateTime::createFromFormat('U.u', microtime(true));
+        $now = DateTime::createFromFormat('U.u', (string)microtime(true));
         $time = $now->format('Y-m-d H-i-s.u');
 
         if (!isset($this->config['location'])) {
