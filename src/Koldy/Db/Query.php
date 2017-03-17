@@ -289,7 +289,11 @@ class Query
                 }
 
             } else {
-                $query = str_replace(":{$key}", ("'" . addslashes((string) $value) . "'"), $query);
+                if (is_null($value)) {
+                    $query = str_replace(":{$key}", 'NULL', $query);
+                } else {
+                    $query = str_replace(":{$key}", ("'" . addslashes((string) $value) . "'"), $query);
+                }
             }
         }
 
