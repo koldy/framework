@@ -649,7 +649,7 @@ abstract class Model implements Serializable
         }
 
         if ($where instanceof Where) {
-            $select->where($where);
+            $select->where(clone $where);
         } else if (is_array($where)) {
             foreach ($where as $field => $value) {
                 $select->where($field, $value);
@@ -928,7 +928,7 @@ abstract class Model implements Serializable
         if ($where !== null) {
             if ($where instanceof Where) {
                 $select->field('COUNT(*)', 'total');
-                $select->where($where);
+                $select->where(clone $where);
 
             } else if (is_array($where)) {
                 $select->field('COUNT(*)', 'total');

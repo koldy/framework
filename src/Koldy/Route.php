@@ -25,7 +25,7 @@ class Route
      *
      * @return string
      */
-    public static function getVar($whatVar, $default = null): string
+    public static function getVar($whatVar, $default = null)
     {
         return Application::route()->getVar($whatVar, $default);
     }
