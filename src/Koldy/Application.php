@@ -381,6 +381,33 @@ class Application
     }
 
     /**
+     * Add additional include path(s) - add anything you want under include path
+     *
+     * @param array ...$path
+     */
+    public static function prependIncludePath(...$path): void
+    {
+        $finalPaths = [];
+
+        foreach ($path as $r) {
+
+            if (is_array($r)) {
+                foreach ($r as $t) {
+                    $finalPaths[] = $t;
+                }
+            } else {
+                $finalPaths[] = $r;
+            }
+        }
+
+        foreach (explode(PATH_SEPARATOR, get_include_path()) as $r) {
+            $finalPaths[] = $r;
+        }
+
+        set_include_path(implode(PATH_SEPARATOR, array_unique($finalPaths)));
+    }
+
+    /**
      * Get the path to application folder with ending slash
      *
      * @param string $append [optional] append anything you want to application path

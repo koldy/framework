@@ -157,7 +157,7 @@ class DefaultRoute extends AbstractRoute
                 $this->controllerClass = 'IndexController';
             }
 
-            $this->controllerPath = "{$moduleDir}{$ds}controllers{$ds}{$this->controllerClass}.php";
+            $this->controllerPath = "{$moduleDir}controllers{$ds}{$this->controllerClass}.php";
             $mainControllerExists = true;
 
             if (!is_file($this->controllerPath)) {
@@ -194,8 +194,7 @@ class DefaultRoute extends AbstractRoute
             }
 
             // and now, configure the include paths according to the case
-            Application::addIncludePath("{$moduleDir}{$ds}controllers", "{$moduleDir}{$ds}library");
-
+            Application::prependIncludePath("{$moduleDir}controllers", "{$moduleDir}library");
         } else {
 
             // ok, it is the default controller/action
