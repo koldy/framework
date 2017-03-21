@@ -388,23 +388,20 @@ class Application
     public static function prependIncludePath(...$path): void
     {
         $finalPaths = [];
-
         foreach ($path as $r) {
 
             if (is_array($r)) {
                 foreach ($r as $t) {
-                    $finalPaths[] = $t;
+                    $paths[] = $t;
                 }
             } else {
-                $finalPaths[] = $r;
+                $paths[] = $r;
             }
         }
 
-        foreach (explode(PATH_SEPARATOR, get_include_path()) as $r) {
-            $finalPaths[] = $r;
-        }
+        $paths = explode(PATH_SEPARATOR, get_include_path());
 
-        set_include_path(implode(PATH_SEPARATOR, array_unique($finalPaths)));
+        set_include_path(implode(PATH_SEPARATOR, array_unique($paths)));
     }
 
     /**
@@ -667,6 +664,18 @@ class Application
      */
     public static function route(): AbstractRoute
     {
+        if (static::$routing === null) {
+            $config = static::getConfig('application');
+            $routingClassName = $config->get('routing_class');
+            $routeOptions = $config->get('routing_options') ?? [];
+
+            if ($routingClassName == null) {
+                static::terminateWithError('Can not init routing class when routing_class is not set in application config');
+            }
+
+            static::$routing = new $routingClassName($routeOptions);
+        }
+
         return static::$routing;
     }
 
@@ -816,6 +825,11 @@ class Application
         return $key;
     }
 
+    /**
+     * Initialize app
+     *
+     * @param string|null $uri
+     */
     public static function init(string $uri = null): void
     {
         if (!defined('KOLDY_CLI')) {
@@ -940,34 +954,26 @@ class Application
     public static function run(string $uri = null): void
     {
         static::init($uri);
-        $config = static::getConfig('application');
 
         if (!KOLDY_CLI) {
             // this is normal HTTP request that came from Web Server, so we'll handle it
-
-            $routingClassName = $config->get('routing_class');
-            $routeOptions = $config->get('routing_options') ?? [];
-
-            if ($routingClassName == null) {
-                static::terminateWithError('Can not start application when routing_class is not set');
-            }
 
             $uri = $uri ?? $_SERVER['REQUEST_URI'] ?? null;
             if ($uri == null) {
                 static::terminateWithError('Something went wrong, $uri is not set');
             }
 
-            static::$routing = new $routingClassName($routeOptions);
             static::$uri = $uri;
 
             try {
-                static::$routing->prepareHttp(static::$uri);
+                $route = static::route();
+                $route->prepareHttp(static::$uri);
 
                 if (Csrf::isEnabled() && (!Csrf::hasTokenStored() || !Csrf::hasCookieToken())) {
                     Csrf::generate();
                 }
 
-                $response = static::$routing->exec();
+                $response = $route->exec();
 
                 if ($response instanceof AbstractResponse) {
                     print $response->flush();
