@@ -392,16 +392,18 @@ class Application
 
             if (is_array($r)) {
                 foreach ($r as $t) {
-                    $paths[] = $t;
+                    $finalPaths[] = $t;
                 }
             } else {
-                $paths[] = $r;
+                $finalPaths[] = $r;
             }
         }
 
-        $paths = explode(PATH_SEPARATOR, get_include_path());
+        foreach (explode(PATH_SEPARATOR, get_include_path()) as $r) {
+            $finalPaths[] = $r;
+        }
 
-        set_include_path(implode(PATH_SEPARATOR, array_unique($paths)));
+        set_include_path(implode(PATH_SEPARATOR, array_unique($finalPaths)));
     }
 
     /**
