@@ -190,10 +190,16 @@ class Validator
             }
         }
 
+        $csrfParameterName = Csrf::getParameterName();
+
         foreach ($this->rules as $rule => $value) {
-            if ($rule != Csrf::getParameterName() && !array_key_exists($rule, $data)) {
+            if ($rule != $csrfParameterName && !array_key_exists($rule, $data)) {
                 $data[$rule] = null;
             }
+        }
+
+        if ($this->isCsrfEnabled() && isset($data[$csrfParameterName])) {
+            unset($data[$csrfParameterName]);
         }
 
         return $data;
