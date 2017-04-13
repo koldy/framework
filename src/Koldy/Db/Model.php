@@ -146,7 +146,12 @@ abstract class Model implements Serializable
      */
     final public function setData(array $values): Model
     {
-        $this->data = array_merge($this->data, $values);
+        if (!is_array($this->data)) {
+            $this->data = $values;
+        } else {
+            $this->data = array_merge($this->data, $values);
+        }
+
         return $this;
     }
 
@@ -180,14 +185,24 @@ abstract class Model implements Serializable
     /**
      * Used for internal use, such as after unserialize() or such
      *
-     * @param array $values
+     * @param array|null $values
      *
      * @return Model
      */
-    protected function setOriginalData(array $values): Model
+    final protected function setOriginalData(?array $values): Model
     {
         $this->originalData = $values;
         return $this;
+    }
+
+    /**
+     * Get the internal original data
+     *
+     * @return array|null
+     */
+    final protected function getOriginalData(): ?array
+    {
+        return $this->originalData;
     }
 
     /**
