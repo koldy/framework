@@ -93,7 +93,14 @@ class Files extends AbstractCacheAdapter
             $object->path = $path;
 
             $file = file_get_contents($path);
-            $firstLine = substr($file, 0, strpos($file, "\n"));
+
+            $pos = strpos($file, "\n");
+            if ($pos === false) {
+                // new line not found, means that file might be corrupted
+                throw new CacheException("Can not load data for cache key={$key}, file might be corrupted");
+            }
+
+            $firstLine = substr($file, 0, $pos);
             $firstLine = explode(';', $firstLine);
 
             $object->created = strtotime($firstLine[0]);
