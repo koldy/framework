@@ -1,7 +1,8 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Koldy\Response;
 
+use Closure;
 use Koldy\Log;
 use Koldy\Response\Exception as ResponseException;
 use Koldy\Session;
@@ -13,18 +14,18 @@ abstract class AbstractResponse
 {
 
     /**
-     * The function that should be called when before script flushes the content
+     * The function(s) that will be called when before script flushes the content
      *
-     * @var \Closure
+     * @var Closure[]
      */
-    protected $workBeforeResponse = null;
+    protected $workBeforeResponse = [];
 
     /**
-     * The function that should be called when script finishes output
+     * The function(s) that will be called when script closes client's connection
      *
-     * @var \Closure
+     * @var Closure[]
      */
-    protected $workAfterResponse = null;
+    protected $workAfterResponse = [];
 
     /**
      * The array of headers that will be printed before outputting anything
@@ -198,18 +199,14 @@ abstract class AbstractResponse
     /**
      * Set the function for before flush
      *
-     * @param \Closure $function
+     * @param Closure $function
      *
      * @throws \InvalidArgumentException
      * @return \Koldy\Response\AbstractResponse
      */
-    public function before($function): AbstractResponse
+    public function before(Closure $function): AbstractResponse
     {
-        if (!is_object($function) || !($function instanceof \Closure)) {
-            throw new \InvalidArgumentException('You must pass the Closure instance to after method in ' . get_class($this) . ' class');
-        }
-
-        $this->workBeforeResponse = $function;
+        $this->workBeforeResponse[] = $function;
         return $this;
     }
 
@@ -217,8 +214,8 @@ abstract class AbstractResponse
      */
     protected function runBeforeFlush(): void
     {
-        if ($this->workBeforeResponse !== null) {
-            call_user_func($this->workBeforeResponse);
+        foreach ($this->workBeforeResponse as $fn) {
+            call_user_func($fn, $this);
         }
     }
 
@@ -235,37 +232,35 @@ abstract class AbstractResponse
     abstract public function flush(): void;
 
     /**
+     *
      */
     protected function runAfterFlush(): void
     {
-        if (function_exists('fastcgi_finish_request')) {
-            if (isset($_SESSION)) {
-                Session::close();
-            }
+        if (isset($_SESSION)) {
+            // close writing to session, since this code will run after client's connection to server has ended
+            Session::close();
+        }
 
+        if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
         }
 
-        if ($this->workAfterResponse !== null) {
-            call_user_func($this->workAfterResponse);
+        foreach ($this->workAfterResponse as $fn) {
+            call_user_func($fn, $this);
         }
     }
 
     /**
-     * Set the function for after work
+     * Set the function for after work. If needed, add more than once.
      *
-     * @param \Closure $function
+     * @param Closure $function
      *
      * @throws Exception
      * @return \Koldy\Response\AbstractResponse
      */
-    public function after($function): AbstractResponse
+    public function after(Closure $function): AbstractResponse
     {
-        if (!is_object($function) || !($function instanceof \Closure)) {
-            throw new ResponseException('You must pass the Closure instance to after method in ' . get_class($this) . ' class');
-        }
-
-        $this->workAfterResponse = $function;
+        $this->workAfterResponse[] = $function;
         return $this;
     }
 
