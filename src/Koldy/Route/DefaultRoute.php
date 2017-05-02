@@ -3,7 +3,7 @@
 namespace Koldy\Route;
 
 use Koldy\{
-  Application, Log
+  Application, Log, Response\AbstractResponse, Response\Plain
 };
 use Koldy\Response\Exception\NotFoundException;
 
@@ -85,6 +85,7 @@ class DefaultRoute extends AbstractRoute
      *
      * @param string $uri
      *
+     * @throws Exception
      * @throws NotFoundException
      */
     public function prepareHttp(string $uri)
@@ -433,7 +434,7 @@ class DefaultRoute extends AbstractRoute
     {
         if (method_exists($this->controllerInstance, 'before')) {
             $response = $this->controllerInstance->before();
-            // if "before" method returns anything, then we should not continue
+            // if "before" method returns anything, then we should not continue, and after will not be executed
             if ($response !== null) {
                 return $response;
             }
@@ -442,7 +443,24 @@ class DefaultRoute extends AbstractRoute
         $method = $this->getActionMethod();
         if (method_exists($this->controllerInstance, $method) || method_exists($this->controllerInstance, '__call')) {
             // get the return value of your method (json, xml, view object, download, string or nothing)
-            return $this->controllerInstance->$method();
+            $output = $this->controllerInstance->$method();
+
+            if (method_exists($this->controllerInstance, 'after')) {
+                if (!($output instanceof AbstractResponse)) {
+                    $output = Plain::create((string) $output);
+                }
+
+                $controllerInstance = $this->controllerInstance;
+
+                // call after() method defined in controller by attaching it to response object and executing it after connection has been closed
+                $output->after(function () use ($controllerInstance, $output) {
+                    $controllerInstance->after($output);
+                });
+
+                return $output;
+            } else {
+                return $output;
+            }
 
         } else {
             // the method we need doesn't exists, so, there is nothing we can do about it any more
