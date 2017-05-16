@@ -357,7 +357,7 @@ class Where
             if (gettype($field) == 'object' && $value === null) {
                 // function or instance of self is passed, do something
 
-                $q = ($field instanceof self) ? $field : $field(new self());
+                $q = ($field instanceof self) ? clone $field : $field(new self());
                 if ($q === null) {
                     throw new DbException('Can not build query, statement\'s where function didn\'t return anything');
                 }
