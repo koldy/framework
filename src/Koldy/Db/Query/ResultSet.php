@@ -46,6 +46,11 @@ class ResultSet extends Select
     protected $modelClass = null;
 
     /**
+     * @var bool
+     */
+    protected $resetGroupBy = false;
+
+    /**
      * @param string $modelClass
      *
      * @return ResultSet
@@ -105,6 +110,10 @@ class ResultSet extends Select
         $query->resetOrderBy();
         $query->field('COUNT(*)', 'total');
 
+        if ($this->resetGroupBy) {
+            $query->resetGroupBy();
+        }
+
         if ($searchFields !== null) {
             $query->setSearchFields($searchFields);
         }
@@ -122,6 +131,23 @@ class ResultSet extends Select
     public function setSearchFields(array $fields): ResultSet
     {
         $this->searchFields = $fields;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasSearchField(): bool
+    {
+        return is_array($this->searchFields) && count($this->searchFields) > 0;
+    }
+
+    /**
+     * @return ResultSet
+     */
+    public function resetGroupByOnCount(): self
+    {
+        $this->resetGroupBy = true;
         return $this;
     }
 

@@ -1447,6 +1447,12 @@ class Validator
             return null;
         }
 
+        for ($i = count($args); $i < 4; $i++) {
+            if (!isset($args[$i])) {
+                $args[$i] = null;
+            }
+        }
+
         /** @var Model $modelClass */
         list($modelClass, $uniqueField, $exceptionValue, $exceptionField) = $args;
 

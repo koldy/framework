@@ -165,11 +165,12 @@ class Query
     public function exec(): void
     {
         $this->queryExecuted = false;
+        $sql = $this->getSQL();
 
-        $this->getAdapter()->prepare($this->getSQL());
+        $this->getAdapter()->prepare($sql);
+        $bindings = $this->getBindings();
 
         try {
-            $bindings = $this->getBindings();
             if (count($bindings) == 0) {
                 $this->getAdapter()->getStatement()->execute();
             } else {
@@ -178,7 +179,17 @@ class Query
 
             Log::sql("{$this->adapter}>>>\n{$this->debug()}");
         } catch (PDOException $e) {
-            Log::debug("Tried and failed to execute SQL query:\n{$this->debug()}");
+            // more descriptive error handling when query fails
+            switch ($e->getCode()) {
+                case 'HY093': // PDO missmatch parameter count
+                    Log::debug("[{$e->getCode()}] Tried and failed to execute SQL query:\n{$sql}");
+                    Log::debug('BINDINGS', $bindings);
+                    break;
+
+                default:
+                    Log::debug("[{$e->getCode()}] Tried and failed to execute SQL query:\n{$this->debug()}");
+                    break;
+            }
             throw new QueryException($e->getMessage(), (int) $e->getCode(), $e);
         }
 
