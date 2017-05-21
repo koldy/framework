@@ -375,4 +375,16 @@ class Util
         return $string;
     }
 
+    /**
+     * Checks if array is associative or not.
+     *
+     * @param array $array
+     *
+     * @return bool
+     */
+    public static function isAssociativeArray(array $array): bool
+    {
+        return count(array_filter(array_keys($array), 'is_string')) > 0;
+    }
+
 }
