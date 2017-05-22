@@ -39,6 +39,7 @@ class Message
     public const NOT_UNIQUE = 23;
     public const NO_RECORD = 24;
     public const CSRF_FAILED = 25;
+    public const BOOL = 26;
 
     /**
      * Flag if this class has been initialized or not
@@ -79,6 +80,7 @@ class Message
       self::NOT_UNIQUE => 'We already have this', // {param}, {value}, {exceptionValue}, {exceptionField}
       self::NO_RECORD => 'This value does not exists in database', // {param}, {value}, {field}
       self::CSRF_FAILED => 'CSRF check has failed', // {param}
+      self::BOOL => 'Parameter is not boolean' // {param}
     ];
 
     /**

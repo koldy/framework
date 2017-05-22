@@ -905,7 +905,7 @@ abstract class Model implements Serializable
     public static function isUnique(
       string $field,
       $value,
-      string $exceptionValue = null,
+      $exceptionValue = null,
       string $exceptionField = null
     ): bool {
         $select = static::select();

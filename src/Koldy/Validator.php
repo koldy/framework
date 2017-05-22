@@ -760,6 +760,56 @@ class Validator
     }
 
     /**
+     * Validate if given value is boolean
+     *
+     * @param string $parameter
+     * @param array $args
+     *
+     * @return null|string
+     * @example 'param' => 'bool' - passed value must be boolean
+     */
+    protected function validateBool(string $parameter, array $args = []): ?string
+    {
+        $value = $this->getValue($parameter);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_scalar($value)) {
+            return Message::getMessage(Message::PRIMITIVE, [
+              'param' => $parameter
+            ]);
+        }
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (!is_bool($value)) {
+            return Message::getMessage(Message::BOOL, [
+              'param' => $parameter
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate if given value is boolean
+     *
+     * @param string $parameter
+     * @param array $args
+     *
+     * @return null|string
+     * @example 'param' => 'boolean' - passed value must be boolean
+     */
+    protected function validateBoolean(string $parameter, array $args = []): ?string
+    {
+        return $this->validateBool($parameter, $args);
+    }
+
+    /**
      * Validate if given value is numeric or not (using PHP's is_numeric()), so it allows decimals
      *
      * @param string $parameter
@@ -1464,6 +1514,8 @@ class Validator
                 if ($exceptionFieldValue === null) {
                     throw new ValidatorConfigException("Can not validate unique parameter={$parameter} when exception field name={$exceptionFieldName} is not present or has the value of null");
                 }
+
+                $exceptionValue = $exceptionFieldValue;
             } else {
                 $exceptionValue = urldecode(trim($exceptionValue));
             }
