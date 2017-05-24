@@ -2,7 +2,7 @@
 
 namespace Koldy\Validator;
 
-use Koldy\Validator\Exception as ValidatorException;
+use Koldy\Validator\ConfigException as ValidatorException;
 
 /**
  * Class ErrorMessage
@@ -132,8 +132,10 @@ class Message
 
             if (is_array($data)) {
                 foreach ($data as $key => $value) {
-                    if (is_scalar($value)) {
-                        $return = str_replace("{{$key}}", $value, $return);
+                    if ($value === null || is_scalar($value)) {
+                        if ($value !== null) {
+                            $return = str_replace("{{$key}}", $value, $return);
+                        }
                     } else {
                         throw new ValidatorException("Parameters for validator error message contains non-primitive value in key={$key}");
                     }

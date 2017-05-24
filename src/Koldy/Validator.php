@@ -192,9 +192,26 @@ class Validator
 
         $csrfParameterName = Csrf::getParameterName();
 
-        foreach ($this->rules as $rule => $value) {
-            if ($rule != $csrfParameterName && !array_key_exists($rule, $data)) {
-                $data[$rule] = null;
+        foreach ($this->rules as $field => $rules) {
+            if ($field != $csrfParameterName && !array_key_exists($field, $data)) {
+                $data[$field] = null;
+            }
+
+            if (isset($data[$field]) && is_string($data[$field]) && $rules !== null) {
+                $rules = explode('|', $rules);
+
+                // case booleans
+                if (in_array('bool', $rules) || in_array('boolean', $rules)) {
+                    if ($data[$field] === 'true') {
+                        $data[$field] = true;
+                    } else if ($data[$field] === 'false') {
+                        $data[$field] = false;
+                    } else {
+                        $data[$field] = (bool)$data[$field];
+                    }
+                } else if (in_array('integer', $rules)) {
+                    $data[$field] = (int)$data[$field];
+                }
             }
         }
 
@@ -786,7 +803,7 @@ class Validator
             return null;
         }
 
-        if (!is_bool($value)) {
+        if (!is_bool($value) && $value !== 'true' && $value !== 'false') {
             return Message::getMessage(Message::BOOL, [
               'param' => $parameter
             ]);
