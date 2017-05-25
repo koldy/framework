@@ -135,8 +135,8 @@ class Manager
                         $adapter->query($sql)->exec();
                     }
                 } catch (DbException $e) {
-                    $adapter->query("DROP TABLE IF EXISTS {$tableName}")->exec();
                     Log::error("Can not create Koldy migrations table in database, using query:\n{$sql}");
+                    $adapter->query("DROP TABLE IF EXISTS {$tableName}")->exec();
                     throw $e;
                 }
             }
