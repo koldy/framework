@@ -314,6 +314,16 @@ class Where
     }
 
     /**
+     * Is this where statement empty or not
+     *
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return !$this->hasWhere();
+    }
+
+    /**
      * @return array
      */
     public function getBindings(): array
