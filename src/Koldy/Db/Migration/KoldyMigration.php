@@ -3,6 +3,7 @@
 namespace Koldy\Db\Migration;
 
 use Koldy\Application;
+use Koldy\Db;
 use Koldy\Db\Model;
 
 /**
@@ -24,7 +25,7 @@ class KoldyMigration extends Model {
      */
     public static function getAdapterConnection(): ?string
     {
-        return Application::getConfig('database')->has('koldy_migration') ? 'koldy_migration' : null;
+        return Db::getConfig()->has('koldy_migration') ? 'koldy_migration' : null;
     }
 
 }
