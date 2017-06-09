@@ -2,6 +2,7 @@
 
 namespace Koldy\Db\Migration;
 
+use Koldy\Application;
 use Koldy\Db\Model;
 
 /**
@@ -15,5 +16,15 @@ use Koldy\Db\Model;
 class KoldyMigration extends Model {
 
     protected static $table = 'koldy_migration';
+
+    /**
+     * If you define koldy_migration database adapter, then migrations table will be stored there
+     *
+     * @return null|string
+     */
+    public static function getAdapterConnection(): ?string
+    {
+        return Application::getConfig('database')->has('koldy_migration') ? 'koldy_migration' : null;
+    }
 
 }
