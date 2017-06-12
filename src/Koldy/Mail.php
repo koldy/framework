@@ -1,9 +1,10 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Koldy;
 
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Mail\Adapter\AbstractMailAdapter;
+use Koldy\Mail\Adapter\Simulate;
 
 /**
  * Send e-mail using config/mail.php.
@@ -21,11 +22,11 @@ class Mail
 {
 
     /**
-     * Array of initialized adapters
+     * First config key in configs/mail.php
      *
-     * @var array
+     * @var string
      */
-    private static $adapters = [];
+    private static $firstKey = null;
 
     /**
      * Get mail config
@@ -45,15 +46,15 @@ class Mail
      * @return AbstractMailAdapter
      * @throws ConfigException
      */
-    protected static function getAdapter(string $adapter = null): AbstractMailAdapter
+    protected static function getAdapter(?string $adapter = null): AbstractMailAdapter
     {
-        $key = $adapter ?? static::getConfig()->getFirstKey();
+        $config = static::getConfig();
 
-        if (isset(static::$adapters[$key])) {
-            return static::$adapters[$key];
+        if (static::$firstKey === null) {
+            static::$firstKey = $config->getFirstKey();
         }
 
-        $config = static::getConfig();
+        $key = $adapter ?? static::$firstKey;
         $configArray = $config->get($key, []);
 
         if (($configArray['enabled'] ?? false) === true) {
@@ -71,10 +72,10 @@ class Mail
                 throw new ConfigException("Unknown mail class={$className} under key={$adapter}");
             }
 
-            static::$adapters[$key] = new $className($configArray['options'] ?? []);
+            return new $className($configArray['options'] ?? []);
         }
 
-        return static::$adapters[$key];
+        return new Simulate($configArray['options'] ?? []);
     }
 
     /**
@@ -97,13 +98,24 @@ class Mail
     /**
      * You can check if configure mail adapter is enabled or not.
      *
-     * @param string $adapter [optional] will use default if not set
+     * @param string $adapter
      *
      * @return boolean
      */
-    public static function isEnabled(string $adapter = null): bool
+    public static function isEnabled(string $adapter): bool
     {
-        return static::getAdapter($adapter) !== null;
+        $config = static::getConfig();
+
+        if (!$config->has($adapter)) {
+            return false;
+        }
+
+        $enabled = $config->getArrayItem($adapter, 'enabled');
+        if ($enabled === null) {
+            return false;
+        }
+
+        return (bool)$enabled;
     }
 
 }
