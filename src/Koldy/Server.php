@@ -68,7 +68,7 @@ class Server
     public static function signature(): string
     {
         $numberOfIncludedFiles = count(get_included_files());
-        $signature = sprintf("server: %s (%s)\n", Request::serverIp(), Application::getDomain());
+        $signature = sprintf("server: %s (%s)\n", static::ip(), Application::getDomain());
 
         if (PHP_SAPI != 'cli') {
             $signature .= 'URI: ' . $_SERVER['REQUEST_METHOD'] . '=' . Application::getDomain() . Application::getUri() . "\n";
