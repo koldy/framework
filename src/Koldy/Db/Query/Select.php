@@ -55,16 +55,14 @@ class Select extends Where
 
     /**
      * @param string|null $table
-     * @param string|null $adapter
+     * @param string|null $tableAlias
      *
      * @link http://koldy.net/docs/database/query-builder#select
      */
-    public function __construct(string $table = null, string $adapter = null)
+    public function __construct(string $table = null, string $tableAlias = null)
     {
-        $this->setAdapter($adapter);
-
         if ($table !== null) {
-            $this->from($table);
+            $this->from($table, $tableAlias);
         }
     }
 
