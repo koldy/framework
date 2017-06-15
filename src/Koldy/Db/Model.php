@@ -978,11 +978,13 @@ abstract class Model implements Serializable
     /**
      * Get the ResultSet object of this model
      *
+     * @param null|string $tableAlias
+     *
      * @return ResultSet
      */
-    public static function resultSet(): ResultSet
+    public static function resultSet(?string $tableAlias = null): ResultSet
     {
-        $rs = new ResultSet(static::getTableName());
+        $rs = new ResultSet(static::getTableName(), $tableAlias);
         $rs->setModelClass(get_called_class())->setAdapter(static::getAdapterConnection());
         return $rs;
     }
