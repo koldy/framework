@@ -998,13 +998,9 @@ abstract class Model implements Serializable
      */
     public static function select(string $tableAlias = null): Select
     {
-        if ($tableAlias === null) {
-            return new Select(static::getTableName(), static::getAdapterConnection());
-        } else {
-            $select = new Select(null, static::getAdapterConnection());
-            $select->from(static::getTableName(), $tableAlias);
-            return $select;
-        }
+        $select = new Select(static::getTableName(), $tableAlias);
+        $select->setAdapter(static::getAdapterConnection());
+        return $select;
     }
 
     /**
