@@ -121,7 +121,7 @@ class Csrf
         }
 
         $config = Application::getConfig('session');
-        $cookie = Cookie::rawSet(static::getCookieName(), $token, 0, '/', $config->get('domain', ''), $config->get('cookie_secure', false), $config->get('http_only', false));
+        $cookie = Cookie::rawSet(static::getCookieName(), $token, 0, '/', $config->get('domain', ''), $config->get('cookie_secure', false), false);
 
         $token = new Token($token, $cookie);
         Session::set(static::getSessionKeyName(), $token);
