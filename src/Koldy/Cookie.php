@@ -19,9 +19,10 @@ class Cookie
     public static function get(string $key): ?string
     {
         if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
-            return null;
+            return Crypt::decrypt($_COOKIE[$key]);
         }
-        return Crypt::decrypt($_COOKIE[$key]);
+
+        return null;
     }
 
     /**
@@ -34,10 +35,10 @@ class Cookie
     public static function rawGet(string $key): ?string
     {
         if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
-            return null;
+            return $_COOKIE[$key];
         }
 
-        return $_COOKIE[$key];
+        return null;
     }
 
     /**
