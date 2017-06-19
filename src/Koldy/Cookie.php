@@ -2,6 +2,10 @@
 
 namespace Koldy;
 
+/**
+ * Class Cookie - helper class for working with cookies
+ * @package Koldy
+ */
 class Cookie
 {
 
@@ -51,10 +55,10 @@ class Cookie
      * @example Cookie::set('last_visited', date('r'));
      * @return string
      */
-    public static function set(string $name, string $value, int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httpOnly = false): string
+    public static function set(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null): string
     {
         $encryptedValue = Crypt::encrypt($value);
-        setcookie($name, $encryptedValue, $expire, $path, $domain, $secure, $httpOnly);
+        setcookie($name, $encryptedValue, $expire ?? 0, $path ?? '/', $domain ?? '', $secure ?? false, $httpOnly ?? false);
         return $encryptedValue;
     }
 
@@ -73,9 +77,9 @@ class Cookie
      * @example Cookie::set('last_visited', date('r'));
      * @return string
      */
-    public static function rawSet(string $name, string $value, int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httpOnly = false): string
+    public static function rawSet(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null): string
     {
-        setcookie($name, $value, $expire, $path, $domain, $secure, $httpOnly);
+        setcookie($name, $value, $expire ?? 0, $path ?? '/', $domain ?? '', $secure ?? false, $httpOnly ?? false);
         return $value;
     }
 
