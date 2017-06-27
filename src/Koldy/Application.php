@@ -186,13 +186,19 @@ class Application
      * autoload() method will allow controllers and other root clases to load properly
      *
      * @param string $className
+     *
+     * @throws ApplicationException
      */
     public static function autoload(string $className): void
     {
         $classPath = str_replace('\\', DS, $className);
         $path = $classPath . '.php';
 
-        require $path;
+        if ((@include $path) === false) {
+            // if we fail to include a file, let's throw an exception so we can see where it happened - it'll speed up troubleshooting
+            $includePath = get_include_path();
+            throw new ApplicationException("Unable to load class {$className} in current include path={$includePath}");
+        }
     }
 
     /**
