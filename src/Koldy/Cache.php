@@ -38,7 +38,7 @@ class Cache
      * @return \Koldy\Cache\Adapter\AbstractCacheAdapter
      * @throws \Koldy\Exception
      */
-    protected static function getAdapter(string $adapter = null): AbstractCacheAdapter
+    public static function getAdapter(string $adapter = null): AbstractCacheAdapter
     {
         $key = $adapter ?? static::getConfig()->getFirstKey();
 
