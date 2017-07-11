@@ -23,27 +23,44 @@ class Memcached extends AbstractCacheAdapter
     private $memcached = null;
 
     /**
+     * Get the instance of \Memcached
+     *
      * @return NativeMemcached
-     * @throws Application\DependencyException
      * @throws ConfigException
      */
     protected function getInstance(): NativeMemcached
     {
         if ($this->memcached === null) {
-            if (!class_exists('\Memcached')) {
-                throw new Application\DependencyException('Memcached class not found; you should install PHP Memcached module');
+            // first check if servers were defined
+            if (!isset($this->config['servers'])) {
+                throw new ConfigException('There are no defined Memcached servers in configuration; check if \'servers\' key exists in cache configuration file');
+            }
+
+            $serversCount = count($this->config['servers']);
+
+            if ($serversCount == 0) {
+                throw new ConfigException('There are no defined Memcached servers in configuration; check the \'servers\' key');
             }
 
             $this->memcached = isset($this->config['persistent_id']) ? new NativeMemcached($this->config['persistent_id']) : new NativeMemcached();
 
-            if (count($this->config['servers']) == 0) {
-                throw new ConfigException('There are no defined Memcached servers in configuration; check the \'servers\' key');
+            $adapterOptions = [
+              NativeMemcached::OPT_LIBKETAMA_COMPATIBLE => true // recommended on http://php.net/manual/en/memcached.constants.php
+            ];
+
+            if (isset($this->config['adapter_options']) && is_array($this->config['adapter_options']) && count($this->config['adapter_options']) > 0) {
+                $adapterOptions = array_merge($adapterOptions, $this->config['adapter_options']);
             }
 
-            $this->memcached->addServers($this->config['servers']);
+            $this->memcached->setOptions($adapterOptions);
 
-            if (isset($this->config['adapter_options']) && is_array($this->config['adapter_options'])) {
-                $this->memcached->setOptions($this->config['adapter_options']);
+            /**
+             * The following IF will prevent opening new connections on every new class instance
+             *
+             * @link http://php.net/manual/en/memcached.construct.php#93536
+             */
+            if (count($this->memcached->getServerList()) < $serversCount) {
+                $this->memcached->addServers($this->config['servers']);
             }
         }
 
@@ -287,4 +304,14 @@ class Memcached extends AbstractCacheAdapter
         return $this->getInstance()->decrement($key, $howMuch);
     }
 
+    /**
+     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
+     * get \Memcached class instance. If you're working with files, then you'll get null.
+     *
+     * @return mixed
+     */
+    public function getNativeInstance()
+    {
+        return $this->getInstance();
+    }
 }

@@ -162,4 +162,14 @@ class Request extends AbstractCacheAdapter
         // nothing to do
     }
 
+    /**
+     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
+     * get \Memcached class instance. If you're working with files, then you'll get null.
+     *
+     * @return mixed
+     */
+    public function getNativeInstance()
+    {
+        return null;
+    }
 }
