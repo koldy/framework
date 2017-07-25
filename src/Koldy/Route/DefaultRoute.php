@@ -110,7 +110,7 @@ class DefaultRoute extends AbstractRoute
         }
 
         if ($redirect !== null) {
-            header('Location: ' . $redirect);
+            header('Location: ' . Application::getDomainWithSchema() . $redirect);
             exit(0);
         }
 
