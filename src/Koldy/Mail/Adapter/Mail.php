@@ -46,7 +46,6 @@ class Mail extends CommonMailAdapter
             $this->setHeader('Bcc', implode(', ', $bcc));
         }
 
-        $this->setHeader('X-Mailer', 'PHP/' . phpversion());
         $charset = $this->config['charset'] ?? 'utf-8';
         $this->setHeader('Content-Type', $this->isHTML ? "text/html; charset={$charset}" : "text/plain; charset={$charset}");
 
