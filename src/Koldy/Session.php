@@ -49,7 +49,7 @@ class Session
 
             session_name($config->get('session_name', 'koldy'));
 
-            if (($adapterClass = $config->get('adapter')) !== null) {
+            if (($adapterClass = $config->get('adapter_class')) !== null) {
                 if (($module = $config->get('module')) !== null) {
                     Application::registerModule($module);
                 }
