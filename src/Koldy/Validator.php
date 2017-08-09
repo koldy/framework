@@ -158,6 +158,14 @@ class Validator
     }
 
     /**
+     * You might want to disable automatic CSRF check in some cases.
+     */
+    public function disableCsrfCheck(): void
+    {
+        $this->csrfEnabled = false;
+    }
+
+    /**
      * @return array
      */
     public function getRules(): array
