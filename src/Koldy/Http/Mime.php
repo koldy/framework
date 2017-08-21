@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Koldy\Http;
 
@@ -357,6 +357,7 @@ class Mime
       'inkml' => 'application/inkml+xml',
       'install' => 'application/x-install-instructions',
       'iota' => 'application/vnd.astraea-software.iota',
+      'ipa' => 'application/octet-stream',
       'ipfix' => 'application/ipfix',
       'ipk' => 'application/vnd.shana.informed.package',
       'irm' => 'application/vnd.ibm.rights-management',
