@@ -269,6 +269,21 @@ class Request
     }
 
     /**
+     * Get request method
+     *
+     * @return string
+     * @throws Exception
+     */
+    public static function method(): string
+    {
+        if (!isset($_SERVER['REQUEST_METHOD'])) {
+            throw new RequestException('There is no request method type');
+        }
+
+        return $_SERVER['REQUEST_METHOD'];
+    }
+
+    /**
      * Get raw data of the request
      * @return string
      * @throws RequestException
