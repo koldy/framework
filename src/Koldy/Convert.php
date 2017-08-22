@@ -29,7 +29,7 @@ class Convert
     private static function getMeasure(int $size, int $count = 0, int $round = 0): string
     {
         if ($size >= 1024) {
-            return self::getMeasure($size / 1024, ++$count, $round);
+            return self::getMeasure((int)round($size / 1024), ++$count, $round);
         } else {
             return round($size, $round) . ' ' . self::$measure[$count];
         }
