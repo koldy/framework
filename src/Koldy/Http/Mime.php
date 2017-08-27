@@ -623,6 +623,7 @@ class Mime
       'plb' => 'application/vnd.3gpp.pic-bw-large',
       'plc' => 'application/vnd.mobius.plc',
       'plf' => 'application/vnd.pocketlearn',
+      'plist' => 'application/xml', // most common, if plist is XML, otherwise should be application/x-plist
       'pls' => 'application/pls+xml',
       'pml' => 'application/vnd.ctc-posml',
       'png' => 'image/png',
