@@ -183,11 +183,19 @@ class Log
     /**
      * Temporary disable all logging
      *
-     * @param null[] ...$levels
+     * @param array|null ...$levels
      */
-    public static function temporaryDisable(?...$levels): void
+    public static function temporaryDisable($levels = null): void
     {
-        static::$temporaryDisabled = $levels ?? true;
+        $disable = true;
+
+        if (is_array($levels)) {
+            $disable = $levels;
+        } else if (is_string($levels)) {
+            $disable = [$levels];
+        }
+
+        static::$temporaryDisabled = $disable;
     }
 
     /**
@@ -200,10 +208,10 @@ class Log
         if ($whichLevel === null) {
             return static::$temporaryDisabled !== false;
         } else {
-            if (static::$temporaryDisabled === true) {
-                return true;
-            } else {
+            if (is_array(static::$temporaryDisabled)) {
                 return in_array($whichLevel, static::$temporaryDisabled);
+            } else {
+                return false;
             }
         }
     }
