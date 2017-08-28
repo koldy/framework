@@ -61,6 +61,14 @@ class Log
      */
     private static $enabledAdapters = [];
 
+    /**
+     * Flag if writing to log is temporary disabled or not. Set this to true for internal use, in cases like:
+     * "do not log SQL queries when DB session handler is enabled and such"
+     *
+     * @var bool|array
+     */
+    private static $temporaryDisabled = false;
+
     protected function __construct()
     {
     }
@@ -173,6 +181,39 @@ class Log
     }
 
     /**
+     * Temporary disable all logging
+     *
+     * @param null[] ...$levels
+     */
+    public static function temporaryDisable(?...$levels): void
+    {
+        static::$temporaryDisabled = $levels ?? true;
+    }
+
+    /**
+     * @param null|string $whichLevel
+     *
+     * @return bool
+     */
+    public static function isTemporaryDisabled(?string $whichLevel = null): bool
+    {
+        if ($whichLevel === null) {
+            return static::$temporaryDisabled !== false;
+        } else {
+            if (static::$temporaryDisabled === true) {
+                return true;
+            } else {
+                return in_array($whichLevel, static::$temporaryDisabled);
+            }
+        }
+    }
+
+    public static function restoreTemporaryDisablement(): void
+    {
+        static::$temporaryDisabled = false;
+    }
+
+    /**
      * Write EMERGENCY message to log
      *
      * @param array|string ...$messages
@@ -183,10 +224,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::EMERGENCY)) {
-                $adapter->emergency((new Message(self::EMERGENCY))->setMessages($messages));
+        if (!static::isTemporaryDisabled('emergency')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::EMERGENCY)) {
+                    $adapter->emergency((new Message(self::EMERGENCY))->setMessages($messages));
+                }
             }
         }
     }
@@ -202,10 +245,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::ALERT)) {
-                $adapter->alert((new Message(self::ALERT))->setMessages($messages));
+        if (!static::isTemporaryDisabled('alert')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::ALERT)) {
+                    $adapter->alert((new Message(self::ALERT))->setMessages($messages));
+                }
             }
         }
     }
@@ -221,10 +266,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::CRITICAL)) {
-                $adapter->critical((new Message(self::CRITICAL))->setMessages($messages));
+        if (!static::isTemporaryDisabled('critical')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::CRITICAL)) {
+                    $adapter->critical((new Message(self::CRITICAL))->setMessages($messages));
+                }
             }
         }
     }
@@ -240,10 +287,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::DEBUG)) {
-                $adapter->debug((new Message(self::DEBUG))->setMessages($messages));
+        if (!static::isTemporaryDisabled('debug')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::DEBUG)) {
+                    $adapter->debug((new Message(self::DEBUG))->setMessages($messages));
+                }
             }
         }
     }
@@ -259,10 +308,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::NOTICE)) {
-                $adapter->notice((new Message(self::NOTICE))->setMessages($messages));
+        if (!static::isTemporaryDisabled('notice')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::NOTICE)) {
+                    $adapter->notice((new Message(self::NOTICE))->setMessages($messages));
+                }
             }
         }
     }
@@ -278,10 +329,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::INFO)) {
-                $adapter->info((new Message(self::INFO))->setMessages($messages));
+        if (!static::isTemporaryDisabled('info')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::INFO)) {
+                    $adapter->info((new Message(self::INFO))->setMessages($messages));
+                }
             }
         }
     }
@@ -297,10 +350,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::WARNING)) {
-                $adapter->warning((new Message(self::WARNING))->setMessages($messages));
+        if (!static::isTemporaryDisabled('warning')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::WARNING)) {
+                    $adapter->warning((new Message(self::WARNING))->setMessages($messages));
+                }
             }
         }
     }
@@ -316,10 +371,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::ERROR)) {
-                $adapter->error((new Message(self::ERROR))->setMessages($messages));
+        if (!static::isTemporaryDisabled('error')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::ERROR)) {
+                    $adapter->error((new Message(self::ERROR))->setMessages($messages));
+                }
             }
         }
     }
@@ -335,10 +392,12 @@ class Log
     {
         static::init();
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled(self::SQL)) {
-                $adapter->sql((new Message(self::SQL))->setMessages($messages));
+        if (!static::isTemporaryDisabled('sql')) {
+            foreach (static::$adapters as $adapter) {
+                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
+                if ($adapter->isLevelEnabled(self::SQL)) {
+                    $adapter->sql((new Message(self::SQL))->setMessages($messages));
+                }
             }
         }
     }

@@ -61,7 +61,8 @@ class Db extends AbstractCacheAdapter
     {
         $key = $this->getKeyName($key);
 
-        $select = new Select($this->getTableName(), $this->getAdapterConnection());
+        $select = new Select($this->getTableName());
+        $select->setAdapter($this->getAdapterConnection());
         $select->where('id', $key)->where('expires_at', '>=', time());
 
         $record = $select->fetchFirst();
@@ -109,7 +110,8 @@ class Db extends AbstractCacheAdapter
     {
         $key = $this->getKeyName($key);
 
-        $select = new Select($this->getTableName(), null, $this->getAdapterConnection());
+        $select = new Select($this->getTableName());
+        $select->setAdapter($this->getAdapterConnection());
         $select->field('expires_at')->where('id', $key);
 
         $cacheRecord = $select->fetchFirst();
@@ -170,7 +172,8 @@ class Db extends AbstractCacheAdapter
             $serverKeys[] = $this->getKeyName($key);
         }
 
-        $select = new Select($this->getTableName(), $this->getAdapterConnection());
+        $select = new Select($this->getTableName());
+        $select->setAdapter($this->getAdapterConnection());
         $select->field('id')->field('data')->where('expires_at', '<', time())->whereIn('id', $serverKeys);
 
         $serverValues = [];

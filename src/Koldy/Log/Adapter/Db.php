@@ -5,7 +5,6 @@ namespace Koldy\Log\Adapter;
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Log\Exception;
 use Koldy\Db\Query\Insert;
-use Koldy\Db as KoldyDb;
 use Koldy\Log;
 use Koldy\Log\Message;
 

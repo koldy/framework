@@ -3,6 +3,7 @@
 namespace Koldy\Session\Adapter;
 
 use Koldy\Db as KoldyDb;
+use Koldy\Db\Exception as DbException;
 use Koldy\Db\Adapter\AbstractAdapter;
 use Koldy\Session\Exception;
 use Koldy\Log;
@@ -104,11 +105,20 @@ class Db implements SessionHandlerInterface
      *
      * @param string $sessionid
      *
-     * @return stdClass if data doesn't exist in database
+     * @return null|stdClass if data doesn't exist in database
+     * @throws DbException
      */
     private function getDbData($sessionid): ?stdClass
     {
-        return $this->getAdapter()->select($this->getTableName())->field('time')->field('data')->where('id', $sessionid)->fetchFirstObj();
+        try {
+            Log::temporaryDisable('sql');
+            $r = $this->getAdapter()->select($this->getTableName())->field('time')->field('data')->where('id', $sessionid)->fetchFirstObj();
+            Log::restoreTemporaryDisablement();
+            return $r;
+        } catch (DbException $e) {
+            Log::restoreTemporaryDisablement();
+            throw $e;
+        }
     }
 
     /**
@@ -147,10 +157,13 @@ class Db implements SessionHandlerInterface
             $data['id'] = $sessionid;
 
             try {
+                Log::temporaryDisable('sql');
                 $this->getAdapter()->insert($this->getTableName(), $data)->exec();
+                Log::restoreTemporaryDisablement();
 
                 return true;
             } catch (KoldyDb\Exception $e) {
+                Log::restoreTemporaryDisablement();
                 Log::emergency($e);
                 return false;
             }
@@ -158,10 +171,13 @@ class Db implements SessionHandlerInterface
             // the record data already exists in db
 
             try {
+                Log::temporaryDisable('sql');
                 $this->getAdapter()->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
+                Log::restoreTemporaryDisablement();
 
                 return true;
             } catch (KoldyDb\Exception $e) {
+                Log::restoreTemporaryDisablement();
                 Log::emergency($e);
                 return false;
             }
@@ -176,10 +192,13 @@ class Db implements SessionHandlerInterface
     public function destroy($sessionid)
     {
         try {
+            Log::temporaryDisable('sql');
             $this->getAdapter()->delete($this->getTableName())->where('id', $sessionid)->exec();
+            Log::restoreTemporaryDisablement();
 
             return true;
         } catch (KoldyDb\Exception $e) {
+            Log::restoreTemporaryDisablement();
             Log::emergency($e);
             return false;
         }
@@ -195,10 +214,13 @@ class Db implements SessionHandlerInterface
         $timestamp = time() - $maxlifetime;
 
         try {
+            Log::temporaryDisable('sql');
             $this->getAdapter()->delete($this->getTableName())->where('time', '<', $timestamp)->exec();
+            Log::restoreTemporaryDisablement();
 
             return true;
         } catch (KoldyDb\Exception $e) {
+            Log::restoreTemporaryDisablement();
             Log::emergency($e);
             return false;
         }
