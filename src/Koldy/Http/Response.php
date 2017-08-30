@@ -35,10 +35,10 @@ class Response
      * Response constructor.
      *
      * @param resource $ch
-     * @param string $body
+     * @param mixed $body
      * @param Request $request
      */
-    public function __construct($ch, string $body, Request $request)
+    public function __construct($ch, $body, Request $request)
     {
         $this->ch = $ch;
         $this->request = $request;
@@ -48,8 +48,8 @@ class Response
         if ($headerSize == 0) {
             $this->body = $body;
         } else {
-            $this->headersText = trim(substr($body, 0, $headerSize));
-            $this->body = substr($body, $headerSize);
+            $this->headersText = trim(substr((string)$body, 0, $headerSize));
+            $this->body = substr((string)$body, $headerSize);
         }
     }
 
@@ -71,9 +71,9 @@ class Response
     /**
      * Get the response body
      *
-     * @return string
+     * @return mixed
      */
-    public function getBody(): string
+    public function getBody()
     {
         return $this->body;
     }

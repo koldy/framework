@@ -387,4 +387,16 @@ class Util
         return array_values($array) !== $array;
     }
 
+    /**
+     * True if given parameter is binary string
+     *
+     * @param $str
+     *
+     * @return bool
+     */
+    public static function isBinary($str): bool
+    {
+        return is_string($str) && preg_match('~[^\x20-\x7E\t\r\n]~', $str) > 0;
+    }
+
 }

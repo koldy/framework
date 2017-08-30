@@ -335,13 +335,27 @@ class Request
         return [];
     }
 
+    /**
+     * Get the prepared curl options for the HTTP request
+     *
+     * @return array
+     */
     protected function getCurlOptions(): array
     {
         $options = [];
 
+        $options[CURLOPT_RETURNTRANSFER] = true;
+        $options[CURLOPT_HEADER] = true;
+
+        foreach ($this->getOptions() as $option => $value) {
+            $options[$option] = $value;
+        }
+
         switch ($this->getMethod()) {
             case self::POST:
-                $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
+                if (!$this->hasOption(CURLOPT_CUSTOMREQUEST)) {
+                    $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
+                }
 
                 if (!$this->hasOption(CURLOPT_POSTFIELDS)) {
                     $options[CURLOPT_POSTFIELDS] = count($this->getParams()) > 0 ? http_build_query($this->getParams()) : '';
@@ -354,7 +368,9 @@ class Request
 
             case self::PUT:
             case self::DELETE:
-                $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
+                if (!$this->hasOption(CURLOPT_CUSTOMREQUEST)) {
+                    $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
+                }
 
                 if (!$this->hasOption(CURLOPT_POSTFIELDS)) {
                     $options[CURLOPT_POSTFIELDS] = count($this->params) > 0 ? http_build_query($this->params) : '';
@@ -365,9 +381,6 @@ class Request
         if (count($this->headers) > 0) {
             $options[CURLOPT_HTTPHEADER] = $this->getPreparedHeaders();
         }
-
-        $options[CURLOPT_RETURNTRANSFER] = true;
-        $options[CURLOPT_HEADER] = true;
 
         return $options;
     }
@@ -382,7 +395,11 @@ class Request
         $url = $this->getUrl();
 
         $ch = curl_init($url);
-        curl_setopt_array($ch, $this->getCurlOptions());
+
+        foreach ($this->getCurlOptions() as $option => $value) {
+            // iterating it so we have all options applied in given order
+            curl_setopt($ch, $option, $value);
+        }
 
         $body = curl_exec($ch);
 
