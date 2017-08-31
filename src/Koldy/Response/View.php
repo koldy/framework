@@ -81,8 +81,7 @@ class View extends AbstractResponse
             return Application::getViewPath() . $view . '.phtml';
         } else {
             // TODO: Fix module part
-            return dirname(substr(Application::getViewPath(), 0, -1)) . DS . 'modules' . DS . substr($view, 0, $pos) . DS . 'views' . DS . str_replace('.', DS,
-                substr($view, $pos + 1)) . '.phtml';
+            return dirname(substr(Application::getViewPath(), 0, -1)) . DS . 'modules' . DS . substr($view, 0, $pos) . DS . 'views' . DS . substr($view, $pos + 1) . '.phtml';
         }
     }
 
