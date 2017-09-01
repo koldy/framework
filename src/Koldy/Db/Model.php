@@ -275,10 +275,9 @@ abstract class Model implements Serializable
     /**
      * Insert the record in database with given array of data
      *
-     * @param array $data pass array or valid instance of \Koldy\Db\Model
+     * @param array $data pass array of data for this model \Koldy\Db\Model
      *
-     * @return Model|false False if insert failed, otherwise, instance of this model
-     * @throws \Koldy\Exception
+     * @return Model
      */
     public static function create(array $data): Model
     {
@@ -621,7 +620,7 @@ abstract class Model implements Serializable
      * @param array $fields
      *
      * @throws Exception
-     * @return Model|null null will be returned if record is not found
+     * @return Model
      * @link http://koldy.net/docs/database/models#fetchOne
      */
     public static function fetchOneOrFail($field, $value = null, array $fields = null): Model
@@ -865,7 +864,7 @@ abstract class Model implements Serializable
      * @param string|null $orderField
      * @param string|null $orderDirection
      *
-     * @return mixed|null
+     * @return mixed
      * @throws NotFoundException
      */
     public static function fetchOneValueOrFail(string $field, $where = null, $orderField = null, $orderDirection = null)
@@ -889,7 +888,7 @@ abstract class Model implements Serializable
      * @param  mixed $exceptionValue OPTIONAL
      * @param  string $exceptionField OPTIONAL
      *
-     * @return bool|null
+     * @return bool
      * @link http://koldy.net/docs/database/models#isUnique
      *
      * @example
@@ -982,7 +981,7 @@ abstract class Model implements Serializable
      *
      * @return ResultSet
      */
-    public static function resultSet(?string $tableAlias = null): ResultSet
+    public static function resultSet(string $tableAlias = null): ResultSet
     {
         $rs = new ResultSet(static::getTableName(), $tableAlias);
         $rs->setModelClass(get_called_class())->setAdapter(static::getAdapterConnection());
@@ -990,7 +989,7 @@ abstract class Model implements Serializable
     }
 
     /**
-     * Get the initialized Select object with populated FROM part
+     * Get the initialized Select object with populated FROM and connection adapter set
      *
      * @param string $tableAlias
      *
