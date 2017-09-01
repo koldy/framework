@@ -26,7 +26,7 @@ class Mail
      *
      * @var string
      */
-    private static $firstKey = null;
+    protected static $firstKey = null;
 
     /**
      * Get mail config
