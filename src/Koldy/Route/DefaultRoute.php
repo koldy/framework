@@ -235,7 +235,6 @@ class DefaultRoute extends AbstractRoute
             // and now, configure the include paths according to the case
             $basePath = Application::getApplicationPath();
             Application::addIncludePath($basePath . 'controllers',    // so you can extend abstract controllers in the same directory if needed,
-              $basePath . 'models',      // all models should be in this directory
               $basePath . 'library'      // the place where you can define your own classes and methods
             );
         }
