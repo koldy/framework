@@ -9,8 +9,8 @@ class Util
 {
 
     /**
-     * Generate random string using openssl_random_pseudo_bytes(). This will return all possible English lower
-     * and uppercase letter with numbers, not just hexadecimal string
+     * Generate random string using openssl_random_pseudo_bytes(). It'll return all possible English lower
+     * and uppercase letters with numbers, not just hexadecimal string
      *
      * @param int $length
      *
@@ -171,7 +171,7 @@ class Util
      */
     public static function attributeValue(string $text): string
     {
-        return static::quotes(static::tags($text));
+        return static::quotes(static::apos(static::tags($text)));
     }
 
     /**
@@ -219,7 +219,7 @@ class Util
 
         $s = strip_tags(trim($string));
 
-        $table = array(
+        $table = [
           'Š' => 'S',
           'š' => 's',
           'Đ' => 'Dj',
@@ -292,12 +292,12 @@ class Util
           'ÿ' => 'y',
           'Ŕ' => 'R',
           'ŕ' => 'r',
-        );
+        ];
 
         $s = strtr($s, $table);
 
-        $rpl = array(
-          '/(,|;|\!|\?|:|&|\+|\=|-|\'|\/|\*|\t|\n|\$|\%|#|\^|\(|\)|\[|\]|\{|\}|\.)/' => '-',
+        $rpl = [
+          '/(,|;|\!|\?|:|&|\+|\=|-|\'|\/|\*|\t|\n|\%|#|\^|\(|\)|\[|\]|\{|\}|\.)/' => '-',
 
           '/≈°/' => 's',
           '/ƒë/' => 'd',
@@ -320,7 +320,7 @@ class Util
           '/&268;/' => 'C',
           '/&262;/' => 'C',
           '/&381;/' => 'Z'
-        );
+        ];
 
         $s = preg_replace(array_keys($rpl), array_values($rpl), $s);
 

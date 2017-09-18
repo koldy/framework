@@ -157,9 +157,19 @@ class Url
         return $this->segments['fragment'];
     }
 
-    public function __toString(): string
+    /**
+     * Gets the full URL from constructor
+     *
+     * @return string
+     */
+    public function getUrl(): string
     {
         return $this->url;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getUrl();
     }
 
 }

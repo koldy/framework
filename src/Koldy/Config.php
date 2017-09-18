@@ -40,7 +40,8 @@ class Config
     private $isPointerConfig;
 
     /**
-     * Config constructor.
+     * Config constructor. It is usually used by framework, but you can use it by yourself if you need to
+     * handle configs manually.
      *
      * @param string $name
      * @param bool $isPointerConfig - if set to true, then it'll act as database or mail config
@@ -52,7 +53,8 @@ class Config
     }
 
     /**
-     * Get the config name
+     * Get the config name. Useful if you're dealing with multiple configs by yourself and you want to know which
+     * config instance is which.
      *
      * @return string
      */
@@ -62,7 +64,7 @@ class Config
     }
 
     /**
-     * Get full path to config file on file system (if config was loaded from file, null otherwise)
+     * Gets full path to config file on file system (if config was loaded from file, null otherwise)
      *
      * @return null|string
      */
@@ -72,6 +74,9 @@ class Config
     }
 
     /**
+     * After config instance is constructed, you should load configuration from file by using this method. Otherwise,
+     * configuration should be set by using set or setData methods.
+     *
      * @param string $path
      *
      * @throws Exception
@@ -94,7 +99,7 @@ class Config
     }
 
     /**
-     * Reload configuration from file system, if it was loaded from file system
+     * Reload configuration from file system if config was loaded from file system
      */
     public function reload(): void
     {
@@ -104,6 +109,9 @@ class Config
     }
 
     /**
+     * Manually sets the configuration data. Be aware that this will override any previously set or loaded config.
+     * If configuration was loaded from file, this won't override the file on file system.
+     *
      * @param array $data
      */
     final public function setData(array $data): void
@@ -113,6 +121,8 @@ class Config
     }
 
     /**
+     * Returns true if config was set to be "pointer-config"
+     *
      * @return bool
      */
     public function isPointerConfig(): bool
@@ -121,6 +131,8 @@ class Config
     }
 
     /**
+     * Gets the whole configuration array
+     *
      * @return array
      * @throws Exception
      */
@@ -144,6 +156,10 @@ class Config
     }
 
     /**
+     * Returns true if loaded configuration is older then the seconds passed as first argument, `false` otherwise.
+     * This is useful if your CLI script is running for the long time and there's possibility that config
+     * was updated in meantime.
+     *
      * @param int $numberOfSeconds
      *
      * @return bool
@@ -159,6 +175,9 @@ class Config
     }
 
     /**
+     * Sets the value to the key in this configuration instance. If configuration was loaded from filesystem, note
+     * that this won't affect file system.
+     *
      * @param string $key
      * @param $value
      *
@@ -166,14 +185,16 @@ class Config
      */
     final public function set(string $key, $value): void
     {
-        if (!is_array($this->data)) {
-            throw new ConfigException('Unable to get config data when config wasn\'t loaded for config name=' . $this->name);
+        if ($this->data === null) {
+            $this->data = [];
         }
 
         $this->data[$key] = $value;
     }
 
     /**
+     * Returns true if requested key exists in current configuration, false otherwise.
+     *
      * @param string $key
      *
      * @return bool
@@ -189,6 +210,9 @@ class Config
     }
 
     /**
+     * Gets the value on requested key. First argument is key's name, second argument is default value you want
+     * to get if key is not set.
+     *
      * @param string $key
      * @param mixed $defaultValue
      *
@@ -231,6 +255,10 @@ class Config
     }
 
     /**
+     * When config is loaded or set, you can delete the presence of key by providing its name as first argument.
+     * This is advanced usage and should be avoided as much as possible. If configuration was loaded from file, this
+     * won't alter the file on file system.
+     *
      * @param string $key
      */
     public function delete(string $key): void
@@ -241,6 +269,8 @@ class Config
     }
 
     /**
+     * If targeted key in first level is array, then you can use this to fetch the key from that array
+     *
      * @param string $key
      * @param string $subKey
      * @param mixed|null $defaultValue
@@ -261,7 +291,7 @@ class Config
     }
 
     /**
-     * Get the first key in config
+     * Get the first key in config. Useful for pointer configs.
      *
      * @return string
      * @throws ConfigException
