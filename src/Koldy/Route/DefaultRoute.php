@@ -194,8 +194,6 @@ class DefaultRoute extends AbstractRoute
                 $this->actionMethod = 'index';
             }
 
-            // and now, configure the include paths according to the case
-            Application::prependIncludePath("{$moduleDir}controllers", "{$moduleDir}library");
         } else {
 
             // ok, it is the default controller/action

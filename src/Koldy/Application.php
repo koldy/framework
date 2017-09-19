@@ -752,6 +752,9 @@ class Application
         }
 
         static::$currentModule = $module;
+
+        // register current module & run init.php if present
+        static::registerModule($module);
     }
 
     /**
