@@ -41,9 +41,18 @@ class Request
     private static $vars = null;
 
     /**
-     * Get the real ip address of remote user
+     * Local "cache" of requested hosts
+     *
+     * @var array
+     */
+    private static $hosts = [];
+
+    /**
+     * Get the real IP address of remote user. If you're looking for server's IP, please refer to Server::ip()
+     *
      * @return string
      * @throws Exception
+     * @see Server::ip()
      */
     public static function ip(): string
     {
@@ -86,15 +95,22 @@ class Request
     }
 
     /**
-     * Get the host name of remote user. This will use gethostbyaddr function
+     * Get the host name of remote user. This will use gethostbyaddr function or its "cached" version
      *
      * @return string|null
      * @link http://php.net/manual/en/function.gethostbyaddr.php
      */
     public static function host(): ?string
     {
-        $host = gethostbyaddr(self::ip());
-        return ($host === '') ? null : $host;
+        $ip = self::ip();
+
+        if (isset(static::$hosts[$ip])) {
+            return static::$hosts[$ip];
+        }
+
+        $host = gethostbyaddr($ip);
+        static::$hosts[$ip] = ($host === '') ? null : $host;
+        return static::$hosts[$ip];
     }
 
     /**
@@ -281,6 +297,17 @@ class Request
         }
 
         return $_SERVER['REQUEST_METHOD'];
+    }
+
+    /**
+     * Gets the current URL of this request. This is alias of \Koldy\Application::getCurrentURL()
+     *
+     * @return Url
+     * @see Application::getCurrentURL()
+     */
+    public static function getCurrentURL(): Url
+    {
+        return Application::getCurrentURL();
     }
 
     /**
@@ -547,7 +574,7 @@ class Request
     /**
      * Get the required parameters. Return bad request if any of them is missing.
      *
-     * @param \string[] ...$requiredParameters
+     * @param string[] ...$requiredParameters
      *
      * @return array
      * @throws BadRequestException
@@ -673,7 +700,7 @@ class Request
      * Return true if request contains only parameters from method argument. If there are more parameters then defined,
      * method will return false.
      *
-     * @param \mixed ...$params
+     * @param mixed ...$params
      *
      * @return bool
      */
