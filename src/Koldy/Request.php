@@ -52,7 +52,7 @@ class Request
      *
      * @return string
      * @throws Exception
-     * @see Server::ip()
+     * @see \Koldy\Server::ip()
      */
     public static function ip(): string
     {
@@ -303,7 +303,7 @@ class Request
      * Gets the current URL of this request. This is alias of \Koldy\Application::getCurrentURL()
      *
      * @return Url
-     * @see Application::getCurrentURL()
+     * @see \Koldy\Application::getCurrentURL()
      */
     public static function getCurrentURL(): Url
     {
