@@ -6,6 +6,7 @@ use Koldy\Db\Adapter\{
   AbstractAdapter, MySQL, PostgreSQL, Sqlite
 };
 use Koldy\Db\Exception as DbException;
+use Koldy\Db\Expr;
 use Koldy\Db\Query;
 
 class Db
@@ -238,6 +239,18 @@ class Db
     public static function delete(string $table = null)
     {
         return static::getAdapter()->delete($table);
+    }
+
+    /**
+     * Create new database expression and return instance
+     *
+     * @param string $data
+     *
+     * @return Expr
+     */
+    public static function expr(string $data): Expr
+    {
+        return new Expr($data);
     }
 
 }

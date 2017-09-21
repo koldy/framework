@@ -47,11 +47,11 @@ class Sqlite extends AbstractAdapter
     {
         $config = $this->getConfig();
 
-        $pdoConfig = array(
+        $pdoConfig = [
           PDO::ATTR_EMULATE_PREPARES => false,
           PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
           PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        );
+        ];
 
         if (isset($config['adapter_options'])) {
             foreach ($config['adapter_options'] as $key => $value) {
@@ -80,7 +80,7 @@ class Sqlite extends AbstractAdapter
 
         // create needed function(s)
         $this->pdo->sqliteCreateFunction('ILIKE', function ($mask, $value) {
-            $mask = str_replace(array('%', '_'), array('.*?', '.'), preg_quote($mask, '/'));
+            $mask = str_replace(['%', '_'], ['.*?', '.'], preg_quote($mask, '/'));
             $mask = "/^$mask$/ui";
             return preg_match($mask, $value);
         }, 2);

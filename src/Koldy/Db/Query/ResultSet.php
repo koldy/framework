@@ -196,9 +196,7 @@ class ResultSet extends Select
             if ($adapter instanceof PostgreSQL) {
                 $useILike = true;
             } else if ($adapter instanceof Sqlite) {
-                // create ILIKE
-
-
+                // ILIKE was created when "connection" was opened
                 $useILike = true;
             } else {
                 $useILike = false;

@@ -180,13 +180,13 @@ class DefaultRoute extends AbstractRoute
                     $this->actionMethod = 'index';
                 } else {
                     $this->actionUrl = strtolower($this->uri[3]);
-                    $this->actionMethod = ucwords(str_replace(array('-', '.'), ' ', $this->actionUrl));
+                    $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                     $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                     $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
                 }
             } else if (isset($this->uri[2]) && $this->uri[2] != '') {
                 $this->actionUrl = strtolower($this->uri[2]);
-                $this->actionMethod = ucwords(str_replace(array('-', '.'), ' ', $this->actionUrl));
+                $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                 $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                 $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
             } else {

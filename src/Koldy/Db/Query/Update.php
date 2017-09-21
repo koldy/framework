@@ -109,10 +109,10 @@ class Update extends Where
             throw new Exception("Can not use invalid direction order ({$direction}) in ORDER BY statement");
         }
 
-        $this->orderBy[] = array(
+        $this->orderBy[] = [
           'field' => $field,
           'direction' => $direction
-        );
+        ];
 
         return $this;
     }

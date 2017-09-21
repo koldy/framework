@@ -110,10 +110,10 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
      */
     public function to(string $email, string $name = null)
     {
-        $this->to[] = array(
+        $this->to[] = [
           'email' => $email,
           'name' => $name
-        );
+        ];
 
         return $this;
     }
@@ -128,10 +128,10 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
      */
     public function cc(string $email, string $name = null)
     {
-        $this->cc[] = array(
+        $this->cc[] = [
           'email' => $email,
           'name' => $name
-        );
+        ];
 
         return $this;
     }
@@ -146,10 +146,10 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
      */
     public function bcc(string $email, string $name = null)
     {
-        $this->bcc[] = array(
+        $this->bcc[] = [
           'email' => $email,
           'name' => $name
-        );
+        ];
 
         return $this;
     }
