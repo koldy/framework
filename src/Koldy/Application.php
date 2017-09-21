@@ -729,7 +729,7 @@ class Application
         if (!isset(static::$registeredModules[$name])) {
             $modulePath = static::getModulePath($name);
 
-            static::addIncludePath($modulePath . 'controllers', $modulePath . 'library');
+            static::prependIncludePath($modulePath . 'controllers', $modulePath . 'library');
             static::$registeredModules[$name] = true;
             $initPath = $modulePath . 'init.php';
 
