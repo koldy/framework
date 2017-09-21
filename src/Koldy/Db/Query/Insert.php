@@ -6,7 +6,6 @@ use Koldy\Db\{
   Exception, Query, Expr
 };
 use Koldy\Json;
-use Koldy\Log;
 
 /**
  * Use this class if you want to insert multiple rows at once
@@ -58,8 +57,9 @@ class Insert
      */
     public function __construct(string $table = null, array $rowValues = null, string $adapter = null)
     {
-        $this->table = $table;
-        $this->setAdapter($adapter);
+        if ($table !== null) {
+            $this->into($table);
+        }
 
         if ($rowValues != null) {
             if (isset($rowValues[0]) && is_array($rowValues[0])) {
@@ -75,6 +75,23 @@ class Insert
                 $this->add($rowValues);
             }
         }
+
+        if ($adapter !== null) {
+            $this->setAdapter($adapter);
+        }
+    }
+
+    /**
+     * The table on which insert will be executed
+     *
+     * @param string $table
+     *
+     * @return Insert
+     * @deprecated Deprecated since v2.0. Use \Koldy\Db\Query\Insert::into() instead of table() method.
+     */
+    public function table(string $table): Insert
+    {
+        return $this->into($table);
     }
 
     /**
@@ -84,7 +101,7 @@ class Insert
      *
      * @return Insert
      */
-    public function table(string $table): Insert
+    public function into(string $table): Insert
     {
         $this->table = $table;
         return $this;

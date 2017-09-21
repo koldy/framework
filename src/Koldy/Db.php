@@ -244,13 +244,13 @@ class Db
     /**
      * Create new database expression and return instance
      *
-     * @param string $data
+     * @param string $expression
      *
      * @return Expr
      */
-    public static function expr(string $data): Expr
+    public static function expr(string $expression): Expr
     {
-        return new Expr($data);
+        return new Expr($expression);
     }
 
 }
