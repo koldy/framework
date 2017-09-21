@@ -195,12 +195,13 @@ class Db
      * Get the SELECT query instance on default adapter
      *
      * @param string|null $table
+     * @param string|null $tableAlias
      *
      * @return Query\Select
      */
-    public static function select(string $table = null): Query\Select
+    public static function select(string $table = null, string $tableAlias = null): Query\Select
     {
-        return static::getAdapter()->select($table);
+        return static::getAdapter()->select($table, $tableAlias);
     }
 
     /**

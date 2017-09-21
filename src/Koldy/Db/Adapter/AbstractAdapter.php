@@ -207,12 +207,15 @@ abstract class AbstractAdapter
 
     /**
      * @param string|null $table
+     * @param string|null $tableAlias
      *
      * @return Query\Select
      */
-    public function select(string $table = null): Query\Select
+    public function select(string $table = null, string $tableAlias = null): Query\Select
     {
-        return new Query\Select($table, $this->getConfigKey());
+        $select = new Query\Select($table, $tableAlias);
+        $select->setAdapter($this->getConfigKey());
+        return $select;
     }
 
     /**

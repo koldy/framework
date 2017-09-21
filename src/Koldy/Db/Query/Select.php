@@ -2,7 +2,6 @@
 
 namespace Koldy\Db\Query;
 
-use Koldy\Db;
 use Koldy\Db\{
   Where, Query, Expr
 };
