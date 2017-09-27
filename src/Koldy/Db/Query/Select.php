@@ -542,7 +542,7 @@ class Select extends Where
                 } else {
                     $query .= "{$nl}{$link}{$having['field']} {$having['operator']} :having{$index}";
                     //$bindings[':having' . $index] = $having['value'];
-                    $this->bindField($index, $having['value'], 'h');
+                    $this->bind($index, $having['value'], 'h');
                 }
             }
         }

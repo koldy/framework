@@ -176,7 +176,7 @@ class Update extends Where
                 $sql .= "{$value},\n";
             } else {
                 //$key = Query::getBindFieldName($field);
-                $key = $this->bindField($field, $value);
+                $key = $this->bind($field, $value);
                 $sql .= ":{$key},\n";
                 //$bindings[$key] = $value;
             }

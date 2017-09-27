@@ -19,13 +19,15 @@ class Where
     protected $bindings = [];
 
     /**
+     * Bind some value for PDO
+     *
      * @param string $field
      * @param $value
-     * @param string $prefix
+     * @param string $prefix - optional, use in special cases when there might a field duplicate, usually in clones or sub queries
      *
      * @return string
      */
-    protected function bindField(string $field, $value, string $prefix = ''): string
+    public function bind(string $field, $value, string $prefix = ''): string
     {
         $bindFieldName = $prefix . Query::getBindFieldName($field);
         $this->bindings[$bindFieldName] = $value;
@@ -394,7 +396,7 @@ class Where
                         if ($value[0] instanceof Expr) {
                             $query .= $value[0];
                         } else {
-                            $key = $this->bindField($field, $value[0]);
+                            $key = $this->bind($field, $value[0]);
                             $query .= ":{$key}";
                             //$this->bindings[':' . $key] = $value[0];
                         }
@@ -405,7 +407,7 @@ class Where
                             $query .= $value[1];
                         } else {
                             //$key = Query::getBindFieldName($field);
-                            $key = $this->bindField($field, $value[1]);
+                            $key = $this->bind($field, $value[1]);
                             $query .= ":{$key}";
                             //$this->bindings[':' . $key] = $value[1];
                         }
@@ -419,7 +421,7 @@ class Where
 
                         foreach ($value as $val) {
                             //$key = Query::getBindFieldName($field);
-                            $key = $this->bindField($field, $val);
+                            $key = $this->bind($field, $val);
                             $query .= ":{$key},";
                             //$this->bindings[':' . $key] = $val;
                         }
@@ -433,7 +435,7 @@ class Where
 
             } else {
                 //$key = Query::getBindFieldName($field);
-                $key = $this->bindField($field, $where['value']);
+                $key = $this->bind($field, $where['value']);
                 $query .= " ({$field} {$where['operator']} :{$key})\n";
                 //$this->bindings[':' . $key] = $where['value'];
 

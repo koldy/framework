@@ -251,7 +251,7 @@ class Query
      */
     public static function getKeyIndex(): int
     {
-        if (self::$keyIndex == PHP_INT_MAX) {
+        if (self::$keyIndex == 100000000) { // 100m should be enough
             self::$keyIndex = 0;
         } else {
             self::$keyIndex++;
