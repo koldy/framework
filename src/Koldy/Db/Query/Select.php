@@ -84,10 +84,10 @@ class Select extends Where
         if ($field !== null) {
             if (is_array($field)) {
                 foreach ($field as $fld) {
-                    $this->field(($alias === null) ? $fld : "{$alias}.{$fld}");
+                    $this->field(($alias ?? $table) . '.' . $fld);
                 }
             } else {
-                $this->field(($alias === null) ? $field : "{$alias}.{$field}");
+                $this->field(($alias ?? $table) . '.' . $field);
             }
         }
 
