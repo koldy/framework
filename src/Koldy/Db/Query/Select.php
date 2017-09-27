@@ -95,7 +95,7 @@ class Select extends Where
     }
 
     /**
-     * Join two tables
+     * "Inner" join two tables
      *
      * @param string $table
      * @param string|array $firstTableField
@@ -118,7 +118,7 @@ class Select extends Where
     }
 
     /**
-     * Join two tables
+     * "Left" join two tables
      *
      * @param string $table
      * @param string|array $firstTableField
@@ -145,7 +145,7 @@ class Select extends Where
     }
 
     /**
-     * Join two tables
+     * "Right" join two tables.
      *
      * @param string $table
      * @param string|array $firstTableField
@@ -168,7 +168,29 @@ class Select extends Where
     }
 
     /**
-     * Join two tables
+     * "Full" join two tables.
+     *
+     * @param string $table
+     * @param string|array $firstTableField
+     * @param string $operator
+     * @param string $secondTableField
+     *
+     * @return Select
+     */
+    public function fullJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
+    {
+        $this->joins[] = [
+          'type' => 'FULL JOIN',
+          'table' => $table,
+          'first' => $firstTableField,
+          'operator' => $operator,
+          'second' => $secondTableField
+        ];
+        return $this;
+    }
+
+    /**
+     * Join two tables. This is alias of innerJoin() method.
      *
      * @param string $table
      * @param string $firstTableField
@@ -177,6 +199,7 @@ class Select extends Where
      *
      * @return Select
      * @example join('user u', 'u.id', '=', 'r.user_role_id')
+     * @see \Koldy\Db\Query\Select::innerJoin()
      */
     public function join(string $table, $firstTableField, string $operator, string $secondTableField): Select
     {
