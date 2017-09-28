@@ -297,6 +297,55 @@ abstract class Model implements Serializable
     }
 
     /**
+     * Reloads this model with the latest data from database. It's using primary key to fetch the data. If primary key
+     * contains multiple columns, then all columns must be present in the model in order to refresh the data successfully.
+     *
+     * @return Model
+     * @throws Exception
+     */
+    public function reload(): Model
+    {
+        $pk = static::$primaryKey;
+
+        if (is_array($pk)) {
+
+            if (count($pk) === 0) {
+                $class = get_class($this);
+                throw new Exception("Can not reload model of {$class}, primary key definition is incorrect, it can't be empty array");
+            }
+
+            $select = [];
+            foreach ($pk as $column) {
+                if (!$this->has($column)) {
+                    $class = get_class($this);
+                    throw new Exception("Can not reload model of {$class}, primary key column {$column} is not set in model");
+                }
+
+                $pkValue = $this->$column;
+                $select[$column] = $pkValue;
+            }
+
+            $row = static::select()->where($select)->fetchFirst();
+        } else {
+            if (!$this->has($pk)) {
+                $class = get_class($this);
+                throw new Exception("Can not reload model of {$class}, primary key {$pk} is not set in model");
+            }
+
+            $pkValue = $this->$pk;
+
+            $row = static::select()->where($pk, $pkValue)->fetchFirst();
+        }
+
+        if ($row === null) {
+            $class = get_class($this);
+            throw new Exception("Can not reload model of {$class}, there is no record in database under {$pk}={$pkValue}");
+        }
+
+        return $this->setData($row);
+    }
+
+    /**
      * If you statically created new record in database to the table with auto
      * incrementing field, then you can use this static method to get the
      * generated primary key
