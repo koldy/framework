@@ -306,6 +306,7 @@ abstract class Model implements Serializable
     public function reload(): Model
     {
         $pk = static::$primaryKey;
+        $condition = null;
 
         if (is_array($pk)) {
 
@@ -325,6 +326,7 @@ abstract class Model implements Serializable
                 $select[$column] = $pkValue;
             }
 
+            $condition = $select;
             $row = static::select()->where($select)->fetchFirst();
         } else {
             if (!$this->has($pk)) {
@@ -333,13 +335,21 @@ abstract class Model implements Serializable
             }
 
             $pkValue = $this->$pk;
+            $condition = [$pk => $pkValue];
 
             $row = static::select()->where($pk, $pkValue)->fetchFirst();
         }
 
         if ($row === null) {
             $class = get_class($this);
-            throw new Exception("Can not reload model of {$class}, there is no record in database under {$pk}={$pkValue}");
+
+            $conditions = [];
+            foreach ($condition as $key => $value) {
+                $conditions[] = "{$key}={$value}";
+            }
+
+            $conditions = implode(', ', $conditions);
+            throw new Exception("Can not reload model of {$class}, there is no record in database under {$conditions}");
         }
 
         return $this->setData($row);
