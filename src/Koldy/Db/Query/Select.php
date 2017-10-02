@@ -2,6 +2,7 @@
 
 namespace Koldy\Db\Query;
 
+use Generator;
 use Koldy\Db\{
   Where, Query, Expr
 };
@@ -576,6 +577,27 @@ class Select extends Where
     }
 
     /**
+     * Fetch all records by getting Generator back
+     *
+     * @return Generator
+     */
+    public function fetchAllGenerator(): Generator
+    {
+        if (!$this->wasExecuted()) {
+            $this->exec();
+        }
+
+        $statement = $this->getAdapter()->getStatement();
+        $statement->execute();
+
+        while ($record = $statement->fetch(PDO::FETCH_ASSOC)) {
+            yield $record;
+        }
+
+        $statement->closeCursor();
+    }
+
+    /**
      * Fetch all records as array of objects
      *
      * @param string|null $class the name of class on which you want the instance of - class has to be able to accept array in constructor
@@ -598,6 +620,35 @@ class Select extends Where
 
             return $objects;
         }
+    }
+
+    /**
+     * Fetch all records from the executed SELECT statement and get the Generator back.
+     *
+     * @param string|null $class the name of class on which you want the instance of - class has to be able to accept array in constructor
+     *
+     * @return Generator
+     */
+    public function fetchAllObjGenerator(string $class = null): Generator
+    {
+        if (!$this->wasExecuted()) {
+            $this->exec();
+        }
+
+        $statement = $this->getAdapter()->getStatement();
+        $statement->execute();
+
+        if ($class === null) {
+            while ($record = $statement->fetch(PDO::FETCH_OBJ)) {
+                yield $record;
+            }
+        } else {
+            while ($record = $statement->fetch(PDO::FETCH_ASSOC)) {
+                yield new $class($record);
+            }
+        }
+
+        $statement->closeCursor();
     }
 
     /**
