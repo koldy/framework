@@ -1062,6 +1062,18 @@ abstract class Model implements Serializable
     }
 
     /**
+     * Get the initialized Insert instance with populated table name and connection adapter set
+     *
+     * @param array|null $rawValues
+     *
+     * @return Insert
+     */
+    public static function insert(array $rawValues = null): Insert
+    {
+        return new Insert(static::getTableName(), $rawValues, static::getAdapterConnection());
+    }
+
+    /**
      * @return string
      */
     public function __toString()
