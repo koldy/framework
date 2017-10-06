@@ -748,6 +748,40 @@ abstract class Model implements Serializable
     }
 
     /**
+     * Fetch the array of initialized records from database, where key in the returned array is something from the
+     * results
+     *
+     * @param string $key The name of the column which will be taken from results to be used as key in array
+     * @param mixed $where the WHERE condition
+     * @param array $fields array of fields to select; by default, all fields will be fetched
+     * @param string|null $orderField
+     * @param string|null $orderDirection
+     * @param int|null $limit
+     *
+     * @param int|null $start
+     *
+     * @return array
+     * @link http://koldy.net/docs/database/models#fetch
+     */
+    public static function fetchWithKey(
+        string $key,
+        $where,
+        array $fields = null,
+        string $orderField = null,
+        string $orderDirection = null,
+        int $limit = null,
+        int $start = null
+    ): array {
+        $data = [];
+
+        foreach (static::fetch($where, $fields, $orderField, $orderDirection, $limit, $start) as $record) {
+            $data[$record->$key] = $record;
+        }
+
+        return $data;
+    }
+
+    /**
      * Fetch all records from database
      *
      * @param string $orderField
