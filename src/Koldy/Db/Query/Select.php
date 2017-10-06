@@ -588,7 +588,6 @@ class Select extends Where
         }
 
         $statement = $this->getAdapter()->getStatement();
-        $statement->execute();
 
         while ($record = $statement->fetch(PDO::FETCH_ASSOC)) {
             yield $record;
@@ -636,7 +635,6 @@ class Select extends Where
         }
 
         $statement = $this->getAdapter()->getStatement();
-        $statement->execute();
 
         if ($class === null) {
             while ($record = $statement->fetch(PDO::FETCH_OBJ)) {
