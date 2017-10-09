@@ -67,11 +67,13 @@ class Server
      */
     public static function signature(): string
     {
+        $domain = Application::getDomain();
+
         $numberOfIncludedFiles = count(get_included_files());
-        $signature = sprintf("server: %s (%s)\n", static::ip(), Application::getDomain());
+        $signature = sprintf("server: %s (%s)\n", static::ip(), $domain);
 
         if (PHP_SAPI != 'cli') {
-            $signature .= 'URI: ' . $_SERVER['REQUEST_METHOD'] . '=' . Application::getDomain() . Application::getUri() . "\n";
+            $signature .= 'URI: ' . $_SERVER['REQUEST_METHOD'] . '=' . $domain . Application::getUri() . "\n";
             $signature .= sprintf("User IP: %s (%s)%s", Request::ip(), Request::host(),
               (Request::hasProxy() ? sprintf(" via %s for %s\n", Request::proxySignature(), Request::httpXForwardedFor()) : "\n"));
             $signature .= sprintf("UAS: %s\n", (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'no user agent set'));
@@ -87,11 +89,25 @@ class Server
 
         $signature .= sprintf("Server load: %s\n", static::getServerLoad());
 
-        $peak = memory_get_peak_usage(true);
-        $memoryLimit = ini_get('memory_limit');
+        $currentUsage = memory_get_usage();
+        $peak = memory_get_peak_usage();
+        $allocated = memory_get_peak_usage(true);
+        $memoryLimit = ini_get('memory_limit') ?? '0';
 
-        $signature .= sprintf("Memory: %s; peak: %s; limit: %s; spent: %s%%\n", Convert::bytesToString(memory_get_usage(true)), Convert::bytesToString($peak), $memoryLimit,
-          ($memoryLimit !== false && $memoryLimit > 0 ? round($peak * 100 / Convert::stringToBytes($memoryLimit), 2) : 'null'));
+        if ($memoryLimit > 0) {
+            $spent = round($peak / $memoryLimit * 100, 2) . 'kb';
+            $currentUsage = round($currentUsage / 1024) . 'kb';
+            $peak = round($peak / 1024) . 'kb';
+            $allocated = round($allocated / 1024) . 'kb';
+            $memoryLimit = round(Convert::stringToBytes($memoryLimit) / 1024) . 'kb';
+            $signature .= sprintf("Memory: currently: %s, peak: %s, allocated: %s, limit: %s, spent: %s\n", $currentUsage, $peak, $allocated, $memoryLimit, $spent);
+        } else {
+            $currentUsage = round($currentUsage / 1024) . 'kb';
+            $peak = round($peak / 1024) . 'kb';
+            $allocated = round($allocated / 1024) . 'kb';
+            $signature .= sprintf("Memory: currently: %s, peak: %s, allocated: %s, no limit detected\n", $currentUsage, $peak, $allocated);
+        }
+
         $signature .= sprintf("No. of included files: %d\n", $numberOfIncludedFiles);
 
         return $signature;
