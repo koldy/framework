@@ -2,7 +2,9 @@
 
 namespace Koldy\Log\Adapter;
 
+use Koldy\Application;
 use Koldy\Config\Exception as ConfigException;
+use Koldy\Convert;
 use Koldy\Log\Message;
 
 /**
@@ -172,6 +174,59 @@ abstract class AbstractLogAdapter
     public function error(Message $message): void
     {
         $this->logMessage($message);
+    }
+
+    /**
+     * Dump some common stuff into log according to config
+     */
+    public function dump(): void
+    {
+        $dump = $this->config['dump'] ?? [];
+
+        if (is_array($dump) && count($dump) > 0) {
+            // 'speed', 'included_files', 'include_path', 'whitespace'
+            $dump = array_flip($dump);
+
+            $url = isset($_SERVER['REQUEST_METHOD']) ? ($_SERVER['REQUEST_METHOD'] . '=' . Application::getCurrentURL()) : ('CLI=' . Application::getCliName());
+
+            if (array_key_exists('speed', $dump)) {
+                $executedIn = Application::getRequestExecutionTime();
+                $count = count(get_included_files());
+                $this->logMessage(new Message('notice', "{$url} EXECUTED IN {$executedIn}ms, used {$count} files"));
+            }
+
+            if (array_key_exists('memory', $dump)) {
+                $memoryLimit = ini_get('memory_limit') ?? '0';
+
+                if ($memoryLimit == -1) {
+                    $memoryLimit = '0';
+                }
+
+                $limit = Convert::stringToBytes($memoryLimit);
+                $peak = memory_get_peak_usage();
+                $msg = round($peak / 1024, 2) . 'kb';
+
+                if ($limit > 0) {
+                    $realPeak = memory_get_peak_usage(true);
+                    $real = round($realPeak / 1024, 2) . 'kb';
+                    $limitRounded = Convert::bytesToString($limit);
+                    $msg .= ", real usage {$real}/{$limitRounded}";
+
+                    $percent = round($realPeak / $limit * 100, 2);
+                    $msg .= " ({$percent}%)";
+                }
+
+                $this->logMessage(new Message('notice', "{$url} CONSUMED {$msg}"));
+            }
+
+            if (array_key_exists('included_files', $dump)) {
+                $this->logMessage(new Message('notice', 'Included files: ' . print_r(get_included_files(), true)));
+            }
+
+            if (array_key_exists('whitespace', $dump)) {
+                $this->logMessage(new Message('notice', str_repeat('#', 60) . "\n\n\n"));
+            }
+        }
     }
 
 }

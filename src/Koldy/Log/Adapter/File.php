@@ -78,46 +78,7 @@ class File extends AbstractLogAdapter
         $self = $this;
 
         register_shutdown_function(function () use ($self) {
-            $dump = $self->config['dump'];
-
-            if (is_array($dump) && count($dump) > 0) {
-                // 'speed', 'included_files', 'include_path', 'whitespace'
-                $dump = array_flip($dump);
-
-                $url = isset($_SERVER['REQUEST_METHOD']) ? ($_SERVER['REQUEST_METHOD'] . '=' . Application::getCurrentURL()) : ('CLI=' . Application::getCliName());
-
-                if (array_key_exists('speed', $dump)) {
-                    $executedIn = Application::getRequestExecutionTime();
-                    $count = count(get_included_files());
-                    $self->logMessage(new Message('notice', "{$url} EXECUTED IN {$executedIn}ms, used {$count} files"));
-                }
-
-                if (array_key_exists('memory', $dump)) {
-                    $limit = Convert::stringToBytes(ini_get('memory_limit')) ?? 0;
-                    $peak = memory_get_peak_usage();
-                    $msg = round($peak / 1024, 2) . 'kb';
-
-                    if ($limit > 0) {
-                        $realPeak = memory_get_peak_usage(true);
-                        $real = round($realPeak / 1024, 2) . 'kb';
-                        $limitRounded = Convert::bytesToString($limit);
-                        $msg .= ", real usage {$real}/{$limitRounded}";
-
-                        $percent = round($realPeak / $limit * 100, 2);
-                        $msg .= " ({$percent}%)";
-                    }
-
-                    $self->logMessage(new Message('notice', "{$url} CONSUMED {$msg}"));
-                }
-
-                if (array_key_exists('included_files', $dump)) {
-                    $self->logMessage(new Message('notice', 'Included files: ' . print_r(get_included_files(), true)));
-                }
-
-                if (array_key_exists('whitespace', $dump)) {
-                    $self->logMessage(new Message('notice', str_repeat('#', 60) . "\n\n\n"));
-                }
-            }
+            $self->dump();
 
             if ($self->fp !== null) {
                 @fclose($self->fp);

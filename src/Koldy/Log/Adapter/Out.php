@@ -3,6 +3,7 @@
 namespace Koldy\Log\Adapter;
 
 use Koldy\Application;
+use Koldy\Convert;
 use Koldy\Log\Exception;
 use Koldy\Log;
 use Koldy\Log\Message;
@@ -55,37 +56,16 @@ class Out extends AbstractLogAdapter
             }
         }
 
-        if (!isset($config['dump'])) {
+        parent::__construct($config);
+
+        if (isset($config['dump'])) {
             $config['dump'] = [];
-        } else {
             $self = $this;
+
             register_shutdown_function(function () use ($self) {
-                $dump = $self->config['dump'];
-
-                // 'speed', 'included_files', 'include_path', 'whitespace'
-
-                if (in_array('speed', $dump)) {
-                    $method = isset($_SERVER['REQUEST_METHOD']) ? ($_SERVER['REQUEST_METHOD'] . '=' . Application::getCurrentURL()) : ('CLI=' . Application::getCliName());
-
-                    $executedIn = Application::getRequestExecutionTime();
-                    $self->logMessage(new Message($method . ' LOADED IN ' . $executedIn . 'ms, ' . count(get_included_files()) . ' files', 'notice'));
-                }
-
-                if (in_array('included_files', $dump)) {
-                    $self->logMessage(new Message(print_r(get_included_files(), true), 'notice'));
-                }
-
-                if (in_array('include_path', $dump)) {
-                    $self->logMessage(new Message(print_r(explode(':', get_include_path()), true), 'notice'));
-                }
-
-                if (in_array('whitespace', $dump)) {
-                    $self->logMessage(new Message("----------\n\n\n", 'notice'));
-                }
+                $self->dump();
             });
         }
-
-        parent::__construct($config);
     }
 
     /**

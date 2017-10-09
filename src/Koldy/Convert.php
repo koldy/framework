@@ -54,16 +54,16 @@ class Convert
      *
      * @param string $string
      *
-     * @return number
+     * @return int
      * @throws ConvertException
      * @example 1M will return 1048576
      */
-    public static function stringToBytes(string $string)
+    public static function stringToBytes(string $string): int
     {
         $original = trim($string);
         $number = (int)$original;
 
-        if ($number === $original) {
+        if ($number === $original || $number === 0) {
             return $number;
         } else {
             $char = strtoupper(substr($original, -1, 1));
