@@ -4,6 +4,7 @@ namespace Koldy\Log\Adapter;
 
 use Koldy\Application;
 use Koldy\Config\Exception as ConfigException;
+use Koldy\Convert;
 use Koldy\Log\Exception;
 use Koldy\Log;
 use Koldy\Filesystem\Directory;
@@ -45,7 +46,7 @@ class File extends AbstractLogAdapter
      *
      * @var \Closure
      */
-    protected $getMessageFunction = null;
+    private $getMessageFunction = null;
 
     /**
      * Construct the handler to log to files. The config array will be check
@@ -72,26 +73,50 @@ class File extends AbstractLogAdapter
             }
         }
 
+        parent::__construct($config);
+
         $self = $this;
 
         register_shutdown_function(function () use ($self) {
-            if (!isset($self->config['dump'])) {
-                return;
-            }
-
             $dump = $self->config['dump'];
 
-            // 'speed', 'included_files', 'include_path', 'whitespace'
+            if (is_array($dump) && count($dump) > 0) {
+                // 'speed', 'included_files', 'include_path', 'whitespace'
+                $dump = array_flip($dump);
 
-            if (in_array('speed', $dump)) {
-                $method = isset($_SERVER['REQUEST_METHOD']) ? ($_SERVER['REQUEST_METHOD'] . '=' . Application::getCurrentURL()) : ('CLI=' . Application::getCliName());
+                $url = isset($_SERVER['REQUEST_METHOD']) ? ($_SERVER['REQUEST_METHOD'] . '=' . Application::getCurrentURL()) : ('CLI=' . Application::getCliName());
 
-                $executedIn = Application::getRequestExecutionTime();
-                $self->logMessage(new Message('notice', $method . ' EXECUTED IN ' . $executedIn . 'ms, used ' . count(get_included_files()) . ' files'));
-            }
+                if (array_key_exists('speed', $dump)) {
+                    $executedIn = Application::getRequestExecutionTime();
+                    $count = count(get_included_files());
+                    $self->logMessage(new Message('notice', "{$url} EXECUTED IN {$executedIn}ms, used {$count} files"));
+                }
 
-            if (in_array('whitespace', $dump)) {
-                $self->logMessage(new Message('notice', str_repeat('-', 40) . "\n\n\n"));
+                if (array_key_exists('memory', $dump)) {
+                    $limit = Convert::stringToBytes(ini_get('memory_limit')) ?? 0;
+                    $peak = memory_get_peak_usage();
+                    $msg = round($peak / 1024, 2) . 'kb';
+
+                    if ($limit > 0) {
+                        $realPeak = memory_get_peak_usage(true);
+                        $real = round($realPeak / 1024, 2) . 'kb';
+                        $limitRounded = Convert::bytesToString($limit);
+                        $msg .= ", real usage {$real}/{$limitRounded}";
+
+                        $percent = round($realPeak / $limit * 100, 2);
+                        $msg .= " ({$percent}%)";
+                    }
+
+                    $self->logMessage(new Message('notice', "{$url} CONSUMED {$msg}"));
+                }
+
+                if (array_key_exists('included_files', $dump)) {
+                    $self->logMessage(new Message('notice', 'Included files: ' . print_r(get_included_files(), true)));
+                }
+
+                if (array_key_exists('whitespace', $dump)) {
+                    $self->logMessage(new Message('notice', str_repeat('#', 60) . "\n\n\n"));
+                }
             }
 
             if ($self->fp !== null) {
@@ -102,8 +127,6 @@ class File extends AbstractLogAdapter
                 $self->closed = true;
             }
         });
-
-        parent::__construct($config);
     }
 
     /**
@@ -173,16 +196,6 @@ class File extends AbstractLogAdapter
 
             if (!@fwrite($this->fp, $line)) { // actually write it in file
                 throw new Exception('Unable to write to log file');
-            } else {
-
-                // so, writing was ok, but what if showdown was already called?
-                // be sent any more - sorry
-
-                if ($this->closed) {
-                    @fclose($this->fp);
-                    $this->fp = null;
-                    $this->fpFile = null;
-                }
             }
         }
     }
