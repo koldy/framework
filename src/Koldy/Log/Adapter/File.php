@@ -4,7 +4,6 @@ namespace Koldy\Log\Adapter;
 
 use Koldy\Application;
 use Koldy\Config\Exception as ConfigException;
-use Koldy\Convert;
 use Koldy\Log\Exception;
 use Koldy\Log;
 use Koldy\Filesystem\Directory;
@@ -151,8 +150,11 @@ class File extends AbstractLogAdapter
             if ($this->getMessageFunction !== null) {
                 $line = call_user_func($this->getMessageFunction, $message);
             } else {
+                $time = $message->getTime()->format('y-m-d H:i:s.v');
+                $level = strtoupper($message->getLevel());
+                $space = str_repeat(' ', 10 - strlen($level));
                 $who = $message->getWho() ?? Log::getWho();
-                $line = "{$message->getTime()->format('Y-m-d H:i:sO')}\t{$message->getLevel()}\t{$who}\t{$message->getMessage()}\n";
+                $line = "{$time} {$level}{$space}{$who}\t{$message->getMessage()}\n";
             }
 
             if (!@fwrite($this->fp, $line)) { // actually write it in file

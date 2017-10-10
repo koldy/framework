@@ -196,27 +196,27 @@ abstract class AbstractLogAdapter
             }
 
             if (array_key_exists('memory', $dump)) {
-                $memoryLimit = ini_get('memory_limit') ?? '0';
-
-                if ($memoryLimit == -1) {
-                    $memoryLimit = '0';
-                }
-
-                $limit = Convert::stringToBytes($memoryLimit);
+                $memory = memory_get_usage();
                 $peak = memory_get_peak_usage();
-                $msg = round($peak / 1024, 2) . 'kb';
+                $allocatedMemory = memory_get_peak_usage(true);
+                $memoryLimit = ini_get('memory_limit') ?? -1;
 
-                if ($limit > 0) {
-                    $realPeak = memory_get_peak_usage(true);
-                    $real = round($realPeak / 1024, 2) . 'kb';
-                    $limitRounded = Convert::bytesToString($limit);
-                    $msg .= ", real usage {$real}/{$limitRounded}";
+                $memoryKb = round($memory / 1024, 2);
+                $peakKb = round($peak / 1024, 2);
+                $allocatedMemoryKb = round($allocatedMemory / 1024, 2);
 
-                    $percent = round($realPeak / $limit * 100, 2);
-                    $msg .= " ({$percent}%)";
+                $limit = '';
+                $peakSpent = '';
+
+                if ($memoryLimit > 0) {
+                    $limitInt = Convert::stringToBytes($memoryLimit);
+                    $limit = ", limit: {$memoryLimit}";
+
+                    $spent = round($peak / $limitInt * 100, 2);
+                    $peakSpent = " ({$spent}% of limit)";
                 }
 
-                $this->logMessage(new Message('notice', "{$url} CONSUMED {$msg}"));
+                $this->logMessage(new Message('notice', "{$url} CONSUMED MEM: current: {$memoryKb}kb, peak: {$peakKb}kb{$peakSpent}, allocated: {$allocatedMemoryKb}kb{$limit}"));
             }
 
             if (array_key_exists('included_files', $dump)) {
@@ -224,7 +224,7 @@ abstract class AbstractLogAdapter
             }
 
             if (array_key_exists('whitespace', $dump)) {
-                $this->logMessage(new Message('notice', str_repeat('#', 60) . "\n\n\n"));
+                $this->logMessage(new Message('notice', "END OF {$url}\n" . str_repeat('#', 120) . "\n\n"));
             }
         }
     }

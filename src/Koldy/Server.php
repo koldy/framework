@@ -63,54 +63,94 @@ class Server
     /**
      * Get the server's "signature" in this moment with all useful debug data
      *
+     * @return array
+     */
+    public static function signatureArray(): array
+    {
+        $numberOfIncludedFiles = count(get_included_files());
+        $serverIP = static::ip();
+        $domain = Application::getDomain();
+
+        $signature = [];
+
+        // add the server IP and domain
+        $signature[] = "server: {$serverIP} ({$domain})";
+
+        if (PHP_SAPI != 'cli') {
+            // this is regular HTTP request
+            $method = Request::method();
+            $url = Application::getCurrentURL();
+
+            // add info about the current request
+            $signature[] = "URL: {$method}={$url}";
+
+            // some end user IP and host stuff
+            $endUserIp = Request::ip();
+            $endUserHost = Request::host() ?? 'no host detected';
+            $proxy = '';
+
+            if ($endUserIp == $endUserHost) {
+                $endUserHost = 'no host detected';
+            }
+
+            if (Request::hasProxy()) {
+                $proxySignature = Request::proxySignature();
+                $forwardedFor = Request::httpXForwardedFor();
+                $proxy = " via {$proxySignature} for {$forwardedFor}";
+            }
+
+            $signature[] = "Origin: {$endUserIp} ({$endUserHost}){$proxy}";
+
+            $uas = Request::userAgent() ?? 'no user agent set';
+            $signature[] = "UAS: {$uas}";
+        } else {
+            $cliName = Application::getCliName();
+            $cliScript = Application::getCliScriptPath();
+
+            $signature[] = "CLI Name: {$cliName}";
+            $signature[] = "CLI Script: {$cliScript}";
+
+            $params = Cli::getParameters();
+            if (count($params) > 0) {
+                $signature[] = 'CLI Params: ' . print_r($params, true);
+            }
+        }
+
+        $serverLoad = static::getServerLoad();
+        $signature[] = "Server Load: {$serverLoad}";
+
+        $memory = memory_get_usage();
+        $peak = memory_get_peak_usage();
+        $allocatedMemory = memory_get_peak_usage(true);
+        $memoryLimit = ini_get('memory_limit') ?? -1;
+
+        $memoryKb = round($memory / 1024, 2);
+        $peakKb = round($peak / 1024, 2);
+        $allocatedMemoryKb = round($allocatedMemory / 1024, 2);
+
+        $limit = '';
+        $peakSpent = '';
+
+        if ($memoryLimit > 0) {
+            $limitInt = Convert::stringToBytes($memoryLimit);
+            $limit = ", limit: {$memoryLimit}";
+
+            $spent = round($peak / $limitInt * 100, 2);
+            $peakSpent = " ({$spent}% of limit)";
+        }
+
+        $signature[] = "Memory: current: {$memoryKb}kb, peak: {$peakKb}kb{$peakSpent}, allocated: {$allocatedMemoryKb}kb{$limit}";
+        $signature[] = "No. of included files: {$numberOfIncludedFiles}";
+
+        return $signature;
+    }
+
+    /**
      * @return string
      */
     public static function signature(): string
     {
-        $domain = Application::getDomain();
-
-        $numberOfIncludedFiles = count(get_included_files());
-        $signature = sprintf("server: %s (%s)\n", static::ip(), $domain);
-
-        if (PHP_SAPI != 'cli') {
-            $signature .= 'URI: ' . $_SERVER['REQUEST_METHOD'] . '=' . $domain . Application::getUri() . "\n";
-            $signature .= sprintf("User IP: %s (%s)%s", Request::ip(), Request::host(),
-              (Request::hasProxy() ? sprintf(" via %s for %s\n", Request::proxySignature(), Request::httpXForwardedFor()) : "\n"));
-            $signature .= sprintf("UAS: %s\n", (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'no user agent set'));
-        } else {
-            $signature .= 'CLI Name: ' . Application::getCliName() . "\n";
-            $signature .= 'CLI Script: ' . Application::getCliScriptPath() . "\n";
-
-            $params = Cli::getParameters();
-            if (count($params) > 0) {
-                $signature .= 'CLI Params: ' . print_r($params, true) . "\n";
-            }
-        }
-
-        $signature .= sprintf("Server load: %s\n", static::getServerLoad());
-
-        $currentUsage = memory_get_usage();
-        $peak = memory_get_peak_usage();
-        $allocated = memory_get_peak_usage(true);
-        $memoryLimit = ini_get('memory_limit') ?? '0';
-
-        if ($memoryLimit > 0) {
-            $spent = round($peak / $memoryLimit * 100, 2) . 'kb';
-            $currentUsage = round($currentUsage / 1024) . 'kb';
-            $peak = round($peak / 1024) . 'kb';
-            $allocated = round($allocated / 1024) . 'kb';
-            $memoryLimit = round(Convert::stringToBytes($memoryLimit) / 1024) . 'kb';
-            $signature .= sprintf("Memory: currently: %s, peak: %s, allocated: %s, limit: %s, spent: %s\n", $currentUsage, $peak, $allocated, $memoryLimit, $spent);
-        } else {
-            $currentUsage = round($currentUsage / 1024) . 'kb';
-            $peak = round($peak / 1024) . 'kb';
-            $allocated = round($allocated / 1024) . 'kb';
-            $signature .= sprintf("Memory: currently: %s, peak: %s, allocated: %s, no limit detected\n", $currentUsage, $peak, $allocated);
-        }
-
-        $signature .= sprintf("No. of included files: %d\n", $numberOfIncludedFiles);
-
-        return $signature;
+        return implode("\n", static::signatureArray());
     }
 
     /**

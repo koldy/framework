@@ -100,8 +100,9 @@ class Email extends AbstractLogAdapter
         $body .= "\n\n----------\n";
         $body .= Server::signature();
         $subject = Util::truncate($subject, 140);
+        $domain = Application::getDomain();
 
-        $mail->from('alert@' . Application::getDomain(), Application::getDomain())->subject($subject)->body($body);
+        $mail->from('alert@' . $domain, $domain)->subject($subject)->body($body);
 
         $to = $this->config['to'];
         if (!is_array($this->config['to']) && strpos($this->config['to'], ',') !== false) {
@@ -112,8 +113,10 @@ class Email extends AbstractLogAdapter
             foreach ($to as $toEmail) {
                 $mail->to(trim($toEmail));
             }
-        } else {
+        } else if (is_string($to)) {
             $mail->to(trim($to));
+        } else {
+            throw new Exception('Unable to prepare log via email, expected array or string for \'to\', got ' . gettype($to));
         }
 
         return $mail;
