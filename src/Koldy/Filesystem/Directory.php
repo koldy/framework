@@ -137,7 +137,7 @@ class Directory
     }
 
     /**
-     * Create the target directory
+     * Create the target directory recursively if needed
      *
      * @param string $path
      * @param int $chmod default 0644
@@ -148,25 +148,13 @@ class Directory
      */
     public static function mkdir(string $path, $chmod = null): void
     {
-        if (is_dir($path)) {
-            return;
-        }
+        if (!is_dir($path)) {
+            if ($chmod === null) {
+                $chmod = Application::getConfig('application')->getArrayItem('filesystem', 'default_chmod', 0644);
+            }
 
-        if ($chmod === null) {
-            $chmod = Application::getConfig('application')->getArrayItem('filesystem', 'default_chmod', 0644);
-        }
-
-        $paths = explode(DS, $path);
-
-        if (count($paths)) {
-            array_shift($paths);
-            $path = DS;
-
-            foreach ($paths as $key => $dir) {
-                $path .= $dir . DS;
-                if (!is_dir($path) && !@mkdir($path, $chmod)) {
-                    throw new FilesystemException("Can not create directory on path={$path}");
-                }
+            if (!mkdir($path, $chmod, true)) {
+                throw new FilesystemException("Can not create directory on path={$path}");
             }
         }
     }
@@ -180,20 +168,12 @@ class Directory
      */
     public static function rmdirRecursive(string $directory): void
     {
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $path) {
-            if ($path->isFile()) {
-                if (!unlink($path->getPathname())) {
-                    throw new FilesystemException("Unable to delete file while deleting directory recursively on path={$path->getPathname()}");
-                }
-            } else {
-                if (!rmdir($path->getPathname())) {
-                    throw new FilesystemException("Unable to delete directory while deleting directory recursively on path={$path->getPathname()}");
-                }
-            };
-        }
+        if (is_dir($directory)) {
+            static::emptyDirectory($directory);
 
-        if (!rmdir($directory)) {
-            throw new FilesystemException("Unable to remove directory on path={$directory}");
+            if (!rmdir($directory)) {
+                throw new FilesystemException("Unable to remove directory on path={$directory}");
+            }
         }
     }
 
@@ -207,14 +187,16 @@ class Directory
      */
     public static function emptyDirectory(string $directory): void
     {
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $path) {
-            if ($path->isFile()) {
-                if (unlink($path->getPathname())) {
-                    throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
-                }
-            } else {
-                if (!rmdir($path->getPathname())) {
-                    throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
+        if (is_dir($directory)) {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $path) {
+                if ($path->isFile()) {
+                    if (!unlink($path->getPathname())) {
+                        throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
+                    }
+                } else {
+                    if (!rmdir($path->getPathname())) {
+                        throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
+                    }
                 }
             }
         }
