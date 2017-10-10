@@ -34,7 +34,13 @@ class Directory
             while (false !== ($entry = readdir($handle))) {
                 if ($entry !== '.' && $entry !== '..') {
                     if ($filter === null || preg_match($filter, $entry)) {
-                        $files[$path . $entry] = $entry;
+                        $fullPath = $path . $entry;
+
+                        if (substr($fullPath, 0, 1) == '.') {
+                            $fullPath = stream_resolve_include_path($path . $entry);
+                        }
+
+                        $files[$fullPath] = $entry;
                     }
                 }
             }
@@ -68,7 +74,13 @@ class Directory
             while (false !== ($entry = readdir($handle))) {
                 if ($entry !== '.' && $entry !== '..' && !is_dir($path . $entry)) {
                     if ($filter === null || preg_match($filter, $entry)) {
-                        $files[$path . $entry] = $entry;
+                        $fullPath = $path . $entry;
+
+                        if (substr($fullPath, 0, 1) == '.') {
+                            $fullPath = stream_resolve_include_path($path . $entry);
+                        }
+
+                        $files[$fullPath] = $entry;
                     }
                 }
             }
@@ -103,7 +115,13 @@ class Directory
                 if ($entry !== '.' && $entry !== '..') {
                     if (!is_dir($path . $entry)) {
                         if ($filter === null || preg_match($filter, $entry)) {
-                            $files[$path . $entry] = $entry;
+                            $fullPath = $path . $entry;
+
+                            if (substr($fullPath, 0, 1) == '.') {
+                                $fullPath = stream_resolve_include_path($path . $entry);
+                            }
+
+                            $files[$fullPath] = $entry;
                         }
                     } else {
                         // it is sub-directory
