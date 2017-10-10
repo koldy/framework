@@ -2,6 +2,7 @@
 
 namespace Koldy\Filesystem;
 
+use Koldy\Application;
 use Koldy\Filesystem\Exception as FilesystemException;
 
 /**
@@ -19,7 +20,7 @@ class Directory
      *
      * @return array assoc; the key is full path of the file and value is only file name
      * @throws FilesystemException
-     * @example return array('/Users/vkoudela/Sites/site.tld/folder/croatia.png' => 'croatia.png')
+     * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
      */
     public static function read(string $path, string $filter = null): array
     {
@@ -52,7 +53,7 @@ class Directory
      *
      * @return array assoc; the key is full path of the file and value is only file name
      * @throws FilesystemException
-     * @example return array('/Users/vkoudela/Sites/site.tld/folder/croatia.png' => 'croatia.png')
+     * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
      */
     public static function readFiles(string $path, string $filter = null): array
     {
@@ -79,14 +80,14 @@ class Directory
     }
 
     /**
-     * Get the list of all only files from the given folder and its subfolders
+     * Get the list of all only files from the given folder and its sub-folders
      *
      * @param string $path the directory path to read
      * @param string $filter [optional] regex for filtering the list
      *
      * @return array assoc; the key is full path of the file and value is only file name
      * @throws FilesystemException
-     * @example return array('/Users/vkoudela/Sites/site.tld/folder/croatia.png' => 'croatia.png')
+     * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
      */
     public static function readFilesRecursive(string $path, string $filter = null): array
     {
@@ -127,10 +128,14 @@ class Directory
      * @throws FilesystemException
      * @example $chmod 0777, 0755, 0700
      */
-    public static function mkdir(string $path, $chmod = 0644): void
+    public static function mkdir(string $path, $chmod = null): void
     {
         if (is_dir($path)) {
             return;
+        }
+
+        if ($chmod === null) {
+            $chmod = Application::getConfig('application')->getArrayItem('filesystem', 'default_chmod', 0644);
         }
 
         $paths = explode(DS, $path);
@@ -141,10 +146,8 @@ class Directory
 
             foreach ($paths as $key => $dir) {
                 $path .= $dir . DS;
-                if (!is_dir($path)) {
-                    if (!@mkdir($path, $chmod)) {
-                        throw new FilesystemException("Can not create directory on path={$path}");
-                    }
+                if (!is_dir($path) && !@mkdir($path, $chmod)) {
+                    throw new FilesystemException("Can not create directory on path={$path}");
                 }
             }
         }
