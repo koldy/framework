@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Db\ModelTraits;
+namespace Koldy\Db\ModelTraits;
 
 use DateTime;
 use DateTimeZone;
