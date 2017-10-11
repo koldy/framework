@@ -53,15 +53,6 @@ abstract class Model implements Serializable
     protected static $autoIncrement = true;
 
     /**
-     * The array of fields that will never be injected into query when calling
-     * the save() method. Be aware that this doesn't work if you're calling static update() method
-     * method.
-     *
-     * @var array
-     */
-    protected static $neverUpdate = [];
-
-    /**
      * The data holder in this object
      *
      * @var array
@@ -1112,7 +1103,9 @@ abstract class Model implements Serializable
      */
     public function __toString()
     {
-        return Json::encode($this->getData());
+        $class = get_class($this);
+        $stringify = Json::encode($this->getData());
+        return "{$class}={$stringify}";
     }
 
     /**
