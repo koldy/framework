@@ -58,6 +58,21 @@ class Util
     }
 
     /**
+     * Clean given string from tabs, new lines and double spaces
+     *
+     * @param string $string
+     * @return string
+     */
+    public static function cleanString(string $string): string
+    {
+        if (strlen($string) == 0) {
+            return '';
+        }
+
+        return preg_replace(['/\s{2,}/', '/[\t\n]/'], ' ', $string);
+    }
+
+    /**
      * Convert (') into (& apos ;)
      *
      * @param string $string
