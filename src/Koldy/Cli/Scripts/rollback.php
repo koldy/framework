@@ -1,9 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 use Koldy\Cli;
 use Koldy\Cli\Exception as CliException;
 use Koldy\Db\Migration\Manager;
-use Koldy\Log;
 
 if (Cli::hasParameterOnPosition(3)) {
     $stepsBack = Cli::getParameterOnPosition(3);

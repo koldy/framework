@@ -78,10 +78,14 @@ class Manager
     }
 
     /**
+     * Start executing migration scripts
+     *
+     * @param bool $force - Set true if you want to run "older" migrations that weren't ran before
+     *
      * @throws DbException
      * @throws Exception
      */
-    public static function migrate(): void
+    public static function migrate(bool $force = false): void
     {
         $migrationsPath = Application::getApplicationPath('migrations');
         $files = Directory::readFiles($migrationsPath, '/\.php$/');
@@ -95,11 +99,14 @@ class Manager
             $adapter = $class::getAdapter();
 
             try {
+
                 $class::count();
+
             } catch (DbException $e) {
                 // table probably doesn't exists, let's create it
                 try {
                     $sql = '';
+
                     if ($adapter instanceof MySQL) {
                         $sql .= "CREATE TABLE {$tableName} (\n";
                         $sql .= "  id int unsigned not null auto_increment,\n";
@@ -111,6 +118,7 @@ class Manager
                         $sql .= "  INDEX (script_timestamp)\n";
                         $sql .= ")Engine=InnoDB";
                         $adapter->query($sql)->exec();
+
                     } else if ($adapter instanceof PostgreSQL) {
                         $sql .= "CREATE TABLE {$tableName} (\n";
                         $sql .= "  id serial,\n";
@@ -124,6 +132,7 @@ class Manager
 
                         $sql = "CREATE INDEX i_{$tableName}_script_timestamp ON {$tableName} (script_timestamp)";
                         $adapter->query($sql)->exec();
+
                     } else if ($adapter instanceof Sqlite) {
                         $sql .= "CREATE TABLE {$tableName} (\n";
                         $sql .= "  id integer primary key autoincrement,\n";
@@ -133,7 +142,9 @@ class Manager
                         $sql .= "  script_execution_duration integer not null\n";
                         $sql .= ")";
                         $adapter->query($sql)->exec();
+
                     }
+
                 } catch (DbException $e) {
                     Log::error("Can not create Koldy migrations table in database, using query:\n{$sql}");
                     $adapter->query("DROP TABLE IF EXISTS {$tableName}")->exec();
@@ -144,32 +155,44 @@ class Manager
             $files = array_flip($files);
 
             if (count($files) == 0) {
+
                 Log::info('Nothing to migrate; no PHP files in migrations folder');
+
             } else {
                 ksort($files);
 
                 // simply, take all records from database, check the last one and remove all $files before the last in database
+
+                /** @var KoldyMigration[] $executedMigrations */
                 $executedMigrations = $class::all('script_timestamp', 'ASC');
                 $executedMigrationsCount = count($executedMigrations);
 
+                $olderMigrationsCount = 0;
+
                 if ($executedMigrationsCount > 0) {
                     $s = $executedMigrationsCount != 1 ? 's' : '';
-                    Log::debug("{$executedMigrationsCount} migration{$s} was executed before till now");
+                    Log::notice("{$executedMigrationsCount} migration{$s} was executed before till now");
 
                     $lastMigration = $executedMigrations[count($executedMigrations) - 1];
-                    $lastMigrationTimestamp = $lastMigration->script_timestamp;
+                    $lastMigrationTimestamp = $lastMigration->getScriptTimestamp();
 
                     $filesToRemove = [];
                     foreach ($files as $file => $path) {
                         $parts = explode('_', $file);
                         if (count($parts) != 2) {
-                            throw new Exception("Invalid file name found in migrations: {$file}; please create migration files using: php public/index.php koldy create-migration migration-name");
+                            throw new Exception("Invalid file name found in migrations: {$file}; please create migration files using: \"./koldy create-migration migration-name\"");
                         }
 
                         $timestamp = $parts[0];
 
                         if ($timestamp <= $lastMigrationTimestamp) {
-                            $filesToRemove[] = $file;
+                            if ($force) {
+                                // if $force is TRUE, then we should not remove anything from stack; we'll execute it all
+                                $olderMigrationsCount++;
+                            } else {
+                                // if $force is FALSE, then we'll remove all "older" migrations from stack so it won't be executed
+                                $filesToRemove[] = $file;
+                            }
                         }
                     }
 
@@ -182,25 +205,37 @@ class Manager
 
                 $filesCount = count($files);
                 $s = $filesCount != 1 ? 's' : '';
-                Log::debug("{$filesCount} migration{$s} will be executed now");
+
+                if ($force && $olderMigrationsCount > 0) {
+                    $s2 = $olderMigrationsCount != 1 ? 's' : '';
+                    Log::info("{$filesCount} migration{$s} will be executed now, INCLUDING {$olderMigrationsCount} older migration{$s2}");
+                } else {
+                    Log::info("{$filesCount} migration{$s} will be executed now");
+                }
 
                 foreach ($files as $file => $path) {
                     $parts = explode('_', $file);
                     if (count($parts) != 2) {
-                        throw new Exception("Invalid file name found in migrations: {$file}; please create migration files using: php public/index.php koldy create-migration migration-name");
+                        throw new Exception("Invalid file name found in migrations: {$file}; please create migration files using: \"./koldy create-migration migration-name\"");
                     }
 
                     $timestamp = (int)$parts[0];
                     $migrationClassName = 'Migration_' . str_replace('.php', '', $file);
                     include_once $path;
 
-                    /** @var \Koldy\Db\Migration $migrationClassInstance */
-                    $migrationClassInstance = new $migrationClassName();
+                    /** @var \Koldy\Db\Migration $migration */
+                    $migration = new $migrationClassName();
                     $startTime = microtime(true);
                     Log::info("Starting to EXECUTE MIGRATION script {$timestamp}_{$migrationClassName}");
                     $dashes = str_repeat('-', 50);
                     Log::info($dashes);
-                    $migrationClassInstance->up();
+
+                    /*********************************/
+                    /**/                           /**/
+                    /**/     $migration->up();     /**/
+                    /**/                           /**/
+                    /*********************************/
+
                     Log::info($dashes);
                     $endTime = microtime(true);
 
@@ -246,9 +281,9 @@ class Manager
           ->fetchAll();
 
         for ($i = 0, $count = count($rollbackMigrations); $i < $stepsDown && $i < $count; $i++) {
-            $migration = $rollbackMigrations[$i];
-            $id = $migration['id'];
-            $script = $migration['script'];
+            $mgr = $rollbackMigrations[$i];
+            $id = $mgr['id'];
+            $script = $mgr['script'];
             $className = 'Migration_' . $script;
             $filePath = Application::getApplicationPath("migrations/{$script}.php");
 
@@ -258,14 +293,20 @@ class Manager
 
             include_once $filePath;
 
-            /** @var Migration $instance */
-            $instance = new $className();
+            /** @var Migration $migration */
+            $migration = new $className();
 
             Log::info("Starting to EXECUTE ROLLBACK script {$script}");
             $dashes = str_repeat('-', 50);
             $startTime = microtime(true);
             Log::debug($dashes);
-            $instance->down();
+
+            /***********************************/
+            /**/                             /**/
+            /**/     $migration->down();     /**/
+            /**/                             /**/
+            /***********************************/
+
             Log::debug($dashes);
             $endTime = microtime(true);
 
