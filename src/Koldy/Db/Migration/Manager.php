@@ -161,72 +161,93 @@ class Manager
             } else {
                 ksort($files);
 
-                // simply, take all records from database, check the last one and remove all $files before the last in database
-
                 /** @var KoldyMigration[] $executedMigrations */
-                $executedMigrations = $class::all('script_timestamp', 'ASC');
-                $executedMigrationsCount = count($executedMigrations);
+                $executedMigrations = [];
+                $lastMigration = null;
 
-                $olderMigrationsCount = 0;
-
-                if ($executedMigrationsCount > 0) {
-                    $s = $executedMigrationsCount != 1 ? 's' : '';
-                    Log::notice("{$executedMigrationsCount} migration{$s} was executed before till now");
-
-                    $lastMigration = $executedMigrations[count($executedMigrations) - 1];
-                    $lastMigrationTimestamp = $lastMigration->getScriptTimestamp();
-
-                    $filesToRemove = [];
-                    foreach ($files as $file => $path) {
-                        $parts = explode('_', $file);
-                        if (count($parts) != 2) {
-                            throw new Exception("Invalid file name found in migrations: {$file}; please create migration files using: \"./koldy create-migration migration-name\"");
-                        }
-
-                        $timestamp = $parts[0];
-
-                        if ($timestamp <= $lastMigrationTimestamp) {
-                            if ($force) {
-                                // if $force is TRUE, then we should not remove anything from stack; we'll execute it all
-                                $olderMigrationsCount++;
-                            } else {
-                                // if $force is FALSE, then we'll remove all "older" migrations from stack so it won't be executed
-                                $filesToRemove[] = $file;
-                            }
-                        }
-                    }
-
-                    foreach ($filesToRemove as $file) {
-                        unset($files[$file]);
-                    }
-
-                    unset($filesToRemove);
+                foreach ($class::all('script_timestamp', 'ASC') as $migration) {
+                    /** @var KoldyMigration $migration */
+                    $executedMigrations[$migration->getScript()] = $migration;
+                    $lastMigration = $migration;
                 }
 
-                $filesCount = count($files);
-                $s = $filesCount != 1 ? 's' : '';
+                // simply iterate through all files on filesystem and create lists to-do and wasnt-executed
 
-                if ($force && $olderMigrationsCount > 0) {
-                    $s2 = $olderMigrationsCount != 1 ? 's' : '';
-                    Log::info("{$filesCount} migration{$s} will be executed now, INCLUDING {$olderMigrationsCount} older migration{$s2}");
-                } else {
-                    Log::info("{$filesCount} migration{$s} will be executed now");
-                }
+                $filesToDo = [];
+                $notExecutedFilesBefore = [];
 
                 foreach ($files as $file => $path) {
+                    $script = substr($file, 0, -4);
                     $parts = explode('_', $file);
+
                     if (count($parts) != 2) {
                         throw new Exception("Invalid file name found in migrations: {$file}; please create migration files using: \"./koldy create-migration migration-name\"");
                     }
 
                     $timestamp = (int)$parts[0];
-                    $migrationClassName = 'Migration_' . str_replace('.php', '', $file);
+
+                    if (!array_key_exists($script, $executedMigrations)) {
+                        // it wasn't executed yet, let's decide what to do
+
+                        // should we add it to to-do list?
+                        if ($lastMigration === null) {
+                            // there is no last migration, se we must add file for sure
+                            $filesToDo[$file] = $path;
+                        } else {
+
+                            $lastMigrationTimestamp = $lastMigration->getScriptTimestamp();
+
+                            if ($timestamp < $lastMigrationTimestamp) {
+                                $notExecutedFilesBefore[] = $script;
+
+                                // should we add this as well?
+                                if ($force) {
+                                    $filesToDo[$file] = $path;
+                                }
+                            } else {
+                                // otherwise, timestamp is newer than last executed migration
+                                $filesToDo[$file] = $path;
+                            }
+                        }
+                    }
+                }
+
+                $wasExecutedBeforeCount = count($executedMigrations);
+                $wasntExecutedBeforeCount = count($notExecutedFilesBefore);
+                $filesToExecuteCount = count($filesToDo);
+
+                $s = $wasExecutedBeforeCount != 1 ? 's' : '';
+                Log::notice("{$wasExecutedBeforeCount} migration{$s} WAS executed before");
+
+                if ($wasntExecutedBeforeCount > 0) {
+                    $s = $wasntExecutedBeforeCount != 1 ? 's' : '';
+
+                    if ($force) {
+                        Log::info("{$wasntExecutedBeforeCount} migration{$s} that had to be executed before WILL BE executed NOW because migration script is running with --force flag");
+                    } else {
+                        Log::info("{$wasntExecutedBeforeCount} migration{$s} WILL NOT be executed because those files are not in the right order and script is not forced (no --force flag). Not-executed migration{$s} from before are:", implode(', ', $notExecutedFilesBefore));
+                    }
+                }
+
+                $s = $filesToExecuteCount != 1 ? 's' : '';
+                Log::notice("{$filesToExecuteCount} detected migration{$s} WILL BE executed now");
+
+                foreach ($filesToDo as $file => $path) {
+                    $script = substr($file, 0, -4);
+                    $parts = explode('_', $file);
+
+                    if (count($parts) != 2) {
+                        throw new Exception("Invalid file name found in migrations: {$file}; please create migration files using: \"./koldy create-migration migration-name\"");
+                    }
+
+                    $timestamp = (int)$parts[0];
+                    $migrationClassName = "Migration_{$script}";
                     include_once $path;
 
                     /** @var \Koldy\Db\Migration $migration */
                     $migration = new $migrationClassName();
                     $startTime = microtime(true);
-                    Log::info("Starting to EXECUTE MIGRATION script {$timestamp}_{$migrationClassName}");
+                    Log::info("Starting to EXECUTE MIGRATION script {$script}");
                     $dashes = str_repeat('-', 50);
                     Log::info($dashes);
 
@@ -316,4 +337,5 @@ class Manager
             Log::info("Executed rollback {$className} in {$scriptExecutionDuration}s and removed from migration table {$class::getTableName()} (#{$id})");
         }
     }
+
 }
