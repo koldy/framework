@@ -34,6 +34,10 @@ class Cli
      */
     public static function getArgv(): array
     {
+        if (PHP_SAPI != 'cli') {
+            throw new CliException('Can not get $argv because script is not called from CLI');
+        }
+
         if (static::$argv !== null) {
             return static::$argv;
         }
@@ -56,17 +60,24 @@ class Cli
         if (static::$parameters === null) {
             static::$parameters = [];
             $argv = static::getArgv();
-            array_shift($argv);
+            array_shift($argv); // remove the script name, it's not needed
             $sizeof = count($argv);
 
             for ($i = 0; $i < $sizeof; $i++) {
                 $p = $argv[$i];
+
                 if (substr($p, 0, 2) == '--') {
                     $tmp = explode('=', $p);
                     static::$parameters[substr($tmp[0], 2)] = $tmp[1];
+
                 } else if (substr($p, 0, 1) == '-' && isset($argv[$i + 1]) && substr($argv[$i + 1], 0, 1) != '-') {
                     static::$parameters[substr($p, 1)] = $argv[$i + 1];
+
+                } else if (substr($p, 0, 1) == '-' && preg_match('/^[a-zA-Z]$/', substr($p, 1, 1))) {
+                    static::$parameters[substr($p, 1, 1)] = null;
+
                 }
+
             }
         }
     }
@@ -83,7 +94,7 @@ class Cli
     public static function hasParameter(string $parameter): bool
     {
         static::parseArgvIntoParameters();
-        return isset(static::$parameters[$parameter]);
+        return array_key_exists($parameter, static::$parameters);
     }
 
     /**
@@ -127,7 +138,7 @@ class Cli
     public static function hasParameterOnPosition(int $index): bool
     {
         static::parseArgvIntoParameters();
-        return isset(static::$argv[$index]);
+        return array_key_exists($index, static::$argv);
     }
 
     /**
