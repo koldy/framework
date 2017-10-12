@@ -73,23 +73,27 @@ class Convert
                     break;
 
                 case 'M': // MEGA
-                    return $number * 1024 * 1024;
+                    return $number * pow(1024, 2);
                     break;
 
                 case 'G': // GIGA
-                    return $number * 1024 * 1024 * 1024;
+                    return $number * pow(1024, 3);
                     break;
 
                 case 'T': // TERA
-                    return $number * 1024 * 1024 * 1024 * 1024;
+                    return $number * pow(1024, 4);
                     break;
 
                 case 'P': // PETA
-                    return $number * 1024 * 1024 * 1024 * 1024 * 1024;
+                    return $number * pow(1024, 5);
+                    break;
+
+                case 'E': // EXA
+                    return $number * pow(1024, 6);
                     break;
 
                 default:
-                    throw new ConvertException('Not implemented sized greater then petabytes');
+                    throw new ConvertException('Not implemented sizes greater than exabytes');
                     break;
             }
         }
@@ -101,6 +105,8 @@ class Convert
      * @param float $kilograms
      *
      * @return float
+     *
+     * @deprecated
      */
     public static function kilogramToPounds(float $kilograms): float
     {
@@ -113,6 +119,8 @@ class Convert
      * @param float $pounds
      *
      * @return float
+     *
+     * @deprecated
      */
     public static function poundToKilograms(float $pounds): float
     {
@@ -125,6 +133,8 @@ class Convert
      * @param float $meters
      *
      * @return float
+     *
+     * @deprecated
      */
     public static function meterToFoot(float $meters): float
     {
@@ -137,6 +147,8 @@ class Convert
      * @param float $feet
      *
      * @return float
+     *
+     * @deprecated
      */
     public static function footToMeters(float $feet): float
     {
@@ -149,6 +161,8 @@ class Convert
      * @param float $centimeters
      *
      * @return float
+     *
+     * @deprecated
      */
     public static function centimeterToInches(float $centimeters): float
     {
@@ -161,6 +175,8 @@ class Convert
      * @param float $inches
      *
      * @return float
+     *
+     * @deprecated
      */
     public static function inchToCentimeters(float $inches): float
     {

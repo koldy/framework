@@ -69,7 +69,7 @@ class Util
             return '';
         }
 
-        return preg_replace(['/\s{2,}/', '/[\t\n]/'], ' ', $string);
+        return trim(preg_replace(['/\s{2,}/', '/[\t\n]/'], ' ', $string));
     }
 
     /**
