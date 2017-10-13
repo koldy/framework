@@ -68,10 +68,10 @@ class Cli
 
                 if (substr($p, 0, 2) == '--') {
                     $tmp = explode('=', $p);
-                    static::$parameters[substr($tmp[0], 2)] = $tmp[1];
+                    static::$parameters[substr($tmp[0], 2)] = $tmp[1] ?? null;
 
                 } else if (substr($p, 0, 1) == '-' && isset($argv[$i + 1]) && substr($argv[$i + 1], 0, 1) != '-') {
-                    static::$parameters[substr($p, 1)] = $argv[$i + 1];
+                    static::$parameters[substr($p, 1)] = $argv[$i + 1] ?? null;
 
                 } else if (substr($p, 0, 1) == '-' && preg_match('/^[a-zA-Z]$/', substr($p, 1, 1))) {
                     static::$parameters[substr($p, 1, 1)] = null;
