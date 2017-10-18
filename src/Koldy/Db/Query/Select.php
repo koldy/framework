@@ -650,6 +650,37 @@ class Select extends Where
     }
 
     /**
+     * Fetch all records and return array of values from each row from given field name.
+     *
+     * @param string $field
+     *
+     * @return array
+     */
+    public function fetchAllOf(string $field): array
+    {
+        $array = [];
+        foreach ($this->fetchAllGenerator() as $record) {
+            $array[] = $record[$field] ?? null;
+        }
+
+        return $array;
+    }
+
+    /**
+     * Fetch all records and return Generator of values from each row from given field name.
+     *
+     * @param string $field
+     *
+     * @return Generator
+     */
+    public function fetchAllOfGenerator(string $field): Generator
+    {
+        foreach ($this->fetchAllGenerator() as $index => $record) {
+            yield $index => $record[$field] ?? null;
+        }
+    }
+
+    /**
      * Fetch only first record as object or return null if there is no records
      * @return array|null
      */
