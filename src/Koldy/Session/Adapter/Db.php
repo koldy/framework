@@ -29,6 +29,11 @@ class Db implements SessionHandlerInterface
     protected $config = [];
 
     /**
+     * Flag if log should be disabled for session related database queries
+     */
+    protected $disableLog = true;
+
+    /**
      * Construct the Db Session storage handler
      *
      * @param array $config
@@ -36,6 +41,10 @@ class Db implements SessionHandlerInterface
     public function __construct(array $config = [])
     {
         $this->config = $config;
+
+        if (array_key_exists('log', $config)) {
+            $this->disableLog = (bool)$config['log'] === true ? false : true;
+        }
     }
 
     /**
@@ -103,7 +112,9 @@ class Db implements SessionHandlerInterface
         $r = null;
 
         try {
-            Log::temporaryDisable('sql');
+            if ($this->disableLog) {
+                Log::temporaryDisable('sql');
+            }
 
             $r = $this->getAdapter()
               ->select($this->getTableName())
@@ -116,7 +127,9 @@ class Db implements SessionHandlerInterface
             throw $e;
 
         } finally {
-            Log::restoreTemporaryDisablement();
+            if ($this->disableLog) {
+                Log::restoreTemporaryDisablement();
+            }
         }
 
         return $r;
@@ -152,7 +165,10 @@ class Db implements SessionHandlerInterface
         );
 
         $sess = $this->getDbData($sessionid);
-        Log::temporaryDisable('sql');
+
+        if ($this->disableLog) {
+            Log::temporaryDisable('sql');
+        }
 
         if ($sess === null) {
             // the record doesn't exists in database, lets insert it
@@ -167,7 +183,9 @@ class Db implements SessionHandlerInterface
                 return false;
 
             } finally {
-                Log::restoreTemporaryDisablement();
+                if ($this->disableLog) {
+                    Log::restoreTemporaryDisablement();
+                }
 
             }
 
@@ -183,7 +201,9 @@ class Db implements SessionHandlerInterface
                 return false;
 
             } finally {
-                Log::restoreTemporaryDisablement();
+                if ($this->disableLog) {
+                    Log::restoreTemporaryDisablement();
+                }
 
             }
         }
@@ -196,7 +216,9 @@ class Db implements SessionHandlerInterface
      */
     public function destroy($sessionid)
     {
-        Log::temporaryDisable('sql');
+        if ($this->disableLog) {
+            Log::temporaryDisable('sql');
+        }
 
         try {
             $this->getAdapter()->delete($this->getTableName())->where('id', $sessionid)->exec();
@@ -207,7 +229,9 @@ class Db implements SessionHandlerInterface
             return false;
 
         } finally {
-            Log::restoreTemporaryDisablement();
+            if ($this->disableLog) {
+                Log::restoreTemporaryDisablement();
+            }
 
         }
     }
@@ -220,7 +244,10 @@ class Db implements SessionHandlerInterface
     public function gc($maxlifetime)
     {
         $timestamp = time() - $maxlifetime;
-        Log::temporaryDisable('sql');
+
+        if ($this->disableLog) {
+            Log::temporaryDisable('sql');
+        }
 
         try {
             $this->getAdapter()->delete($this->getTableName())->where('time', '<', $timestamp)->exec();
@@ -231,7 +258,9 @@ class Db implements SessionHandlerInterface
             return false;
 
         } finally {
-            Log::restoreTemporaryDisablement();
+            if ($this->disableLog) {
+                Log::restoreTemporaryDisablement();
+            }
         }
     }
 
