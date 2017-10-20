@@ -34,6 +34,11 @@ class File extends AbstractLogAdapter
     private $fpFile = null;
 
     /**
+     * @var string
+     */
+    private $generatedFileName = null;
+
+    /**
      * Flag if file pointer was already closed
      *
      * @var boolean
@@ -43,9 +48,21 @@ class File extends AbstractLogAdapter
     /**
      * Get message function handler
      *
-     * @var \Closure
+     * @var \Closure|null
      */
     private $getMessageFunction = null;
+
+    /**
+     * Function for getting the file name
+     *
+     * @var \Closure|null
+     */
+    private $fileNameFn = null;
+
+    /**
+     * @var int
+     */
+    private $mode = null;
 
     /**
      * Construct the handler to log to files. The config array will be check
@@ -70,6 +87,33 @@ class File extends AbstractLogAdapter
 
                 throw new ConfigException('Invalid get_message_fn type; expected \Closure object, got: ' . $got);
             }
+        }
+        
+        if (isset($config['file_name_fn'])) {
+            if ($config['file_name_fn'] instanceof \Closure) {
+                $this->fileNameFn = $config['file_name_fn'];
+            } else {
+
+                if (is_object($config['file_name_fn'])) {
+                    $got = get_class($config['file_name_fn']);
+                } else {
+                    $got = gettype($config['file_name_fn']);
+                }
+
+                throw new ConfigException('Invalid file_name_fn type; expected \Closure object, got: ' . $got);
+            }
+        }
+
+        if (!isset($config['log'])) {
+            throw new ConfigException('The \'log\' key has to be defined in every log configuration block');
+        }
+
+        if (!isset($config['path'])) {
+            $config['path'] = null;
+        }
+
+        if (isset($config['mode'])) {
+            $this->mode = $config['mode'];
         }
 
         parent::__construct($config);
@@ -96,7 +140,15 @@ class File extends AbstractLogAdapter
      */
     protected function getFileName(): string
     {
-        return gmdate('Y-m-d') . '.log';
+        if ($this->generatedFileName === null || Application::isCli()) {
+            if ($this->fileNameFn !== null) {
+                $this->generatedFileName = call_user_func($this->fileNameFn);
+            } else {
+                $this->generatedFileName = gmdate('Y-m-d') . '.log';
+            }
+        }
+
+        return $this->generatedFileName;
     }
 
     /**
@@ -133,7 +185,7 @@ class File extends AbstractLogAdapter
                     // file failed to open, maybe directory doesn't exists?
                     $dir = dirname($path);
                     if (!is_dir($dir)) {
-                        Directory::mkdir($dir, 0755);
+                        Directory::mkdir($dir, $this->mode);
                     }
 
                     if (!($this->fp = @fopen($path, 'a'))) {

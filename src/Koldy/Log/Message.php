@@ -74,11 +74,24 @@ class Message
     }
 
     /**
+     * Manually set the time
+     *
+     * @param DateTime $time
+     *
+     * @return Message
+     */
+    public function setTime(DateTime $time): self
+    {
+        $this->time = $time;
+        return $this;
+    }
+
+    /**
      * @param string $message
      *
      * @return Message
      */
-    public function addMessagePart(string $message): Message
+    public function addMessagePart(string $message): self
     {
         $this->messages[] = $message;
         return $this;
@@ -94,7 +107,7 @@ class Message
      *
      * @return Message
      */
-    public function addPHPErrorMessage(string $message, string $file, int $number, int $line): Message
+    public function addPHPErrorMessage(string $message, string $file, int $number, int $line): self
     {
         $this->messages[] = [
           'type' => self::TYPE_PHP,
@@ -112,7 +125,7 @@ class Message
      *
      * @return Message
      */
-    public function setMessages(array $messages): Message
+    public function setMessages(array $messages): self
     {
         $this->messages = $messages;
         return $this;
@@ -182,7 +195,7 @@ class Message
      *
      * @return Message
      */
-    public function setWho(string $who): Message
+    public function setWho(string $who): self
     {
         $this->who = $who;
         return $this;
@@ -203,7 +216,7 @@ class Message
      *
      * @return Message
      */
-    public function setLevel(string $level): Message
+    public function setLevel(string $level): self
     {
         $this->level = $level;
         return $this;
