@@ -63,7 +63,7 @@ class Db extends AbstractCacheAdapter
 
         $select = new Select($this->getTableName());
         $select->setAdapter($this->getAdapterConnection());
-        $select->where('id', $key)->where('expires_at', '>=', time());
+        $select->where('id', $key)->where('expires_at', '>', time());
 
         $record = $select->fetchFirst();
 
@@ -88,15 +88,18 @@ class Db extends AbstractCacheAdapter
         }
 
         $update = new Update($this->getTableName(), null, $this->getAdapterConnection());
-        $ok = $update->set('expires_at', time() + $seconds)->set('data', serialize($value))->where('id', $key)->rowCount();
+        $update->set('expires_at', time() + $seconds);
+        $update->set('data', serialize($value));
+        $update->where('id', $key);
+        $ok = $update->rowCount();
 
         if ($ok === 0 && !$this->has($key)) {
             $insert = new Insert($this->getTableName(), null, $this->getAdapterConnection());
-            $insert->add(array(
+            $insert->add([
               'id' => $key,
               'expires_at' => time() + $seconds,
               'data' => serialize($value)
-            ));
+            ]);
             $insert->exec();
         }
     }
@@ -112,14 +115,9 @@ class Db extends AbstractCacheAdapter
 
         $select = new Select($this->getTableName());
         $select->setAdapter($this->getAdapterConnection());
-        $select->field('expires_at')->where('id', $key);
+        $select->field('id')->where('id', $key)->where('expires_at', '>', time());
 
-        $cacheRecord = $select->fetchFirst();
-        if ($cacheRecord === null) {
-            return false;
-        }
-
-        return ($cacheRecord['expires_at'] > time());
+        return $select->fetchFirst() !== null;
     }
 
     /**
