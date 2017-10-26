@@ -56,7 +56,7 @@ class Message
     }
 
     /**
-     * Get or set the time of message
+     * Get the time of message
      *
      * @return DateTime
      */
@@ -66,6 +66,8 @@ class Message
     }
 
     /**
+     * Get the time formatted like 'Y-m-d\TH:i:s.uO'
+     *
      * @return string
      */
     public function getTimeFormatted(): string
@@ -74,7 +76,7 @@ class Message
     }
 
     /**
-     * Manually set the time
+     * Manually set the time of the log message
      *
      * @param DateTime $time
      *
@@ -87,6 +89,8 @@ class Message
     }
 
     /**
+     * Add another message this log message object.
+     *
      * @param string $message
      *
      * @return Message
@@ -98,7 +102,7 @@ class Message
     }
 
     /**
-     * Add standard PHP error message
+     * Add standard PHP error message. This is usually for framework's internal use.
      *
      * @param string $message
      * @param string $file
@@ -121,6 +125,8 @@ class Message
     }
 
     /**
+     * Manually set the array of messages
+     *
      * @param array $messages
      *
      * @return Message
@@ -132,7 +138,8 @@ class Message
     }
 
     /**
-     * Get all messages
+     * Get the array of log messages. If you pass multiple params to e.g. Log::debug('first', 'second'), then
+     * you'll get array of two elements
      *
      * @return array
      */
@@ -142,7 +149,7 @@ class Message
     }
 
     /**
-     * Get the actual message only, depending on data we have
+     * Get the actual message only, depending on data we have. It's like "get the message line"
      *
      * @param string $delimiter
      *
@@ -164,7 +171,9 @@ class Message
                 }
 
             } else if (is_object($part) && $part instanceof Throwable) {
-                if (KOLDY_CLI) {
+                $isCli = defined('KOLDY_CLI') && KOLDY_CLI === true;
+
+                if ($isCli) {
                     $on = '';
                 } else {
                     $on = ' on ' . Application::getCurrentURL();
@@ -189,7 +198,7 @@ class Message
     }
 
     /**
-     * Set "who" on this log message
+     * Set "who" on this log message only
      *
      * @param string $who
      *
@@ -202,7 +211,7 @@ class Message
     }
 
     /**
-     * Get "who" on this log message
+     * Get "who" on this log message only
      *
      * @return string
      */
@@ -212,6 +221,8 @@ class Message
     }
 
     /**
+     * Set the message log level (debug, notice, info, sql, warning, error, alert, emergency, critical)
+     *
      * @param string $level
      *
      * @return Message
@@ -223,6 +234,8 @@ class Message
     }
 
     /**
+     * Get the message level (debug, notice, info, sql, warning, error, alert, emergency, critical)
+     *
      * @return string
      */
     public function getLevel(): string
@@ -231,6 +244,8 @@ class Message
     }
 
     /**
+     * Get the default "message line" that includes time, level, who triggered it and the information
+     *
      * @return string
      */
     public function getDefaultLine(): string
