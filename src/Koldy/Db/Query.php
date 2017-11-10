@@ -280,6 +280,9 @@ class Query
      * @param bool $oneLine return query in one line
      *
      * @return string
+     *
+     * @throws QueryException
+     * @throws \Koldy\Exception
      */
     public function debug(bool $oneLine = false): string
     {
@@ -290,6 +293,40 @@ class Query
                 $key = substr($key, 1);
             }
 
+            $type = gettype($value);
+            switch ($type) {
+                case 'string':
+                    $query = str_replace(":{$key}", ("'" . addslashes((string) $value) . "'"), $query);
+                    break;
+
+                case 'integer':
+                case 'float':
+                case 'double':
+                    $query = str_replace(":{$key}", $value, $query);
+                    break;
+
+                case 'NULL':
+                    $query = str_replace(":{$key}", 'NULL', $query);
+                    break;
+
+                case 'boolean':
+                    $true = (bool)$value;
+                    $query = str_replace(":{$key}", $true ? 'true' : 'false', $query);
+                    break;
+
+                case 'object':
+                case 'array':
+                case 'resource':
+                case 'unknown type':
+                    throw new QueryException('Unsupported type: ' . $type);
+                    break;
+
+                default:
+                    throw new \Koldy\Exception('Unknown type: ' . $type);
+                    break;
+            }
+
+            /*
             if (is_numeric($value) && substr((string)$value, 0, 1) != '0') {
                 $value = (string)$value;
 
@@ -306,6 +343,7 @@ class Query
                     $query = str_replace(":{$key}", ("'" . addslashes((string) $value) . "'"), $query);
                 }
             }
+            */
         }
 
         if ($oneLine) {
