@@ -63,8 +63,6 @@ class File extends CommonMailAdapter
 
         $content[] = 'Subject: ' . $this->subject;
 
-        $this->setHeader('X-Mailer', 'PHP/' . phpversion());
-
         $charset = $this->config['charset'] ?? 'utf-8';
         $contentType = ($this->isHTML) ? ('text/html; charset=' . $charset) : ('text/plain; charset=' . $charset);
         $this->setHeader('Content-type', $contentType);

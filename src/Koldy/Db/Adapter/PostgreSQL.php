@@ -113,13 +113,16 @@ class PostgreSQL extends AbstractAdapter
      */
     public static function isBoolTrue(?string $input): ?bool
     {
-        if ($input === null) {
+        if ($input === null || $input === '') {
             return null;
         }
 
-        if ((string)$input == 'true' || (bool)$input == true) {
+        $input = strtolower($input);
+
+        if ((string)$input === 'true' || $input === '1') {
             return true;
-        } else if ((string)$input == 'false' || (bool)$input == false) {
+
+        } else if ((string)$input === 'false' || $input === '0') {
             return false;
         }
 
