@@ -223,7 +223,6 @@ class Application
 
         if (is_string($data)) {
             $applicationConfigPath = stream_resolve_include_path($data); // this is path to /application/configs/application.php
-            static::$configs = dirname($applicationConfigPath);
 
             if ($applicationConfigPath === false || !is_file($applicationConfigPath)) {
                 static::terminateWithError('Can not resolve the full path to the main application config file or file doesn\'t exists!');
@@ -351,15 +350,17 @@ class Application
         }
         static::$env = $env;
 
-        if (!isset($data['key']) || !is_string($data['key']) || strlen($data['key']) > 32) {
+        $key = $configInstance->get('key');
+        if (!isset($key) || !is_string($key) || strlen($key) > 32) {
             static::terminateWithError('Invalid unique key in main application config. It has to be max 32 chars long.');
         }
 
-        if (!isset($data['timezone'])) {
+        $timezone = $configInstance->get('timezone');
+        if (!isset($timezone)) {
             static::terminateWithError('Timezone is not set in main application config');
         }
 
-        static::$isLive = (bool)$data['live'];
+        static::$isLive = $configInstance->get('live') === true;
         static::$configs['application'] = $configInstance;
     }
 
