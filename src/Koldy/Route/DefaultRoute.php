@@ -26,7 +26,7 @@ class DefaultRoute extends AbstractRoute
     /**
      * The resolved module URL part
      *
-     * @var string
+     * @var string|null
      */
     protected $moduleUrl = null;
 
@@ -306,9 +306,9 @@ class DefaultRoute extends AbstractRoute
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getModuleUrl(): string
+    public function getModuleUrl(): ?string
     {
         return $this->moduleUrl;
     }

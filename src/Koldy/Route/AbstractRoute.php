@@ -60,9 +60,9 @@ abstract class AbstractRoute
     /**
      * Get the module URL part
      *
-     * @return string
+     * @return string|null
      */
-    abstract public function getModuleUrl(): string;
+    abstract public function getModuleUrl(): ?string;
 
     /**
      * Get the controller as it is in URI
