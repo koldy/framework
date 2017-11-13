@@ -102,11 +102,16 @@ class Cookie
      *
      * @param string $name
      *
+     * @param null|string $path
+     * @param null|string $domain
+     * @param bool|null $secure
+     * @param bool|null $httpOnly
+     *
      * @link http://koldy.net/docs/cookies#delete
      */
-    public static function delete(string $name): void
+    public static function delete(string $name, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null): void
     {
-        setcookie($name, '', time() - 3600 * 24);
+        setcookie($name, '', time() - 3600 * 24, $path ?? '/', $domain ?? '', $secure ?? false, $httpOnly ?? false);
     }
 
 }
