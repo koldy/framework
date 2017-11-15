@@ -102,7 +102,7 @@ class NumericNotation
             throw new Exception('Got empty number for dec2big, can not proceed');
         }
 
-        $mod = count($alphabet);
+        $mod = (string)count($alphabet);
         $s = '';
 
         do {
@@ -133,7 +133,7 @@ class NumericNotation
         }
 
         $alphabet = array_flip(static::NUMBERS);
-        $mod = count($alphabet);
+        $mod = (string)count($alphabet);
 
         $x = 0;
         for ($i = 0, $j = strlen($alpha) - 1; $i < strlen($alpha); $i++, $j--) {
