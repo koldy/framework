@@ -135,11 +135,12 @@ class NumericNotation
         $alphabet = array_flip(static::NUMBERS);
         $mod = (string)count($alphabet);
 
-        $x = 0;
+        $x = '0';
         for ($i = 0, $j = strlen($alpha) - 1; $i < strlen($alpha); $i++, $j--) {
             $char = substr($alpha, $j, 1);
             $val = $alphabet[$char];
-            $x = bcadd($x, bcmul($val, bcpow($mod, $i)));
+
+            $x = bcadd($x, bcmul((string)$val, bcpow($mod, (string)$i)));
         }
 
         return $x;
