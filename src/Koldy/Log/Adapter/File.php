@@ -196,7 +196,13 @@ class File extends AbstractLogAdapter
             }
 
             if (!$this->fp || $this->fp === null) {
-                throw new Exception("Can not write to log file: {$fpFile}");
+                if ($this->config['path'] === null) {
+                    $path = Application::getStoragePath('log' . DS . $fpFile);
+                } else {
+                    $path = str_replace(DS . DS, DS, $this->config['path'] . DS . $fpFile);
+                }
+
+                throw new Exception("Can not write to log file path={$path}");
             }
 
             if ($this->getMessageFunction !== null) {
