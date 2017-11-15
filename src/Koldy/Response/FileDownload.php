@@ -105,6 +105,7 @@ class FileDownload extends AbstractResponse
             throw new ResponseException("Can not start file download of file on path={$this->file->getRealPath()}");
         }
 
+        $this->prepareFlush();
         $this->runBeforeFlush();
         $contentType = null;
 

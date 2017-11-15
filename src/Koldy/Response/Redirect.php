@@ -115,18 +115,19 @@ class Redirect extends AbstractResponse
         return self::temporary(Application::route()->asset($path, $assetSite));
     }
 
+    /**
+     * Run Redirect
+     */
     public function flush(): void
     {
+        $this->prepareFlush();
+        $this->runBeforeFlush();
+
+        $this->setHeader('Content-Length', 0);
         $this->flushHeaders();
         flush();
 
-        if (function_exists('fastcgi_finish_request')) {
-            @fastcgi_finish_request();
-        }
-
-        if ($this->workAfterResponse instanceof \Closure) {
-            call_user_func($this->workAfterResponse);
-        }
+        $this->runAfterFlush();
     }
 
 }
