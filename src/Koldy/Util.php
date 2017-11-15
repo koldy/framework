@@ -414,4 +414,42 @@ class Util
         return is_string($str) && preg_match('~[^\x20-\x7E\t\r\n]~', $str) > 0;
     }
 
+    /**
+     * Round decimal number up
+     * 
+     * @param float $number
+     * @param int $precision
+     * @return float
+     * 
+     * @example Util::roundCeil(1024.654321, 2) will return 1024.66
+     */
+    public static function roundCeil(float $number, int $precision = 0): float
+    {
+        if ($precision === 0) {
+            return ceil($number);
+        }
+        
+        $fig = pow(10, $precision);
+        return (ceil($number * $fig) / $fig);
+    }
+
+    /**
+     * Round decimal number up
+     * 
+     * @param float $number
+     * @param int $precision
+     * @return float
+     * 
+     * @example Util::roundFloor(1024.654321, 2) will return 1024.64
+     */
+    public static function roundFloor(float $number, int $precision = 0): float
+    {
+        if ($precision === 0) {
+            return floor($number);
+        }
+        
+        $fig = pow(10, $precision);
+        return (floor($number * $fig) / $fig);
+    }
+
 }
