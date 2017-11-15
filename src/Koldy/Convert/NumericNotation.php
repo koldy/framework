@@ -1,4 +1,6 @@
-<?php namespace Koldy\Convert;
+<?php declare(strict_types=1);
+
+namespace Koldy\Convert;
 
 /**
  * Someday, you'll encounter the situation when PHP can't handle really big numbers. If you search the internet, you'll
@@ -88,6 +90,8 @@ class NumericNotation
      * @param string $number
      *
      * @return string
+     * @throws Exception
+     * @example 40487 is ax1
      */
     public static function dec2big(string $number): string
     {
@@ -95,7 +99,7 @@ class NumericNotation
         $number = trim((string)$number);
 
         if (strlen($number) == 0) {
-            return 0;
+            throw new Exception('Got empty number for dec2big, can not proceed');
         }
 
         $mod = count($alphabet);
@@ -119,11 +123,13 @@ class NumericNotation
      * @param string $alpha
      *
      * @return string because real number can reach the MAX_INT
+     * @throws Exception
+     * @example ax1 is 40487
      */
     public static function big2dec(string $alpha): string
     {
         if (strlen($alpha) <= 0) {
-            return 0;
+            throw new Exception('Got empty string in big2dec, can not proceed');
         }
 
         $alphabet = array_flip(static::NUMBERS);
