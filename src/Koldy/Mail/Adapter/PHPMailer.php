@@ -3,7 +3,7 @@
 namespace Koldy\Mail\Adapter;
 
 use Koldy\Mail\Exception;
-use PHPMailer as NativePHPMailer;
+use PHPMailer\PHPMailer\PHPMailer as NativePHPMailer;
 
 /**
  * This is only driver class that uses PHPMailer. You need to set the include path the way that PHP can include it. We recommend that you set that path
