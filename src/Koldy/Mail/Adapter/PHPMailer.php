@@ -2,8 +2,11 @@
 
 namespace Koldy\Mail\Adapter;
 
+use Closure;
 use Koldy\Mail\Exception;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 use PHPMailer\PHPMailer\PHPMailer as NativePHPMailer;
+use Throwable;
 
 /**
  * This is only driver class that uses PHPMailer. You need to set the include path the way that PHP can include it. We recommend that you set that path
@@ -58,6 +61,18 @@ class PHPMailer extends AbstractMailAdapter
             case 'mail':
                 $this->mailer->isMail();
                 break;
+        }
+
+        if (isset($config['adjust'])) {
+            // it's set, let's validate
+
+            $adjustFn = $config['adjust'];
+
+            if (!($adjustFn instanceof Closure)) {
+                throw new Exception('Invalid configuration for \'adjust\' - this property must be function that accepts PHPMailer instance as parameter');
+            }
+
+            call_user_func($adjustFn, $this->mailer);
         }
     }
 
@@ -191,10 +206,7 @@ class PHPMailer extends AbstractMailAdapter
                 throw new Exception($this->mailer->ErrorInfo);
             }
 
-        } catch (\phpmailerException $e) {
-            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
-
-        } catch (\Throwable $e) {
+        } catch (PHPMailerException | Throwable $e) {
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
 
         }
