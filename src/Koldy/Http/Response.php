@@ -27,6 +27,11 @@ class Response
     protected $headersText = null;
 
     /**
+     * @var null
+     */
+    protected $headers = null;
+
+    /**
      * @var Request
      */
     protected $request;
@@ -149,11 +154,74 @@ class Response
     }
 
     /**
+     * Get length of headers text
+     *
      * @return int
      */
     public function headerSize(): int
     {
         return (int)curl_getinfo($this->ch, CURLINFO_HEADER_SIZE);
+    }
+
+    /**
+     * Get the headers as text
+     *
+     * @return null|string
+     */
+    public function getHeadersText(): ?string
+    {
+        return $this->headersText;
+    }
+
+    /**
+     * Get all response headers as array where key is the header name and value is header value
+     *
+     * @return array
+     */
+    public function getHeaders(): array
+    {
+        if ($this->headers === null && $this->headersText !== null) {
+            $this->headers = [];
+
+            foreach (explode("\n", $this->headersText) as $line) {
+                $pos = strpos($line, ':');
+
+                if ($pos === false) {
+                    // this is one-line header
+                    $this->headers[$line] = null;
+                } else {
+                    $name = substr($line, 0, $pos);
+                    $value = substr($line, $pos + 1);
+                    $this->headers[$name] = trim($value);
+                }
+            }
+        }
+
+        return $this->headers ?? [];
+    }
+
+    /**
+     * Get the header with the given name
+     *
+     * @param string $name
+     *
+     * @return mixed|null
+     */
+    public function getHeader(string $name)
+    {
+        return $this->getHeaders()[$name] ?? null;
+    }
+
+    /**
+     * Is there response header with the given name
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasHeader(string $name): bool
+    {
+        return $this->getHeader($name) !== null;
     }
 
     /**

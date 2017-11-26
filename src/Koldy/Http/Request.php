@@ -410,12 +410,16 @@ class Request
         return new Response($ch, $body, $this);
     }
 
-    private static function quickRequest(
-      string $url,
-      string $method,
-      array $params = null,
-      array $headers = null
-    ): Response {
+    /**
+     * @param string $url
+     * @param string $method
+     * @param array|null $params
+     * @param array|null $headers
+     *
+     * @return Response
+     */
+    protected static function quickRequest(string $url, string $method, array $params = null, array $headers = null): Response
+    {
         /** @var Request $self */
         $self = new static();
         $self->setUrl($url)->setMethod($method);
@@ -427,6 +431,9 @@ class Request
         if ($headers != null) {
             $self->setHeaders($headers);
         }
+
+        $self->setOption(CURLOPT_FOLLOWLOCATION, true);
+        $self->setOption(CURLOPT_MAXREDIRS, 10);
 
         return $self->exec();
     }
@@ -488,9 +495,11 @@ class Request
     }
 
     /**
+     * Print settings and all values useful for troubleshooting
+     *
      * @return string
      */
-    public function __toString()
+    public function debug()
     {
         $constants = get_defined_constants(true);
         $flipped = array_flip($constants['curl']);
@@ -527,6 +536,14 @@ class Request
         }
 
         return $msg;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->debug();
     }
 
 }

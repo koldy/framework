@@ -65,7 +65,7 @@ class Util
      */
     public static function cleanString(string $string): string
     {
-        if (strlen($string) == 0) {
+        if ($string === '') {
             return '';
         }
 
@@ -139,7 +139,7 @@ class Util
             if (!$middle) {
                 return substr($string, 0, $length) . $etc;
             } else {
-                return substr($string, 0, $length / 2) . $etc . substr($string, -$length / 2);
+                return substr($string, 0, (int)round($length / 2)) . $etc . substr($string, (int)round(-$length / 2));
             }
         } else {
             return $string;
@@ -196,7 +196,6 @@ class Util
      * @param string $startsWith
      *
      * @return bool
-     * @todo TEST
      */
     public static function startsWith(string $yourString, string $startsWith): bool
     {
@@ -210,7 +209,6 @@ class Util
      * @param string $endsWith
      *
      * @return bool
-     * @todo TEST
      */
     public static function endsWith(string $yourString, string $endsWith): bool
     {
