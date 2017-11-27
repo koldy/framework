@@ -3,21 +3,10 @@
 namespace Koldy\Response;
 
 use Koldy\Application;
-use Koldy\Response\Exception as ResponseException;
+use Koldy\Route;
 
 /**
- * Perform redirect be flushing redirect headers to client. Usually, you'll use
- * this class as return value from method in your controller classes.
- *
- * @example
- *
- *    class PageController {
- *      public function userAction() {
- *        return Redirect::href('user', 'list');
- *      }
- *    }
- *
- * @link http://koldy.net/docs/redirect
+ * Response Redirection client to another Location.
  *
  */
 class Redirect extends AbstractResponse
@@ -29,14 +18,14 @@ class Redirect extends AbstractResponse
      * @param string $where
      *
      * @return Redirect
-     * @link http://koldy.net/docs/redirect#methods
      */
     public static function permanent(string $where): Redirect
     {
-        /** @var \Koldy\Response\Redirect $self */
         $self = new static();
-        $self->statusCode(301)->setHeader('Location', $where)//->setHeader('Status', '301 Moved Permanently')
-          ->setHeader('Connection', 'close')->setHeader('Content-Length', 0);
+        $self->statusCode(301)
+          ->setHeader('Location', $where)
+          ->setHeader('Connection', 'close')
+          ->setHeader('Content-Length', 0);
 
         return $self;
     }
@@ -47,26 +36,25 @@ class Redirect extends AbstractResponse
      * @param string $where
      *
      * @return Redirect
-     * @link http://koldy.net/docs/redirect#methods
      */
     public static function temporary(string $where): Redirect
     {
-        /** @var Redirect $self */
         $self = new static();
-        $self->statusCode(302)->setHeader('Location', $where)//->setHeader('Status', '302 Moved Temporary')
-          ->setHeader('Connection', 'close')->setHeader('Content-Length', 0);
+        $self->statusCode(302)
+          ->setHeader('Location', $where)
+          ->setHeader('Connection', 'close')
+          ->setHeader('Content-Length', 0);
 
         return $self;
     }
 
     /**
-     * Alias to temporary() method
+     * Alias to temporary() method (302)
      *
      * @param string $where
      *
      * @return Redirect
      * @example http://www.google.com
-     * @link http://koldy.net/docs/redirect#methods
      */
     public static function to(string $where): Redirect
     {
@@ -74,10 +62,9 @@ class Redirect extends AbstractResponse
     }
 
     /**
-     * Redirect user to home page
+     * Redirect client (302) to home page
      *
      * @return Redirect
-     * @link http://koldy.net/docs/redirect#usage
      */
     public static function home(): Redirect
     {
@@ -85,15 +72,13 @@ class Redirect extends AbstractResponse
     }
 
     /**
-     * Redirect user to the URL generated with Route::href method
+     * Redirect client (302) to the URL generated with Route::href method
      *
-     * @param string $controller [optional]
-     * @param string $action [optional]
-     * @param array $params [optional]
+     * @param string $controller
+     * @param string $action
+     * @param array $params
      *
      * @return Redirect
-     * @link http://koldy.net/docs/redirect#usage
-     * @link http://koldy.net/docs/url#href
      */
     public static function href(string $controller = null, string $action = null, array $params = null): Redirect
     {
@@ -101,18 +86,30 @@ class Redirect extends AbstractResponse
     }
 
     /**
-     * Redirect user the the given link under the same domain.
+     * Redirect client the the given link under the same domain.
      *
      * @param string $path
      * @param string|null $assetSite
      *
      * @return Redirect
-     * @link http://koldy.net/docs/redirect#usage
-     * @link http://koldy.net/docs/url#link
+     * @deprecated use asset() method instead of this mthod
      */
     public static function link(string $path, string $assetSite = null): Redirect
     {
         return self::temporary(Application::route()->asset($path, $assetSite));
+    }
+
+    /**
+     * Redirect client to asset URL (defined by key in mandatory config under assets)
+     * 
+     * @param string $path
+     * @param string|null $assetKey
+     *
+     * @return Redirect
+     */
+    public static function asset(string $path, string $assetKey = null): Redirect
+    {
+        return self::temporary(Route::asset($path, $assetKey));
     }
 
     /**
