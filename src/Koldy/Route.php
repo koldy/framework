@@ -18,6 +18,16 @@ class Route
 {
 
     /**
+     * Get the initialized routing class
+     *
+     * @return AbstractRoute
+     */
+    public static function getRoute(): AbstractRoute
+    {
+        return Application::route();
+    }
+
+    /**
      * Get the variable from request. This depends about the route you're using.
      *
      * @param string|int $whatVar
@@ -47,9 +57,9 @@ class Route
      *
      * @return bool
      */
-    public static function isController($controller): bool
+    public static function isController(string $controller): bool
     {
-        return ($controller == Application::route()->getControllerUrl());
+        return $controller == Application::route()->getControllerUrl();
     }
 
     /**
@@ -69,9 +79,9 @@ class Route
      *
      * @return bool
      */
-    public static function isAction($action): bool
+    public static function isAction(string $action): bool
     {
-        return ($action == Application::route()->getActionUrl());
+        return $action == Application::route()->getActionUrl();
     }
 
     /**
@@ -82,9 +92,9 @@ class Route
      *
      * @return bool
      */
-    public static function is($controller, $action): bool
+    public static function is(string $controller, string $action): bool
     {
-        return ($controller == Application::route()->getControllerUrl() && $action == Application::route()->getActionUrl());
+        return $controller == Application::route()->getControllerUrl() && $action == Application::route()->getActionUrl();
     }
 
     /**
@@ -96,7 +106,7 @@ class Route
      *
      * @return bool
      */
-    public static function isModule($module, $controller = null, $action = null): bool
+    public static function isModule(string $module, string $controller = null, string $action = null): bool
     {
         $route = Application::route();
         if ($module === $route->getModuleUrl()) {
@@ -128,7 +138,7 @@ class Route
      *
      * @return string
      */
-    public static function href($controller = null, $action = null, array $params = null): string
+    public static function href($controller = null, string $action = null, array $params = null): string
     {
         return Application::route()->href($controller, $action, $params);
     }
@@ -144,9 +154,33 @@ class Route
      *
      * @return string
      */
-    public static function siteHref($site, $controller = null, $action = null, array $params = null): string
+    public static function siteHref(string $site, string $controller = null, string $action = null, array $params = null): string
     {
         return Application::route()->siteHref($site, $controller, $action, $params);
+    }
+
+    /**
+     * Unlike siteHref which generates URI the same way as href(), site() just accepts anything for URI and appends it
+     *
+     * @param string $site
+     * @param string|null $uri - URI with leading "/"
+     *
+     * @return string
+     * @throws Exception
+     */
+    public static function site(string $site, string $uri = null): string
+    {
+        $otherSite = Application::getConfig('sites')->get($site);
+
+        if ($otherSite === null) {
+            throw new Exception("Unable to construct URL to site={$site}, site is not defined in configs/sites.php");
+        }
+
+        if ($uri === null) {
+            return $otherSite;
+        } else {
+            return $otherSite . '/' . $uri;
+        }
     }
 
     /**
@@ -169,7 +203,7 @@ class Route
      * @return string
      * @throws Exception
      */
-    public static function asset($path, $server = null): string
+    public static function asset(string $path, string $server = null): string
     {
         $route = Application::route();
 
