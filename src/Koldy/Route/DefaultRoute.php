@@ -3,9 +3,10 @@
 namespace Koldy\Route;
 
 use Koldy\{
-  Application, Log, Response\AbstractResponse, Response\Plain
+    Application, Log, Response\AbstractResponse, Response\Exception\ServerException, Response\Plain, Response\ResponseExceptionHandler
 };
 use Koldy\Response\Exception\NotFoundException;
+use Throwable;
 
 /**
  * I call this the default route because this will be just fine for the most
@@ -462,6 +463,41 @@ class DefaultRoute extends AbstractRoute
         } else {
             // the method we need doesn't exists, so, there is nothing we can do about it any more
             throw new NotFoundException("Can not find method={$method} in class={$this->getControllerClass()} on path={$this->controllerPath} for URI=" . Application::getUri());
+        }
+    }
+
+    /**
+     * If your app throws any kind of exception, it will end up here, so, handle it!
+     *
+     * @param Throwable $e
+     */
+    public function handleException(Throwable $e): void
+    {
+        $exceptionHandlerPath = null;
+
+        if (($module = Application::getCurrentModule()) !== null) {
+            $exceptionHandlerPath = Application::getModulePath($module) . 'controllers/ExceptionHandler.php';
+            if (!is_file($exceptionHandlerPath)) {
+                $exceptionHandlerPath = Application::getApplicationPath('controllers/ExceptionHandler.php');
+            }
+        } else {
+            $exceptionHandlerPath = Application::getApplicationPath('controllers/ExceptionHandler.php');
+        }
+
+        if (is_file($exceptionHandlerPath)) {
+            require_once $exceptionHandlerPath;
+            $exceptionHandler = new \ExceptionHandler($e);
+
+            if ($exceptionHandler instanceof ResponseExceptionHandler) {
+                $exceptionHandler->exec();
+            } else {
+                $routeException = new ServerException('Your ExceptionHandler is not instance of ResponseExceptionHandler, can not continue');
+                Log::emergency($routeException);
+                Application::terminateWithError('Your ExceptionHandler is not instance of ResponseExceptionHandler, can not continue');
+            }
+        } else {
+            $exceptionHandler = new ResponseExceptionHandler($e);
+            $exceptionHandler->exec();
         }
     }
 

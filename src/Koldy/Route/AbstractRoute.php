@@ -3,8 +3,6 @@
 namespace Koldy\Route;
 
 use Koldy\Application;
-use Koldy\Response\Exception\ServerException;
-use Koldy\Response\ResponseExceptionHandler;
 use Koldy\Route\Exception as RouteException;
 use Koldy\Log;
 use Throwable;
@@ -247,25 +245,13 @@ abstract class AbstractRoute
      *
      * @param Throwable $e
      */
-    public function handleException(Throwable $e)
+    abstract public function handleException(Throwable $e): void;
+
+    /**
+     * Will be needed in one of the future versions
+     */
+    public function build(): void
     {
-        $exceptionHandlerPath = Application::getApplicationPath('controllers/ExceptionHandler.php');
-
-        if (is_file($exceptionHandlerPath)) {
-            require_once $exceptionHandlerPath;
-            $exceptionHandler = new \ExceptionHandler($e);
-
-            if ($exceptionHandler instanceof ResponseExceptionHandler) {
-                $exceptionHandler->exec();
-            } else {
-                $routeException = new ServerException('Your ExceptionHandler is not instance of ResponseExceptionHandler, can not continue');
-                Log::emergency($routeException);
-                Application::terminateWithError('Your ExceptionHandler is not instance of ResponseExceptionHandler, can not continue');
-            }
-        } else {
-            $exceptionHandler = new ResponseExceptionHandler($e);
-            $exceptionHandler->exec();
-        }
     }
 
 }
