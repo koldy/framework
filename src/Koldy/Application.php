@@ -1065,11 +1065,15 @@ class Application
                     throw new CliException("CLI script={$script} contains invalid characters; please stick to english letters, numbers, dashes and underlines");
                 }
 
+                exit(0);
+
             } catch (Throwable $e) {
                 if (!Log::isEnabledLogger('\Koldy\Log\Adapter\Out')) {
                     echo "{$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n\n{$e->getTraceAsString()}";
                 }
                 Log::critical($e);
+
+                exit(1);
             }
         }
 
