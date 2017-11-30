@@ -6,6 +6,8 @@ use Koldy\Convert\Exception as ConvertException;
 
 /**
  * This is utility class that has some common converting methods. Take a look at the methods and their PHP doc.
+ *
+ * @link https://koldy.net/framework/docs/2.0/converters.md
  */
 class Convert
 {
@@ -15,7 +17,7 @@ class Convert
      *
      * @var array
      */
-    private static $measure = ['B', 'KB', 'MB', 'GB', 'TB', 'PT'];
+    private static $measure = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB', 'BB'];
 
     /**
      * Get file's measure
@@ -43,6 +45,8 @@ class Convert
      *
      * @return string
      * @example 2048 will return 2 KB
+     *
+     * @link https://koldy.net/framework/docs/2.0/converters.md#bytestostring
      */
     public static function bytesToString(int $bytes, int $round = 0): string
     {
@@ -57,6 +61,8 @@ class Convert
      * @return int
      * @throws ConvertException
      * @example 1M will return 1048576
+     *
+     * @link https://koldy.net/framework/docs/2.0/converters.md#stringtobytes
      */
     public static function stringToBytes(string $string): int
     {
@@ -100,90 +106,6 @@ class Convert
     }
 
     /**
-     * Convert kilogram (kg) to pounds (lb)
-     *
-     * @param float $kilograms
-     *
-     * @return float
-     *
-     * @deprecated
-     */
-    public static function kilogramToPounds(float $kilograms): float
-    {
-        return $kilograms * 2.20462262;
-    }
-
-    /**
-     * Convert pounds (lb) to kilograms (kg)
-     *
-     * @param float $pounds
-     *
-     * @return float
-     *
-     * @deprecated
-     */
-    public static function poundToKilograms(float $pounds): float
-    {
-        return $pounds / 2.20462262;
-    }
-
-    /**
-     * Convert meter (m) to foot (ft)
-     *
-     * @param float $meters
-     *
-     * @return float
-     *
-     * @deprecated
-     */
-    public static function meterToFoot(float $meters): float
-    {
-        return $meters * 3.2808399;
-    }
-
-    /**
-     * Convert foot (ft) to meters (m)
-     *
-     * @param float $feet
-     *
-     * @return float
-     *
-     * @deprecated
-     */
-    public static function footToMeters(float $feet): float
-    {
-        return $feet / 3.2808399;
-    }
-
-    /**
-     * Convert centimeters (cm) to inches (in)
-     *
-     * @param float $centimeters
-     *
-     * @return float
-     *
-     * @deprecated
-     */
-    public static function centimeterToInches(float $centimeters): float
-    {
-        return $centimeters * 0.393700787;
-    }
-
-    /**
-     * Convert inches (in) to centimeters (cm)
-     *
-     * @param float $inches
-     *
-     * @return float
-     *
-     * @deprecated
-     */
-    public static function inchToCentimeters(float $inches): float
-    {
-        return $inches / 0.393700787;
-    }
-
-    /**
      * Convert given string into proper UTF-8 string
      *
      * @param string $string
@@ -191,6 +113,8 @@ class Convert
      * @return string
      * @throws ConvertException
      * @author Simon Brüchner (@powtac)
+     *
+     * @link https://koldy.net/framework/docs/2.0/converters.md#stringtoutf8
      * @link http://php.net/manual/en/function.utf8-encode.php#102382
      */
     public static function stringToUtf8(string $string): string
