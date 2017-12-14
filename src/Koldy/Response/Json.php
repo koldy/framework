@@ -22,7 +22,7 @@ class Json extends AbstractResponse
     public function __construct(array $data = [])
     {
         $this->setHeader('Content-Type', 'application/json');
-        $this->data = $data;
+        $this->setData($data);
     }
 
     /**
