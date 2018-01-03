@@ -3,6 +3,7 @@
 namespace Koldy\Session\Adapter;
 
 use Koldy\Db as KoldyDb;
+use Koldy\Db\Adapter\PostgreSQL;
 use Koldy\Db\Exception as DbException;
 use Koldy\Db\Adapter\AbstractAdapter;
 use Koldy\Session\Exception;
@@ -139,6 +140,7 @@ class Db implements SessionHandlerInterface
      * @param string $sessionid
      *
      * @return string
+     * @throws DbException
      */
     public function read($sessionid)
     {
@@ -147,7 +149,11 @@ class Db implements SessionHandlerInterface
         if ($sess === null) {
             return '';
         } else {
-            return $sess->data;
+            if ($this->getAdapter() instanceof PostgreSQL) {
+                return hex2bin(stream_get_contents($sess->data));
+            } else {
+                return $sess->data;
+            }
         }
     }
 
@@ -156,13 +162,20 @@ class Db implements SessionHandlerInterface
      * @param string $sessiondata
      *
      * @return bool
+     * @throws DbException
      */
     public function write($sessionid, $sessiondata)
     {
-        $data = array(
+        $adapter = $this->getAdapter();
+
+        $data = [
           'time' => time(),
           'data' => $sessiondata
-        );
+        ];
+
+        if ($adapter instanceof PostgreSQL) {
+            $data['data'] = bin2hex($data['data']);
+        }
 
         $sess = $this->getDbData($sessionid);
 
@@ -175,7 +188,7 @@ class Db implements SessionHandlerInterface
             $data['id'] = $sessionid;
 
             try {
-                $this->getAdapter()->insert($this->getTableName(), $data)->exec();
+                $adapter->insert($this->getTableName(), $data)->exec();
                 return true;
 
             } catch (DbException $e) {
@@ -193,7 +206,7 @@ class Db implements SessionHandlerInterface
             // the record data already exists in db
 
             try {
-                $this->getAdapter()->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
+                $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
                 return true;
 
             } catch (DbException $e) {
