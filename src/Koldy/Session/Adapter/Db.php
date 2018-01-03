@@ -150,7 +150,7 @@ class Db implements SessionHandlerInterface
             return '';
         } else {
             if ($this->getAdapter() instanceof PostgreSQL) {
-                return hex2bin(stream_get_contents($sess->data));
+                return hex2bin(is_resource($sess->data) ? stream_get_contents($sess->data) : $sess->data);
             } else {
                 return $sess->data;
             }
