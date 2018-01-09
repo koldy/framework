@@ -988,7 +988,7 @@ class Application
                 $response = $route->exec();
 
                 if ($response instanceof AbstractResponse) {
-                    print $response->flush();
+                    $response->flush();
 
                 } else {
                     print $response;
@@ -1008,7 +1008,7 @@ class Application
             // scripts are stored in /application/scripts, but before that, we need to determine which script is called
 
             global $argv;
-            // $argv[0] - this should be "cli.php", but we don't need this at all
+            // $argv[0] - this should be "index.php", but we don't need this at all
 
             try {
                 // so, if you run your script as "php cli.php backup", you'll have only two elements

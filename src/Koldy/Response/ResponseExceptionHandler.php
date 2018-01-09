@@ -33,6 +33,7 @@ class ResponseExceptionHandler
 
     /**
      * @param Throwable $e
+     * @throws Json\Exception
      */
     protected function handleExceptionInAjax(Throwable $e): void
     {
@@ -40,7 +41,7 @@ class ResponseExceptionHandler
           'success' => false,
           'type' => 'exception',
           'exception' => !Application::isLive() ? $e->getMessage() : null,
-          'trace' => !Application::isLive() ? $e->getTraceAsString() : null
+          'trace' => !Application::isLive() ? $e->getTrace() : null
         ];
 
         if ($e instanceof BadRequestException) {
@@ -71,6 +72,7 @@ class ResponseExceptionHandler
 
     /**
      * @param Throwable $e
+     * @throws Exception
      */
     protected function handleExceptionInNormalRequest(Throwable $e): void
     {
@@ -130,6 +132,8 @@ class ResponseExceptionHandler
 
     /**
      * Execute exception handler
+     * @throws Exception
+     * @throws Json\Exception
      */
     public function exec(): void
     {
