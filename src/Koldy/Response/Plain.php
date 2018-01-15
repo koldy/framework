@@ -92,18 +92,12 @@ class Plain extends AbstractResponse
         $this->prepareFlush();
         $this->runBeforeFlush();
 
-        ob_start();
+        $size = strlen($this->content);
+        $this->setHeader('Content-Length', $size);
+        $this->flushHeaders();
 
         // print the text stored in this object
         print $this->content;
-
-        $size = ob_get_length();
-        $this->setHeader('Content-Length', $size);
-
-        $this->flushHeaders();
-
-        ob_end_flush();
-        flush();
 
         $this->runAfterFlush();
     }

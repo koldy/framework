@@ -161,8 +161,10 @@ class View extends AbstractResponse
             }
         }
 
-        ob_start();
-        include($path);
+        ob_start(null, 0, PHP_OUTPUT_HANDLER_CLEANABLE | PHP_OUTPUT_HANDLER_FLUSHABLE | PHP_OUTPUT_HANDLER_REMOVABLE);
+
+        require $path;
+
         return ob_get_clean();
     }
 
@@ -247,9 +249,10 @@ class View extends AbstractResponse
             throw new ResponseException("View ({$this->view}) not found on path={$path}");
         }
 
-        ob_start();
+        ob_start(null, 0, PHP_OUTPUT_HANDLER_CLEANABLE | PHP_OUTPUT_HANDLER_FLUSHABLE | PHP_OUTPUT_HANDLER_REMOVABLE);
 
-        include($path);
+        require $path;
+
         $size = ob_get_length();
         $this->setHeader('Content-Length', $size);
 
@@ -274,8 +277,10 @@ class View extends AbstractResponse
             throw new ResponseException("View ({$this->view}) not found on path={$path}");
         }
 
-        ob_start();
-        include($path);
+        ob_start(null, 0, PHP_OUTPUT_HANDLER_CLEANABLE | PHP_OUTPUT_HANDLER_FLUSHABLE | PHP_OUTPUT_HANDLER_REMOVABLE);
+
+        require $path;
+
         return ob_get_clean();
     }
 

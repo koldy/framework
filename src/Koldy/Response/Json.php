@@ -56,16 +56,12 @@ class Json extends AbstractResponse
         $this->prepareFlush();
         $this->runBeforeFlush();
 
-        ob_start();
-
-        print json_encode($this->getData());
-
-        $size = ob_get_length();
+        $content = json_encode($this->getData());
+        $size = strlen($content);
         $this->setHeader('Content-Length', $size);
-
         $this->flushHeaders();
-        ob_end_flush();
-        flush();
+
+        print $content;
 
         $this->runAfterFlush();
     }
