@@ -4,7 +4,6 @@ namespace Koldy\Response;
 
 use Koldy\Application;
 use Koldy\Data;
-use Koldy\Log;
 use Koldy\Response\Exception as ResponseException;
 
 /**
@@ -31,8 +30,19 @@ class View extends AbstractResponse
      */
     protected $view = null;
 
+    /**
+     * @var null|string
+     */
+    protected $viewPath = null;
+
+    /**
+     * View constructor.
+     *
+     * @param string $view
+     */
     public function __construct(string $view)
     {
+        $this->viewPath = Application::getViewPath();
         $this->setView($view);
     }
 
@@ -45,7 +55,7 @@ class View extends AbstractResponse
      * @example View::create('base') will initialize /application/views/base.phtml
      * @link http://koldy.net/docs/view
      */
-    public static function create(string $view): View
+    public static function create(string $view): self
     {
         return new static($view);
     }
@@ -57,7 +67,7 @@ class View extends AbstractResponse
      *
      * @return View
      */
-    public function setView(string $view): View
+    public function setView(string $view): self
     {
         $this->view = $view;
         return $this;
@@ -70,7 +80,7 @@ class View extends AbstractResponse
      *
      * @return string
      */
-    protected static function getViewPath(string $view): string
+    protected function getViewPath(string $view): string
     {
         if (DS != '/') {
             $view = str_replace('/', DS, $view);
@@ -78,15 +88,33 @@ class View extends AbstractResponse
 
         $pos = strpos($view, ':');
         if ($pos === false) {
-            return Application::getViewPath() . $view . '.phtml';
+            return $this->viewPath . $view . '.phtml';
         } else {
-            // TODO: Fix module part
-            return dirname(substr(Application::getViewPath(), 0, -1)) . DS . 'modules' . DS . substr($view, 0, $pos) . DS . 'views' . DS . substr($view, $pos + 1) . '.phtml';
+            return dirname(substr($this->viewPath, 0, -1)) . DS . 'modules' . DS . substr($view, 0, $pos) . DS . 'views' . DS . substr($view, $pos + 1) . '.phtml';
         }
     }
 
     /**
-     * Does view exists or not
+     * Set custom view path where views are stored. Any additional use within this instance will be relative to the
+     * path given here
+     *
+     * @param string $basePath
+     *
+     * @return View
+     */
+    public function setViewPath(string $basePath): self
+    {
+        $this->viewPath = $basePath;
+
+        if (substr($this->viewPath, -1) != '/') {
+            $this->viewPath .= '/';
+        }
+
+        return $this;
+    }
+
+    /**
+     * Does view exists or not in main view path
      *
      * @param string $view
      *
@@ -94,7 +122,15 @@ class View extends AbstractResponse
      */
     public static function exists(string $view): bool
     {
-        $path = static::getViewPath($view);
+        $pos = strpos($view, ':');
+
+        if ($pos === false) {
+            $path = Application::getViewPath() . $view . '.phtml';
+        } else {
+            $path = dirname(substr(Application::getViewPath(), 0, -1)) . DS . 'modules' . DS . substr($view, 0, $pos) . DS . 'views' . DS . substr($view, $pos + 1) . '.phtml';
+        }
+
+
         return is_file($path);
     }
 
@@ -109,11 +145,10 @@ class View extends AbstractResponse
      */
     public function render(string $view, array $with = null): string
     {
-        $path = static::getViewPath($view);
+        $path = $this->getViewPath($view);
 
         if (!file_exists($path)) {
-            Log::alert("Can not find view on path={$path}");
-            throw new ResponseException("View ({$view}) not found");
+            throw new ResponseException("View ({$view}) not found on path={$path}");
         }
 
         if ($with !== null && count($with) > 0) {
@@ -138,6 +173,7 @@ class View extends AbstractResponse
      * @param array $with
      *
      * @return string
+     * @throws Exception
      */
     public function renderViewIf(string $view, array $with = null): string
     {
@@ -155,6 +191,7 @@ class View extends AbstractResponse
      * @param array $with
      *
      * @return string
+     * @throws Exception
      */
     public function renderViewInKeyIf(string $key, array $with = null): string
     {
@@ -204,11 +241,10 @@ class View extends AbstractResponse
         $this->prepareFlush();
         $this->runBeforeFlush();
 
-        $path = static::getViewPath($this->view);
+        $path = $this->getViewPath($this->view);
 
         if (!file_exists($path)) {
-            Log::error("Can not find view on path={$path}");
-            throw new ResponseException("View ({$this->view}) not found");
+            throw new ResponseException("View ({$this->view}) not found on path={$path}");
         }
 
         ob_start();
@@ -232,11 +268,10 @@ class View extends AbstractResponse
     public function getOutput(): string
     {
         $this->prepareFlush();
-        $path = static::getViewPath($this->view);
+        $path = $this->getViewPath($this->view);
 
         if (!file_exists($path)) {
-            Log::error("Can not find view on path={$path}");
-            throw new ResponseException("View ({$this->view}) not found");
+            throw new ResponseException("View ({$this->view}) not found on path={$path}");
         }
 
         ob_start();
@@ -246,6 +281,7 @@ class View extends AbstractResponse
 
     /**
      * @return string
+     * @throws Exception
      */
     public function __toString()
     {
