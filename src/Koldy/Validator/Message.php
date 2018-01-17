@@ -40,6 +40,8 @@ class Message
     public const NO_RECORD = 24;
     public const CSRF_FAILED = 25;
     public const BOOL = 26;
+    public const STARTS_WITH = 27;
+    public const ENDS_WITH = 28;
 
     /**
      * Flag if this class has been initialized or not
@@ -80,7 +82,9 @@ class Message
       self::NOT_UNIQUE => 'We already have this', // {param}, {value}, {exceptionValue}, {exceptionField}
       self::NO_RECORD => 'This value does not exists in database', // {param}, {value}, {field}
       self::CSRF_FAILED => 'CSRF check has failed', // {param}
-      self::BOOL => 'Parameter is not boolean' // {param}
+      self::BOOL => 'Parameter is not boolean', // {param}
+      self::STARTS_WITH => 'Value should start with {param}', // {param}, {value}
+      self::ENDS_WITH => 'Value should end with {param}' // {param}, {value}
     ];
 
     /**

@@ -1651,4 +1651,92 @@ class Validator
         return null;
     }
 
+    /**
+     * Validate if given parameter has required value
+     *
+     * @param string $parameter
+     * @param array $args
+     *
+     * @return null|string
+     * @throws ValidatorConfigException
+     * @example 'param' => 'startsWith:098'
+     */
+    protected function validateStartsWith(string $parameter, array $args = []): ?string
+    {
+        if (count($args) == 0) {
+            throw new ValidatorConfigException("Validator 'startsWith' must have argument in validator list for parameter {$parameter}");
+        }
+
+        $value = $this->getValue($parameter);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_scalar($value)) {
+            return Message::getMessage(Message::PRIMITIVE, [
+                'param' => $parameter
+            ]);
+        }
+
+        $value = trim((string)$value);
+
+        if ($value == '') {
+            return null;
+        }
+
+        if (!Util::startsWith($value, $args[0])) {
+            return Message::getMessage(Message::STARTS_WITH, [
+                'param' => $parameter,
+                'value' => $value
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate if given parameter has required value
+     *
+     * @param string $parameter
+     * @param array $args
+     *
+     * @return null|string
+     * @throws ValidatorConfigException
+     * @example 'param' => 'endsWith:dd1'
+     */
+    protected function validateEndsWith(string $parameter, array $args = []): ?string
+    {
+        if (count($args) == 0) {
+            throw new ValidatorConfigException("Validator 'endsWith' must have argument in validator list for parameter {$parameter}");
+        }
+
+        $value = $this->getValue($parameter);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_scalar($value)) {
+            return Message::getMessage(Message::PRIMITIVE, [
+                'param' => $parameter
+            ]);
+        }
+
+        $value = trim((string)$value);
+
+        if ($value == '') {
+            return null;
+        }
+
+        if (!Util::endsWith($value, $args[0])) {
+            return Message::getMessage(Message::ENDS_WITH, [
+                'param' => $parameter,
+                'value' => $value
+            ]);
+        }
+
+        return null;
+    }
+
 }
