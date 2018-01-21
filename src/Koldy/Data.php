@@ -25,7 +25,7 @@ trait Data
     }
 
     /**
-     * Set all data
+     * Set data - it'll override all existing data. If you want to "append" data, use addData() method.
      *
      * @param array $data
      *
@@ -34,6 +34,19 @@ trait Data
     final public function setData(array $data)
     {
         $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Add/append data to already existing data by using array_merge().
+     *
+     * @param array $data
+     *
+     * @return $this
+     */
+    final public function addData(array $data)
+    {
+        $this->data = array_merge($this->data, $data);
         return $this;
     }
 
