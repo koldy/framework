@@ -34,6 +34,7 @@ trait CreatedAt
     /**
      * @param string|null $timezone
      * @return DateTime
+     * @throws \Koldy\Exception
      */
     public function getCreatedAtDatetime(string $timezone = null): DateTime
     {
@@ -45,15 +46,20 @@ trait CreatedAt
      * @param int $seconds
      *
      * @return bool
+     * @throws \Koldy\Exception
      */
-    public function isCreatedInLast(int $seconds = 86400): bool
+    public function isCreatedInLast(int $seconds = 86400, string $timezone = null): bool
     {
         if (!$this->hasCreatedAt()) {
             return false;
         }
 
+        if ($timezone === null) {
+            $timezone = 'UTC';
+        }
+
         $date = $this->getCreatedAtDatetime();
-        $now = new DateTime();
+        $now = new DateTime('now', new DateTimeZone($timezone));
         $now->modify("-{$seconds} seconds");
 
         return $date->getTimestamp() >= $now->getTimestamp();
