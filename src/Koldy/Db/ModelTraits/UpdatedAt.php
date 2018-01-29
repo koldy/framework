@@ -4,7 +4,6 @@ namespace Koldy\Db\ModelTraits;
 
 use DateTime;
 use DateTimeZone;
-use Koldy\Application;
 
 /**
  * Trait UpdatedAt
@@ -54,7 +53,9 @@ trait UpdatedAt
             return null;
         }
 
-        $timezone = $timezone ?? Application::getConfig('application')->get('timezone', 'UTC');
+        if ($timezone === null) {
+            $timezone = 'UTC';
+        }
         return new DateTime($this->getUpdatedAt(), new DateTimeZone($timezone));
     }
 
