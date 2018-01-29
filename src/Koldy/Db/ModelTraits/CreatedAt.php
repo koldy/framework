@@ -4,7 +4,6 @@ namespace Koldy\Db\ModelTraits;
 
 use DateTime;
 use DateTimeZone;
-use Koldy\Application;
 
 /**
  * Trait CreatedAt
@@ -34,19 +33,20 @@ trait CreatedAt
     /**
      * @param string|null $timezone
      * @return DateTime
-     * @throws \Koldy\Exception
      */
     public function getCreatedAtDatetime(string $timezone = null): DateTime
     {
-        $timezone = $timezone ?? Application::getConfig('application')->get('timezone', 'UTC');
+        if ($timezone === null) {
+            $timezone = 'UTC';
+        }
         return new DateTime($this->getCreatedAt(), new DateTimeZone($timezone));
     }
 
     /**
      * @param int $seconds
      *
+     * @param string|null $timezone
      * @return bool
-     * @throws \Koldy\Exception
      */
     public function isCreatedInLast(int $seconds = 86400, string $timezone = null): bool
     {
@@ -58,7 +58,7 @@ trait CreatedAt
             $timezone = 'UTC';
         }
 
-        $date = $this->getCreatedAtDatetime();
+        $date = $this->getCreatedAtDatetime($timezone);
         $now = new DateTime('now', new DateTimeZone($timezone));
         $now->modify("-{$seconds} seconds");
 
