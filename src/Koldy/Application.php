@@ -838,9 +838,25 @@ class Application
     }
 
     /**
+     * Gets default application encoding set in mandatory config under "encoding" key. If not set, it'll return "UTF-8" as default.
+     * Encoding will be used in functions list mb_strlen()
+     *
+     * @return string
+     * @throws Exception
+     *
+     * @link http://www.php.net/manual/en/mbstring.supported-encodings.php
+     */
+    public static function getEncoding(): string
+    {
+        return static::getConfig('application')->get('encoding', 'UTF-8');
+    }
+
+    /**
      * Initialize app
      *
      * @param string|null $uri
+     * @throws ConfigException
+     * @throws Exception
      */
     public static function init(string $uri = null): void
     {
@@ -961,7 +977,6 @@ class Application
      *
      * @param string $uri [optional]
      *
-     * @throws Exception
      */
     public static function run(string $uri = null): void
     {

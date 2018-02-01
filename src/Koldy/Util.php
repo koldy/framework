@@ -122,6 +122,7 @@ class Util
      * @param bool $middle [optional] default false
      *
      * @return string
+     * @throws Exception
      */
     public static function truncate(string $string, int $length = 80, string $etc = '...', bool $breakWords = false, bool $middle = false): string
     {
@@ -129,17 +130,19 @@ class Util
             return '';
         }
 
-        if (strlen($string) > $length) {
-            $length -= min($length, strlen($etc));
+        $encoding = Application::getEncoding();
+
+        if (mb_strlen($string, $encoding) > $length) {
+            $length -= min($length, mb_strlen($etc, $encoding));
 
             if (!$breakWords && !$middle) {
-                $string = preg_replace('/\s+?(\S+)?$/', '', substr($string, 0, $length + 1));
+                $string = preg_replace('/\s+?(\S+)?$/', '', mb_substr($string, 0, $length + 1, $encoding));
             }
 
             if (!$middle) {
-                return substr($string, 0, $length) . $etc;
+                return mb_substr($string, 0, $length, $encoding) . $etc;
             } else {
-                return substr($string, 0, (int)round($length / 2)) . $etc . substr($string, (int)round(-$length / 2));
+                return mb_substr($string, 0, (int)round($length / 2), $encoding) . $etc . mb_substr($string, (int)round(-$length / 2), null, $encoding);
             }
         } else {
             return $string;
@@ -196,10 +199,11 @@ class Util
      * @param string $startsWith
      *
      * @return bool
+     * @throws Exception
      */
     public static function startsWith(string $yourString, string $startsWith): bool
     {
-        return substr($yourString, 0, strlen($startsWith)) == $startsWith;
+        return mb_substr($yourString, 0, mb_strlen($startsWith, Application::getEncoding()), Application::getEncoding()) == $startsWith;
     }
 
     /**
@@ -209,10 +213,11 @@ class Util
      * @param string $endsWith
      *
      * @return bool
+     * @throws Exception
      */
     public static function endsWith(string $yourString, string $endsWith): bool
     {
-        return substr($yourString, 0 - strlen($endsWith)) == $endsWith;
+        return mb_substr($yourString, 0 - mb_strlen($endsWith, Application::getEncoding()), null, Application::getEncoding()) == $endsWith;
     }
 
     /**

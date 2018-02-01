@@ -2,6 +2,8 @@
 
 namespace Koldy\Response;
 
+use Koldy\Application;
+
 /**
  * Class for printing plain text as response to HTTP request.
  *
@@ -86,13 +88,14 @@ class Plain extends AbstractResponse
 
     /**
      * @link http://koldy.net/docs/plain#usage
+     * @throws \Koldy\Exception
      */
     public function flush(): void
     {
         $this->prepareFlush();
         $this->runBeforeFlush();
 
-        $size = strlen($this->content);
+        $size = mb_strlen($this->content, Application::getEncoding());
         $this->setHeader('Content-Length', $size);
         $this->flushHeaders();
 

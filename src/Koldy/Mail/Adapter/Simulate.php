@@ -2,6 +2,7 @@
 
 namespace Koldy\Mail\Adapter;
 
+use Koldy\Application;
 use Koldy\Exception;
 use Koldy\Log;
 
@@ -53,7 +54,7 @@ class Simulate extends CommonMailAdapter
             $replyTo = ' replyTo=' . $this->replyTo;
         }
 
-        Log::info("E-mail [SIMULATED] is sent FROM={$from}{$replyTo} TO={$to}{$cc}{$bcc} with subject \"{$this->subject}\" and content length: " . strlen($this->body));
+        Log::info("E-mail [SIMULATED] is sent FROM={$from}{$replyTo} TO={$to}{$cc}{$bcc} with subject \"{$this->subject}\" and content length: " . mb_strlen($this->body, Application::getEncoding()));
     }
 
 }

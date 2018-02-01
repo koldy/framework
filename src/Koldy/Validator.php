@@ -59,6 +59,7 @@ class Validator
      *
      * @param array $rules
      * @param array|null $data
+     * @throws Exception
      */
     public function __construct(array $rules, array $data = null)
     {
@@ -82,7 +83,9 @@ class Validator
      * @param bool $validateAndThrowException
      *
      * @return Validator
-     * @throws Validator\Exception
+     * @throws Exception
+     * @throws InvalidDataException
+     * @throws ValidatorConfigException
      */
     public static function create(array $rules, array $data = null, bool $validateAndThrowException = true): Validator
     {
@@ -107,7 +110,9 @@ class Validator
      * @param bool $validateAndThrowException
      *
      * @return Validator
-     * @throws Validator\Exception
+     * @throws Exception
+     * @throws InvalidDataException
+     * @throws ValidatorConfigException
      */
     public static function only(array $rules, array $data = null, bool $validateAndThrowException = true): Validator
     {
@@ -377,6 +382,8 @@ class Validator
 
     /**
      * @return bool
+     * @throws InvalidDataException
+     * @throws ValidatorConfigException
      */
     public function isAllValid(): bool
     {
@@ -388,6 +395,8 @@ class Validator
      * Get error messages
      *
      * @return array
+     * @throws InvalidDataException
+     * @throws ValidatorConfigException
      */
     public function getMessages(): array
     {
@@ -403,6 +412,7 @@ class Validator
      * @param array $args
      *
      * @return string|null
+     * @throws ValidatorConfigException
      * @example 'param' => 'present' - will fail if 'param' is not within validation data
      */
     protected function validatePresent(string $parameter, array $args = []): ?string
@@ -426,6 +436,7 @@ class Validator
      * @param array $args
      *
      * @return string|null
+     * @throws ValidatorConfigException
      * @example 'param' => 'required'
      */
     protected function validateRequired(string $parameter, array $args = []): ?string
@@ -598,6 +609,7 @@ class Validator
      * @throws ValidatorConfigException
      *
      * @example 'param' => 'minLength:5'
+     * @throws Exception
      */
     protected function validateMinLength(string $parameter, array $args = []): ?string
     {
@@ -627,7 +639,7 @@ class Validator
             return null;
         }
 
-        if (strlen($value) < (int)$args[0]) {
+        if (mb_strlen($value, Application::getEncoding()) < (int)$args[0]) {
             return Message::getMessage(Message::MIN_LENGTH, [
               'param' => $parameter,
               'min' => $args[0],
@@ -648,6 +660,7 @@ class Validator
      * @throws ValidatorConfigException
      *
      * @example 'param' => 'maxLength:5'
+     * @throws Exception
      */
     protected function validateMaxLength(string $parameter, array $args = []): ?string
     {
@@ -677,7 +690,7 @@ class Validator
             return null;
         }
 
-        if (strlen($value) > (int)$args[0]) {
+        if (mb_strlen($value, Application::getEncoding()) > (int)$args[0]) {
             return Message::getMessage(Message::MAX_LENGTH, [
               'param' => $parameter,
               'max' => $args[0],
@@ -698,6 +711,7 @@ class Validator
      * @throws ValidatorConfigException
      *
      * @example 'param' => 'length:5'
+     * @throws Exception
      */
     protected function validateLength(string $parameter, array $args = []): ?string
     {
@@ -723,7 +737,7 @@ class Validator
 
         $value = (string)$value;
 
-        if (strlen($value) != (int)$args[0]) {
+        if (mb_strlen($value, Application::getEncoding()) != (int)$args[0]) {
             return Message::getMessage(Message::LENGTH, [
               'param' => $parameter,
               'length' => $args[0],
@@ -742,6 +756,7 @@ class Validator
      *
      * @return null|string
      * @example 'param' => 'integer' - passed value must contain 0-9 digits only
+     * @throws ValidatorConfigException
      */
     protected function validateInteger(string $parameter, array $args = []): ?string
     {
@@ -791,6 +806,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'bool' - passed value must be boolean
      */
     protected function validateBool(string $parameter, array $args = []): ?string
@@ -827,6 +843,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'boolean' - passed value must be boolean
      */
     protected function validateBoolean(string $parameter, array $args = []): ?string
@@ -841,6 +858,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'numeric'
      */
     protected function validateNumeric(string $parameter, array $args = []): ?string
@@ -880,6 +898,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'alphaNum'
      */
     protected function validateAlphaNum(string $parameter, array $args = []): ?string
@@ -919,6 +938,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'hex'
      */
     protected function validateHex(string $parameter, array $args = []): ?string
@@ -962,6 +982,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'alpha'
      */
     protected function validateAlpha(string $parameter, array $args = []): ?string
@@ -1001,6 +1022,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'email'
      */
     protected function validateEmail(string $parameter, array $args = []): ?string
@@ -1040,6 +1062,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws ValidatorConfigException
      * @example 'param' => 'slug'
      */
     protected function validateSlug(string $parameter, array $args = []): ?string
@@ -1658,6 +1681,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws Exception
      * @throws ValidatorConfigException
      * @example 'param' => 'startsWith:098'
      */
@@ -1702,6 +1726,7 @@ class Validator
      * @param array $args
      *
      * @return null|string
+     * @throws Exception
      * @throws ValidatorConfigException
      * @example 'param' => 'endsWith:dd1'
      */

@@ -2,6 +2,8 @@
 
 namespace Koldy\Http;
 
+use Koldy\Application;
+
 /**
  * This will be the instance of the response created by \Koldy\Http\Request class
  *
@@ -238,6 +240,7 @@ class Response
      * @param bool $allDetails
      *
      * @return string
+     * @throws \Koldy\Exception
      */
     public function debug($allDetails = false)
     {
@@ -255,8 +258,8 @@ class Response
             }
 
             $body = $this->getBody();
-            if (strlen($body) > 255) {
-                $body = substr($body, 0, 252) . '...';
+            if (mb_strlen($body, Application::getEncoding()) > 255) {
+                $body = mb_substr($body, 0, 252, Application::getEncoding()) . '...';
             }
 
             $msg .= "\n";
@@ -272,6 +275,7 @@ class Response
      * If you try to print the response object, you'll get response body
      *
      * @return string
+     * @throws \Koldy\Exception
      */
     public function __toString()
     {

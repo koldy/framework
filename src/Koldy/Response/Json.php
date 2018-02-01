@@ -2,6 +2,7 @@
 
 namespace Koldy\Response;
 
+use Koldy\Application;
 use Koldy\Data;
 
 /**
@@ -50,6 +51,7 @@ class Json extends AbstractResponse
 
     /**
      * @link http://koldy.net/docs/json#usage
+     * @throws \Koldy\Exception
      */
     public function flush(): void
     {
@@ -57,7 +59,7 @@ class Json extends AbstractResponse
         $this->runBeforeFlush();
 
         $content = json_encode($this->getData());
-        $size = strlen($content);
+        $size = mb_strlen($content, Application::getEncoding());
         $this->setHeader('Content-Length', $size);
         $this->flushHeaders();
 
