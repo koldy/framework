@@ -52,7 +52,7 @@ class Csrf
                 static::$config = $config;
             }
 
-            if (!isset(static::$config[self::ENABLED])) {
+            if (!array_key_exists(self::ENABLED, static::$config)) {
                 throw new ConfigException('Missing key \'enabled\' in security/CSRF config');
             }
 
@@ -60,7 +60,7 @@ class Csrf
                 // check CSRF config
 
                 foreach ([self::PARAMETER_NAME, self::COOKIE_NAME, self::SESSION_KEY_NAME] as $key) {
-                    if (!isset(static::$config[$key])) {
+                    if (!array_key_exists($key, static::$config)) {
                         throw new ConfigException("Missing {$key} key in security/CSRF config");
                     }
                 }
@@ -161,6 +161,8 @@ class Csrf
      * Is there CSRF token stored in the session?
      *
      * @return bool
+     * @throws ConfigException
+     * @throws \Koldy\Exception
      */
     public static function hasTokenStored(): bool
     {
@@ -178,7 +180,9 @@ class Csrf
     /**
      * Get currently stored CSRF token from session
      * @return Token
+     * @throws ConfigException
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public static function getStoredToken(): Token
     {
@@ -186,7 +190,13 @@ class Csrf
             return static::$token;
         }
 
-        $token = Session::get(static::getSessionKeyName());
+        $sessionKeyName = static::getSessionKeyName();
+
+        if ($sessionKeyName === null || strlen($sessionKeyName) == 0) {
+            throw new Exception('Can not get stored CSRF token when session key is not set');
+        }
+
+        $token = Session::get($sessionKeyName);
 
         if ($token === null) {
             throw new SecurityException('There is no stored token on backend');
@@ -200,10 +210,18 @@ class Csrf
      * Is there a cookie with CSRF token present in this request?
      *
      * @return bool
+     * @throws ConfigException
+     * @throws Exception
      */
     public static function hasCookieToken(): bool
     {
-        return Cookie::has(static::getCookieName());
+        $cookieName = static::getCookieName();
+
+        if ($cookieName === null || strlen($cookieName) == 0) {
+            throw new Exception('Can not check if CSRF token is in cookie when cookie name is not set in CSRF configuration');
+        }
+
+        return Cookie::has($cookieName);
     }
 
     /**
@@ -212,6 +230,9 @@ class Csrf
      * @param string $token
      *
      * @return bool
+     * @throws ConfigException
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public static function isTokenValid(string $token): bool
     {
@@ -226,9 +247,10 @@ class Csrf
     /**
      * Get the name of parameter that has to be sent within the form
      *
-     * @return string
+     * @return string|null
+     * @throws ConfigException
      */
-    public static function getParameterName(): string
+    public static function getParameterName(): ?string
     {
         static::init();
         return static::$config[self::PARAMETER_NAME];
@@ -238,11 +260,19 @@ class Csrf
      * Get prepared HTML input that can be used directly in forms
      *
      * @return string
+     * @throws ConfigException
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public static function getHtmlInputHidden(): string
     {
         static::init();
         $parameterName = static::getParameterName();
+
+        if ($parameterName === null) {
+            throw new Exception('Can not generate HTML hidden input field when parameter name is not set');
+        }
+
         $csrfValue = static::getStoredToken()->getToken();
         return sprintf('<input type="hidden" name="%s" value="%s"/>', $parameterName, $csrfValue);
     }
@@ -251,6 +281,9 @@ class Csrf
      * Get prepared prepared meta tags from where you can read your CSRF values
      *
      * @return string
+     * @throws ConfigException
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public static function getMetaTags(): string
     {
