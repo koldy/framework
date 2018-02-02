@@ -82,7 +82,7 @@ class Token implements \Serializable
         $data = Json::decode($serialized);
 
         foreach (['token', 'cookie_token'] as $key) {
-            if (!isset($data[$key])) {
+            if (!array_key_exists($key, $data)) {
                 throw new SecurityException("Unserialized CSRF token doesn't contain required \"{$key}\" key");
             }
         }

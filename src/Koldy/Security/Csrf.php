@@ -12,6 +12,9 @@ use Koldy\Security\Exception as SecurityException;
 class Csrf
 {
 
+    /**
+     * @deprecated
+     */
     private const ENABLED = 'enabled';
     private const PARAMETER_NAME = 'parameter_name';
     private const COOKIE_NAME = 'cookie_name';
@@ -36,6 +39,7 @@ class Csrf
      * @param bool $reInit
      *
      * @throws ConfigException
+     * @throws \Koldy\Exception
      */
     public static function init(array $config = null, bool $reInit = false)
     {
@@ -43,7 +47,7 @@ class Csrf
             if ($config === null) {
                 $config = Application::getConfig('application');
                 static::$config = $config->getArrayItem('security', 'csrf', [
-                  self::ENABLED => false,
+                  //self::ENABLED => false,
                   self::PARAMETER_NAME => 'csrf',
                   self::COOKIE_NAME => 'csrf_token',
                   self::SESSION_KEY_NAME => 'csrf_token'
@@ -52,11 +56,13 @@ class Csrf
                 static::$config = $config;
             }
 
+            /* // CSRF is not started by default by framework any more
             if (!array_key_exists(self::ENABLED, static::$config)) {
                 throw new ConfigException('Missing key \'enabled\' in security/CSRF config');
             }
+            */
 
-            if (static::$config['enabled']) {
+            //if (static::$config['enabled']) {
                 // check CSRF config
 
                 foreach ([self::PARAMETER_NAME, self::COOKIE_NAME, self::SESSION_KEY_NAME] as $key) {
@@ -64,7 +70,7 @@ class Csrf
                         throw new ConfigException("Missing {$key} key in security/CSRF config");
                     }
                 }
-            }
+            //}
         }
     }
 
@@ -73,6 +79,7 @@ class Csrf
      *
      * @return string
      * @throws ConfigException
+     * @throws \Koldy\Exception
      */
     public static function getSessionKeyName(): ?string
     {
@@ -85,6 +92,7 @@ class Csrf
      *
      * @return string|null
      * @throws ConfigException
+     * @throws \Koldy\Exception
      */
     public static function getCookieName(): ?string
     {
@@ -146,10 +154,12 @@ class Csrf
     }
 
     /**
-     * Is CSRF check enabled or not
+     * Is CSRF check enabled in config or not
      *
      * @return bool
      * @throws ConfigException
+     * @throws \Koldy\Exception
+     * @deprecated
      */
     public static function isEnabled(): bool
     {
@@ -212,6 +222,7 @@ class Csrf
      * @return bool
      * @throws ConfigException
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public static function hasCookieToken(): bool
     {
@@ -249,6 +260,7 @@ class Csrf
      *
      * @return string|null
      * @throws ConfigException
+     * @throws \Koldy\Exception
      */
     public static function getParameterName(): ?string
     {

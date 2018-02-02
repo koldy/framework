@@ -7,7 +7,6 @@ use Koldy\Config\Exception as ConfigException;
 use Koldy\Cli\Exception as CliException;
 use Koldy\Response\AbstractResponse;
 use Koldy\Route\AbstractRoute;
-use Koldy\Security\Csrf;
 use Throwable;
 
 /**
@@ -528,6 +527,7 @@ class Application
      * @param bool $isPointerConfig
      *
      * @return Config
+     * @throws Exception
      */
     public static function getConfig(string $name, bool $isPointerConfig = false): Config
     {
@@ -640,6 +640,7 @@ class Application
      * Get full domain with schema
      *
      * @return string
+     * @throws Exception
      */
     public static function getDomainWithSchema(): string
     {
@@ -670,6 +671,7 @@ class Application
      * Get the initialized routing class
      *
      * @return \Koldy\Route\AbstractRoute
+     * @throws Exception
      */
     public static function route(): AbstractRoute
     {
@@ -723,6 +725,7 @@ class Application
      *
      * @param string $name
      *
+     * @throws Exception
      * @example if your module is located on "/application/modules/invoices", then pass "invoices"
      */
     public static function registerModule(string $name): void
@@ -744,6 +747,7 @@ class Application
      * @param string $module
      *
      * @throws ApplicationException
+     * @throws Exception
      */
     public static function setCurrentModule(string $module): void
     {
@@ -782,7 +786,6 @@ class Application
      * @param string $name
      *
      * @return string
-     * @throws Exception
      */
     public static function getModulePath($name): string
     {
@@ -976,7 +979,8 @@ class Application
      * will try to detect it automatically.
      *
      * @param string $uri [optional]
-     *
+     * @throws ConfigException
+     * @throws Exception
      */
     public static function run(string $uri = null): void
     {
@@ -996,9 +1000,12 @@ class Application
                 $route = static::route();
                 $route->prepareHttp(static::$uri);
 
+                /*
+                 NOTE: CSRF will not be handled automatically by framework any more
                 if (Csrf::isEnabled() && (!Csrf::hasTokenStored() || !Csrf::hasCookieToken())) {
                     Csrf::generate();
                 }
+                */
 
                 $response = $route->exec();
 
