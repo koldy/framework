@@ -72,8 +72,9 @@ class Csrf
      * Get the session key under which token is stored in session
      *
      * @return string
+     * @throws ConfigException
      */
-    public static function getSessionKeyName(): string
+    public static function getSessionKeyName(): ?string
     {
         static::init();
         return static::$config[self::SESSION_KEY_NAME];
@@ -82,9 +83,10 @@ class Csrf
     /**
      * Get the cookie key under which token is stored on client's computer
      *
-     * @return string
+     * @return string|null
+     * @throws ConfigException
      */
-    public static function getCookieName(): string
+    public static function getCookieName(): ?string
     {
         static::init();
         return static::$config[self::COOKIE_NAME];
@@ -97,6 +99,9 @@ class Csrf
      * @param null|int $length
      *
      * @return Token
+     * @throws ConfigException
+     * @throws Session\Exception
+     * @throws \Koldy\Exception
      */
     public static function generate(string $token = null, int $length = null): Token
     {
@@ -121,11 +126,21 @@ class Csrf
         }
 
         $config = Application::getConfig('session');
-        $cookie = Cookie::rawSet(static::getCookieName(), $token, 0, '/', $config->get('domain', ''), $config->get('cookie_secure', false), false);
+
+        $cookieName = static::getCookieName();
+        if (is_string($cookieName) && strlen($cookieName) > 0) {
+            $cookie = Cookie::rawSet($cookieName, $token, 0, '/', $config->get('domain', ''), $config->get('cookie_secure', false), false);
+        } else {
+            $cookie = null;
+        }
 
         $token = new Token($token, $cookie);
-        Session::set(static::getSessionKeyName(), $token);
         static::$token = $token;
+
+        $sessionKeyName = static::getSessionKeyName();
+        if (is_string($sessionKeyName) && strlen($sessionKeyName) > 0) {
+            Session::set($sessionKeyName, $token);
+        }
 
         return $token;
     }
@@ -134,6 +149,7 @@ class Csrf
      * Is CSRF check enabled or not
      *
      * @return bool
+     * @throws ConfigException
      */
     public static function isEnabled(): bool
     {

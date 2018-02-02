@@ -14,12 +14,12 @@ class Token implements \Serializable
     /**
      * @var string
      */
-    private $token;
+    private $token = null;
 
     /**
      * @var string
      */
-    private $cookieToken;
+    private $cookieToken = null;
 
     /**
      * Token constructor.
@@ -27,7 +27,7 @@ class Token implements \Serializable
      * @param string $token
      * @param string $cookieToken
      */
-    public function __construct(string $token, string $cookieToken)
+    public function __construct(string $token, string $cookieToken = null)
     {
         $this->token = $token;
         $this->cookieToken = $cookieToken;
@@ -36,7 +36,7 @@ class Token implements \Serializable
     /**
      * @return string
      */
-    public function getToken(): string
+    public function getToken(): ?string
     {
         return $this->token;
     }
@@ -44,7 +44,7 @@ class Token implements \Serializable
     /**
      * @return string
      */
-    public function getCookieToken(): string
+    public function getCookieToken(): ?string
     {
         return $this->cookieToken;
     }
@@ -54,6 +54,7 @@ class Token implements \Serializable
      * @link http://php.net/manual/en/serializable.serialize.php
      * @return string the string representation of the object or null
      * @since 5.1.0
+     * @throws Json\Exception
      */
     public function serialize()
     {
@@ -72,6 +73,7 @@ class Token implements \Serializable
      * </p>
      *
      * @return void
+     * @throws Json\Exception
      * @throws SecurityException
      * @since 5.1.0
      */
