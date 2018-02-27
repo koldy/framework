@@ -417,9 +417,7 @@ class Validator
      */
     protected function validatePresent(string $parameter, array $args = []): ?string
     {
-        $value = $this->getValue($parameter);
-
-        if ($value === null) {
+        if (!array_key_exists($parameter, $this->data)) {
             return Message::getMessage(Message::PRESENT, [
               'param' => $parameter
             ]);
