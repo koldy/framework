@@ -23,6 +23,7 @@ class Application
 
     const DEVELOPMENT = 0;
     const PRODUCTION = 1;
+    const TEST = 2;
 
     /**
      * All loaded configs in one place so feel free to call
@@ -67,6 +68,7 @@ class Application
      * - production/not-live (testing production on developer machine or anywhere else)
      * - development/not-live (real dev mode)
      * - development/live - (running live, but in dev mode; e.g. you want your analytics, but serving dev not minimized versions)
+     * - test/not-live - should be the only combination with test env
      *
      * @var bool
      */
@@ -344,7 +346,7 @@ class Application
 
         // check the environment
         $env = $configInstance->get('env');
-        if ($env === null || !($env == static::DEVELOPMENT || $env == static::PRODUCTION)) {
+        if ($env === null || !($env == static::DEVELOPMENT || $env == static::PRODUCTION || $env == static::TEST)) {
             static::terminateWithError('Invalid ENV parameter in main application config');
         }
         static::$env = $env;
@@ -711,6 +713,16 @@ class Application
     }
 
     /**
+     * Is application running in test mode or not
+     *
+     * @return boolean
+     */
+    public static function inTest(): bool
+    {
+        return static::$env === self::TEST;
+    }
+
+    /**
      * Is app running live or not?
      *
      * @return bool
@@ -725,7 +737,6 @@ class Application
      *
      * @param string $name
      *
-     * @throws Exception
      * @example if your module is located on "/application/modules/invoices", then pass "invoices"
      */
     public static function registerModule(string $name): void
