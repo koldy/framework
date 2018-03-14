@@ -193,31 +193,33 @@ class Util
     }
 
     /**
-     * Check if string starts with given string
+     * Check if string starts with given string - it supports UTF-8, but it's case sensitive
      *
      * @param string $yourString
      * @param string $startsWith
+     * @param string|null $encoding - by default, using application config (encoding) or uses UTF-8 by default
      *
      * @return bool
      * @throws Exception
      */
-    public static function startsWith(string $yourString, string $startsWith): bool
+    public static function startsWith(string $yourString, string $startsWith, string $encoding = null): bool
     {
-        return mb_substr($yourString, 0, mb_strlen($startsWith, Application::getEncoding()), Application::getEncoding()) == $startsWith;
+        return mb_substr($yourString, 0, mb_strlen($startsWith, $encoding ?? Application::getEncoding()), $encoding ?? Application::getEncoding()) === $startsWith;
     }
 
     /**
-     * Check if string ends with given string
+     * Check if string ends with given string - it supports UTF-8, but it's case sensitive
      *
      * @param string $yourString
      * @param string $endsWith
+     * @param string|null $encoding - by default, using application config (encoding) or uses UTF-8 by default
      *
      * @return bool
      * @throws Exception
      */
-    public static function endsWith(string $yourString, string $endsWith): bool
+    public static function endsWith(string $yourString, string $endsWith, string $encoding = null): bool
     {
-        return mb_substr($yourString, 0 - mb_strlen($endsWith, Application::getEncoding()), null, Application::getEncoding()) == $endsWith;
+        return mb_substr($yourString, 0 - mb_strlen($endsWith, $encoding ?? Application::getEncoding()), null, $encoding ?? Application::getEncoding()) === $endsWith;
     }
 
     /**
