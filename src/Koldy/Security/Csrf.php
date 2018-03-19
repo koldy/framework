@@ -16,6 +16,7 @@ class Csrf
      * @deprecated
      */
     private const ENABLED = 'enabled';
+
     private const PARAMETER_NAME = 'parameter_name';
     private const COOKIE_NAME = 'cookie_name';
     private const SESSION_KEY_NAME = 'session_key_name';
@@ -164,7 +165,7 @@ class Csrf
     public static function isEnabled(): bool
     {
         static::init();
-        return static::$config[self::ENABLED];
+        return static::$config[self::ENABLED] ?? false;
     }
 
     /**

@@ -55,13 +55,6 @@ class Validator
     private $validated = null;
 
     /**
-     * Array of parameters and it's resolved data. This is part of optimisation which reduces number of data search cycles
-     *
-     * @var array
-     */
-    private $resolvedData = [];
-
-    /**
      * Validator constructor.
      *
      * @param array $rules
@@ -74,8 +67,9 @@ class Validator
             $this->data = Request::getAllParameters();
             $this->csrfEnabled = Csrf::isEnabled();
 
-            if ($this->csrfEnabled && !isset($rules[Csrf::getParameterName()])) {
-                $rules[Csrf::getParameterName()] = 'required|csrf';
+            $csrfParameter = Csrf::getParameterName();
+            if ($csrfParameter !== null && !isset($rules[$csrfParameter])) {
+                $rules[$csrfParameter] = 'required|csrf';
             }
         } else {
             $this->data = $data;
@@ -154,6 +148,7 @@ class Validator
      * Is automatic CSRF check enabled or not
      *
      * @return bool
+     * @deprecated
      */
     public function isCsrfEnabled(): bool
     {
@@ -163,6 +158,7 @@ class Validator
     /**
      * Manually enable CSRF check. This has to be enabled manually if you're passing
      * custom data to validator and still want to do CSRF check.
+     * @deprecated
      */
     public function enableCsrfCheck(): void
     {
@@ -171,6 +167,7 @@ class Validator
 
     /**
      * You might want to disable automatic CSRF check in some cases.
+     * @deprecated
      */
     public function disableCsrfCheck(): void
     {
