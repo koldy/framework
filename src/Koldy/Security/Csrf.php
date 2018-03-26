@@ -160,12 +160,16 @@ class Csrf
      * @return bool
      * @throws ConfigException
      * @throws \Koldy\Exception
-     * @deprecated
      */
     public static function isEnabled(): bool
     {
         static::init();
-        return static::$config[self::ENABLED] ?? false;
+
+        if (array_key_exists(self::ENABLED, static::$config)) {
+            return static::$config[self::ENABLED] ?? false;
+        }
+
+        return static::getParameterName() !== null;
     }
 
     /**
@@ -266,7 +270,7 @@ class Csrf
     public static function getParameterName(): ?string
     {
         static::init();
-        return static::$config[self::PARAMETER_NAME];
+        return static::$config[self::PARAMETER_NAME] ?? null;
     }
 
     /**
@@ -280,14 +284,13 @@ class Csrf
     public static function getHtmlInputHidden(): string
     {
         static::init();
-        $parameterName = static::getParameterName();
 
-        if ($parameterName === null) {
-            throw new Exception('Can not generate HTML hidden input field when parameter name is not set');
+        if (($parameterName = static::getParameterName()) !== null) {
+            $csrfValue = static::getStoredToken()->getToken();
+            return sprintf('<input type="hidden" name="%s" value="%s"/>', $parameterName, $csrfValue);
+        } else {
+            return '';
         }
-
-        $csrfValue = static::getStoredToken()->getToken();
-        return sprintf('<input type="hidden" name="%s" value="%s"/>', $parameterName, $csrfValue);
     }
 
     /**
@@ -301,9 +304,12 @@ class Csrf
     public static function getMetaTags(): string
     {
         static::init();
-        $parameterName = static::getParameterName();
-        $csrfValue = static::getStoredToken()->getToken();
-        return sprintf('<meta name="csrf_name" content="%s"/><meta name="csrf_value" content="%s"/>', $parameterName, $csrfValue);
+        if (($parameterName = static::getParameterName()) !== null) {
+            $csrfValue = static::getStoredToken()->getToken();
+            return sprintf('<meta name="csrf_name" content="%s"/><meta name="csrf_value" content="%s"/>', $parameterName, $csrfValue);
+        } else {
+            return '';
+        }
     }
 
 }
