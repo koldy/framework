@@ -226,6 +226,8 @@ abstract class Model implements Serializable
 
     /**
      * Begin transaction using this model's DB adapter
+     *
+     * @throws Adapter\Exception
      */
     public static function beginTransaction(): void
     {
@@ -234,6 +236,8 @@ abstract class Model implements Serializable
 
     /**
      * Commit current transaction using this model's DB adapter
+     *
+     * @throws Adapter\Exception
      */
     public static function commit(): void
     {
@@ -242,6 +246,8 @@ abstract class Model implements Serializable
 
     /**
      * Rollback current transaction on this model's DB adapter
+     *
+     * @throws Adapter\Exception
      */
     public static function rollBack(): void
     {
@@ -269,6 +275,10 @@ abstract class Model implements Serializable
      * @param array $data pass array of data for this model \Koldy\Db\Model
      *
      * @return Model
+     * @throws Exception
+     * @throws Json\Exception
+     * @throws Query\Exception
+     * @throws \Koldy\Exception
      */
     public static function create(array $data): Model
     {
@@ -386,6 +396,9 @@ abstract class Model implements Serializable
      * assume that you passed primary key value. If you pass assoc array,
      * then the framework will use those to create the WHERE statement.
      *
+     * @return int number of affected rows
+     * @throws Query\Exception
+     * @throws \Koldy\Exception
      * @example
      *
      *    User::update(array('first_name' => 'new name'), 5) will execute:
@@ -394,7 +407,6 @@ abstract class Model implements Serializable
      *    User::update(array('first_name' => 'new name'), array('disabled' => 0)) will execute:
      *    UPDATE user SET first_name = 'new name' WHERE disabled = 0
      *
-     * @return int number of affected rows
      */
     public static function update(array $data, $where = null): int
     {
@@ -419,8 +431,11 @@ abstract class Model implements Serializable
     /**
      * Save this initialized object into database.
      *
-     * @throws Exception
      * @return integer how many rows is affected, -1 if nothing was updated
+     * @throws Exception
+     * @throws Json\Exception
+     * @throws Query\Exception
+     * @throws \Koldy\Exception
      */
     public function save(): int
     {
@@ -520,8 +535,10 @@ abstract class Model implements Serializable
      * @param mixed $where the primary key value of the record
      * @param int $howMuch default 1
      *
-     * @throws Exception
      * @return int number of affected rows
+     * @throws Exception
+     * @throws Query\Exception
+     * @throws \Koldy\Exception
      */
     public static function increment(string $field, $where, int $howMuch = 1): int
     {
@@ -552,11 +569,12 @@ abstract class Model implements Serializable
      * @param mixed $where
      *
      * @return integer How many records is deleted
+     * @throws Query\Exception
+     * @throws \Koldy\Exception
      * @example User::delete(1);
      * @example User::delete(array('group_id' => 5, 'parent_id' => 10));
      * @example User::delete(array('parent_id' => 10, array('time', '>', '2013-08-01 00:00:00')))
      *
-     * @return int number of affected rows
      * @link http://koldy.net/docs/database/models#delete
      */
     public static function delete($where): int
@@ -581,8 +599,10 @@ abstract class Model implements Serializable
      * Instance data will be kept in memory until destroyed.
      *
      * @see \Koldy\Db\Model::delete()
-     * @throws Exception
      * @return int
+     * @throws Exception
+     * @throws Query\Exception
+     * @throws \Koldy\Exception
      */
     public function destroy(): int
     {
@@ -691,11 +711,12 @@ abstract class Model implements Serializable
      * @param array $fields array of fields to select; by default, all fields will be fetched
      * @param string|null $orderField
      * @param string|null $orderDirection
-     * @param int|null $start
      * @param int|null $limit
      *
+     * @param int|null $start
      * @return Model[]
      *
+     * @throws Query\Exception
      * @link http://koldy.net/docs/database/models#fetch
      */
     public static function fetch(
@@ -752,6 +773,7 @@ abstract class Model implements Serializable
      * @param int|null $start
      *
      * @return array
+     * @throws Query\Exception
      * @link http://koldy.net/docs/database/models#fetch
      */
     public static function fetchWithKey(
@@ -779,6 +801,7 @@ abstract class Model implements Serializable
      * @param string $orderDirection
      *
      * @return Model[]
+     * @throws Query\Exception
      * @link http://www.php.net/manual/en/pdo.constants.php
      */
     public static function all(string $orderField = null, string $orderDirection = null): array
@@ -805,10 +828,11 @@ abstract class Model implements Serializable
      * @param mixed $where
      * @param string|null $orderField
      * @param string|null $orderDirection
-     * @param int|null $start
      * @param int|null $limit
      *
+     * @param int|null $start
      * @return array
+     * @throws Query\Exception
      * @link http://koldy.net/docs/database/models#fetchKeyValue
      */
     public static function fetchKeyValue(
@@ -861,6 +885,7 @@ abstract class Model implements Serializable
      * @param integer $start
      *
      * @return array or empty array if not found
+     * @throws Query\Exception
      * @example User::fetchArrayOf('id', Where::init()->where('id', '>', 50), 'id', 'asc') would return array(51,52,53,54,55,...)
      * @link http://koldy.net/docs/database/models#fetchArrayOf
      */
@@ -911,6 +936,7 @@ abstract class Model implements Serializable
      * @param string|null $orderDirection
      *
      * @return mixed|null
+     * @throws Query\Exception
      */
     public static function fetchOneValue(string $field, $where = null, $orderField = null, $orderDirection = null)
     {
@@ -950,6 +976,7 @@ abstract class Model implements Serializable
      *
      * @return mixed
      * @throws NotFoundException
+     * @throws Query\Exception
      */
     public static function fetchOneValueOrFail(string $field, $where = null, $orderField = null, $orderDirection = null)
     {
@@ -973,6 +1000,7 @@ abstract class Model implements Serializable
      * @param  string $exceptionField OPTIONAL
      *
      * @return bool
+     * @throws Query\Exception
      * @link http://koldy.net/docs/database/models#isUnique
      *
      * @example
@@ -1017,6 +1045,7 @@ abstract class Model implements Serializable
      * @param mixed $where
      *
      * @return int
+     * @throws Query\Exception
      * @link http://koldy.net/docs/database/models#count
      */
     public static function count($where = null): int
@@ -1092,6 +1121,8 @@ abstract class Model implements Serializable
      * @param array|null $rawValues
      *
      * @return Insert
+     * @throws Exception
+     * @throws Json\Exception
      */
     public static function insert(array $rawValues = null): Insert
     {
@@ -1100,6 +1131,8 @@ abstract class Model implements Serializable
 
     /**
      * @return string
+     * @throws Exception
+     * @throws Json\Exception
      */
     public function __toString()
     {

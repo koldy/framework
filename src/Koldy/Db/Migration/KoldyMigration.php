@@ -29,6 +29,7 @@ class KoldyMigration extends Model
      * If you define koldy_migration database adapter, then migrations table will be stored there
      *
      * @return null|string
+     * @throws \Koldy\Exception
      */
     public static function getAdapterConnection(): ?string
     {

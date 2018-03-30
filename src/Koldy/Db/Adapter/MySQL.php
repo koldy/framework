@@ -26,6 +26,8 @@ class MySQL extends AbstractAdapter
 
     /**
      * Connect to database
+     *
+     * @throws Exception
      */
     public function connect(): void
     {

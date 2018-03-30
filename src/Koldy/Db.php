@@ -33,6 +33,7 @@ class Db
      * Get the database config
      *
      * @return Config
+     * @throws Exception
      */
     public static function getConfig(): Config
     {
@@ -41,6 +42,8 @@ class Db
 
     /**
      * @return string
+     * @throws Config\Exception
+     * @throws Exception
      */
     public static function getDefaultAdapterKey(): string
     {
@@ -51,6 +54,9 @@ class Db
      * @param string|null $configKey
      *
      * @return AbstractAdapter
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Exception
      */
     public static function getAdapter(string $configKey = null): AbstractAdapter
     {
@@ -156,6 +162,11 @@ class Db
 
     /**
      * Begin transaction on default DB adapter
+     *
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Db\Adapter\Exception
+     * @throws Exception
      */
     public static function beginTransaction(): void
     {
@@ -164,6 +175,11 @@ class Db
 
     /**
      * Commit current transaction on default DB adapter
+     *
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Db\Adapter\Exception
+     * @throws Exception
      */
     public static function commit(): void
     {
@@ -172,6 +188,11 @@ class Db
 
     /**
      * Rollback current transaction on default DB adapter
+     *
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Db\Adapter\Exception
+     * @throws Exception
      */
     public static function rollBack(): void
     {
@@ -185,6 +206,9 @@ class Db
      * @param array $bindings
      *
      * @return Query
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Exception
      */
     public static function query($query, array $bindings = []): Query
     {
@@ -198,6 +222,9 @@ class Db
      * @param string|null $tableAlias
      *
      * @return Query\Select
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Exception
      */
     public static function select(string $table = null, string $tableAlias = null): Query\Select
     {
@@ -211,6 +238,10 @@ class Db
      * @param array|null $rowValues
      *
      * @return Query\Insert
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Exception
+     * @throws Json\Exception
      */
     public static function insert(string $table = null, array $rowValues = null): Query\Insert
     {
@@ -224,6 +255,9 @@ class Db
      * @param array|null $values
      *
      * @return Query\Update
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Exception
      */
     public static function update(string $table = null, array $values = null): Query\Update
     {
@@ -236,6 +270,9 @@ class Db
      * @param string|null $table
      *
      * @return Query\Delete
+     * @throws Config\Exception
+     * @throws DbException
+     * @throws Exception
      */
     public static function delete(string $table = null)
     {

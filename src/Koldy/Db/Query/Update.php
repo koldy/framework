@@ -157,6 +157,7 @@ class Update extends Where
      * Get the query
      * @return Query
      * @throws Exception
+     * @throws \Koldy\Db\Exception
      */
     public function getQuery(): Query
     {
@@ -203,6 +204,8 @@ class Update extends Where
      * Get how many rows was deleted
      *
      * @return int
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function rowCount(): int
     {

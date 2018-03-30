@@ -132,6 +132,7 @@ class Query
      * Get the last statement
      *
      * @return PDOStatement
+     * @throws QueryException
      */
     public function getStatement(): PDOStatement
     {
@@ -161,6 +162,7 @@ class Query
      * Execute query
      *
      * @throws QueryException
+     * @throws \Koldy\Exception
      */
     public function exec(): void
     {
@@ -208,6 +210,8 @@ class Query
      * Fetch all results from this query, get array of arrays
      *
      * @return array
+     * @throws QueryException
+     * @throws \Koldy\Exception
      */
     public function fetchAll(): array
     {
@@ -224,6 +228,8 @@ class Query
      * @param string $class
      *
      * @return array
+     * @throws QueryException
+     * @throws \Koldy\Exception
      */
     public function fetchAllObj(string $class = null): array
     {
@@ -355,6 +361,10 @@ class Query
         return $query;
     }
 
+    /**
+     * @return string
+     * @throws \Koldy\Exception
+     */
     public function __toString()
     {
         try {

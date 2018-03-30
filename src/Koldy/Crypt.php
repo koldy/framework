@@ -16,6 +16,8 @@ class Crypt
 
     /**
      * @return string
+     * @throws Config\Exception
+     * @throws Exception
      */
     final protected static function getMethod(): string
     {
@@ -30,7 +32,9 @@ class Crypt
      * @param string|null $method
      *
      * @return string
+     * @throws Config\Exception
      * @throws CryptException
+     * @throws Exception
      */
     final public static function encrypt(string $plainText, string $key = null, string $method = null): string
     {
@@ -66,7 +70,9 @@ class Crypt
      * @param string|null $method
      *
      * @return string
+     * @throws Config\Exception
      * @throws CryptException
+     * @throws Exception
      * @throws MalformedException
      */
     final public static function decrypt(string $encryptedText, string $key = null, string $method = null): string

@@ -182,6 +182,7 @@ class ResultSet extends Select
 
     /**
      * @return Query
+     * @throws Exception
      */
     public function getQuery(): Query
     {

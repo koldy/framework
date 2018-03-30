@@ -53,6 +53,7 @@ class Insert
      * @param string|null $adapter
      *
      * @throws Exception
+     * @throws Json\Exception
      * @link http://koldy.net/docs/database/query-builder#insert
      */
     public function __construct(string $table = null, array $rowValues = null, string $adapter = null)

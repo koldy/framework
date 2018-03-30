@@ -27,6 +27,9 @@ class Sqlite extends AbstractAdapter
 
     /**
      * Connect to database
+     *
+     * @throws Exception
+     * @throws \Koldy\Filesystem\Exception
      */
     public function connect(): void
     {
@@ -42,6 +45,8 @@ class Sqlite extends AbstractAdapter
 
     /**
      * Actually connect to database
+     *
+     * @throws \Koldy\Filesystem\Exception
      */
     private function tryConnect(): void
     {

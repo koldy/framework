@@ -421,8 +421,9 @@ class Select extends Where
 
     /**
      * Get the query string prepared for PDO
-     * @throws Exception
      * @return Query
+     * @throws Exception
+     * @throws \Koldy\Db\Exception
      */
     public function getQuery(): Query
     {
@@ -566,6 +567,7 @@ class Select extends Where
     /**
      * Fetch all records by this query
      * @return array
+     * @throws Exception
      */
     public function fetchAll(): array
     {
@@ -580,6 +582,7 @@ class Select extends Where
      * Fetch all records by getting Generator back
      *
      * @return Generator
+     * @throws Exception
      */
     public function fetchAllGenerator(): Generator
     {
@@ -602,6 +605,7 @@ class Select extends Where
      * @param string|null $class the name of class on which you want the instance of - class has to be able to accept array in constructor
      *
      * @return array
+     * @throws Exception
      */
     public function fetchAllObj(string $class = null): array
     {
@@ -627,6 +631,7 @@ class Select extends Where
      * @param string|null $class the name of class on which you want the instance of - class has to be able to accept array in constructor
      *
      * @return Generator
+     * @throws Exception
      */
     public function fetchAllObjGenerator(string $class = null): Generator
     {
@@ -655,6 +660,7 @@ class Select extends Where
      * @param string $field
      *
      * @return array
+     * @throws Exception
      */
     public function fetchAllOf(string $field): array
     {
@@ -672,6 +678,7 @@ class Select extends Where
      * @param string $field
      *
      * @return Generator
+     * @throws Exception
      */
     public function fetchAllOfGenerator(string $field): Generator
     {
@@ -683,6 +690,7 @@ class Select extends Where
     /**
      * Fetch only first record as object or return null if there is no records
      * @return array|null
+     * @throws Exception
      */
     public function fetchFirst(): ?array
     {
@@ -701,6 +709,7 @@ class Select extends Where
      * @param string $class
      *
      * @return null|object
+     * @throws Exception
      */
     public function fetchFirstObj(string $class = null)
     {

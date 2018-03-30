@@ -54,6 +54,7 @@ class Delete extends Where
      * Get the query that will be executed
      * @return Query
      * @throws Exception
+     * @throws \Koldy\Db\Exception
      */
     public function getQuery(): Query
     {
@@ -74,6 +75,7 @@ class Delete extends Where
      * Get how many rows was deleted
      *
      * @return int
+     * @throws Exception
      */
     public function rowCount(): int
     {

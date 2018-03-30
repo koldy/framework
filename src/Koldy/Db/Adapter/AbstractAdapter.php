@@ -114,6 +114,9 @@ abstract class AbstractAdapter
 
     /**
      * Reconnect to database
+     *
+     * @throws QueryException
+     * @throws \Koldy\Exception
      */
     public function reconnect(): void
     {
@@ -223,6 +226,8 @@ abstract class AbstractAdapter
      * @param array|null $rowValues
      *
      * @return Query\Insert
+     * @throws \Koldy\Db\Exception
+     * @throws \Koldy\Json\Exception
      */
     public function insert(string $table = null, array $rowValues = null): Query\Insert
     {

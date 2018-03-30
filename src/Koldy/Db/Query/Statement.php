@@ -5,7 +5,6 @@ namespace Koldy\Db\Query;
 use Koldy\Db;
 use Koldy\Db\Query;
 use Koldy\Db\Adapter\AbstractAdapter;
-use Koldy\Db\Query\Exception as QueryException;
 
 trait Statement
 {
@@ -23,7 +22,6 @@ trait Statement
     /**
      * Get the adapter on which query will be performed
      * @return AbstractAdapter
-     * @throws QueryException
      */
     public function getAdapter(): AbstractAdapter
     {
@@ -72,6 +70,7 @@ trait Statement
      * Get SQL prepared for PDO, before binding real values
      *
      * @return string
+     * @throws Exception
      */
     public function getSQL(): string
     {
@@ -84,6 +83,8 @@ trait Statement
      * @param string|null $adapter
      *
      * @return $this
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function exec(string $adapter = null)
     {
@@ -125,6 +126,8 @@ trait Statement
      * @param bool $oneLine
      *
      * @return string
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function debug(bool $oneLine = false): string
     {
@@ -133,6 +136,8 @@ trait Statement
 
     /**
      * @return string
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function __toString()
     {

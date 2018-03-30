@@ -22,6 +22,7 @@ class Manager
      * @param string $name
      *
      * @throws Application\Exception
+     * @throws \Koldy\Filesystem\Exception
      */
     public static function createMigration(string $name): void
     {
@@ -84,6 +85,9 @@ class Manager
      *
      * @throws DbException
      * @throws Exception
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
+     * @throws \Koldy\Filesystem\Exception
      */
     public static function migrate(bool $force = false): void
     {
@@ -284,6 +288,7 @@ class Manager
      * @param int $stepsDown
      *
      * @throws Exception
+     * @throws \Koldy\Db\Query\Exception
      */
     public static function rollBack(int $stepsDown = 1): void
     {
