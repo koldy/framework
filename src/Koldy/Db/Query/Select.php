@@ -424,6 +424,7 @@ class Select extends Where
      * @return Query
      * @throws Exception
      * @throws \Koldy\Db\Exception
+     * @throws \Koldy\Exception
      */
     public function getQuery(): Query
     {
@@ -568,6 +569,7 @@ class Select extends Where
      * Fetch all records by this query
      * @return array
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchAll(): array
     {
@@ -583,6 +585,7 @@ class Select extends Where
      *
      * @return Generator
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchAllGenerator(): Generator
     {
@@ -606,6 +609,7 @@ class Select extends Where
      *
      * @return array
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchAllObj(string $class = null): array
     {
@@ -632,6 +636,7 @@ class Select extends Where
      *
      * @return Generator
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchAllObjGenerator(string $class = null): Generator
     {
@@ -661,6 +666,7 @@ class Select extends Where
      *
      * @return array
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchAllOf(string $field): array
     {
@@ -679,6 +685,7 @@ class Select extends Where
      *
      * @return Generator
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchAllOfGenerator(string $field): Generator
     {
@@ -691,6 +698,7 @@ class Select extends Where
      * Fetch only first record as object or return null if there is no records
      * @return array|null
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchFirst(): ?array
     {
@@ -710,6 +718,7 @@ class Select extends Where
      *
      * @return null|object
      * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function fetchFirstObj(string $class = null)
     {

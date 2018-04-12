@@ -2,10 +2,12 @@
 
 namespace Koldy\Db;
 
+use Generator;
 use Koldy\Db;
 use Koldy\Db\Adapter\AbstractAdapter;
 use Koldy\Db\Query\Exception as QueryException;
 use Koldy\Log;
+use PDO;
 use PDOException;
 use PDOStatement;
 
@@ -101,6 +103,9 @@ class Query
 
     /**
      * @return AbstractAdapter
+     * @throws Exception
+     * @throws \Koldy\Config\Exception
+     * @throws \Koldy\Exception
      */
     public function getAdapter(): AbstractAdapter
     {
@@ -132,7 +137,10 @@ class Query
      * Get the last statement
      *
      * @return PDOStatement
+     * @throws Exception
      * @throws QueryException
+     * @throws \Koldy\Config\Exception
+     * @throws \Koldy\Exception
      */
     public function getStatement(): PDOStatement
     {
@@ -251,13 +259,41 @@ class Query
     }
 
     /**
+     * Fetch all results from this query and get array of stdClass instances or your custom class instances
+     *
+     * @param string $class
+     *
+     * @return Generator
+     * @throws QueryException
+     * @throws \Koldy\Exception
+     */
+    public function fetchAllObjGenerator(string $class = null): Generator
+    {
+        if (!$this->wasExecuted()) {
+            $this->exec();
+        }
+
+        $statement = $this->getAdapter()->getStatement();
+
+        if ($class === null) {
+            while ($record = $statement->fetch(PDO::FETCH_OBJ)) {
+                yield $record;
+            }
+        } else {
+            while ($record = $statement->fetch(PDO::FETCH_ASSOC)) {
+                yield new $class($record);
+            }
+        }
+    }
+
+    /**
      * Get next key index
      *
      * @return int
      */
     public static function getKeyIndex(): int
     {
-        if (self::$keyIndex == 100000000) { // 100m should be enough
+        if (self::$keyIndex == PHP_INT_MAX) {
             self::$keyIndex = 0;
         } else {
             self::$keyIndex++;
