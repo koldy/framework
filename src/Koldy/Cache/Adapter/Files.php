@@ -30,11 +30,11 @@ class Files extends AbstractCacheAdapter
     protected $data = [];
 
     /**
-     * Flag if shutdown function is registered or not
+     * Flag if folder was already checked if exists
      *
-     * @var boolean
+     * @var bool
      */
-    protected $shutdown = false;
+    protected $checkedFolder = false;
 
     /**
      * Construct the object by array of config properties. Config keys are set
@@ -44,7 +44,6 @@ class Files extends AbstractCacheAdapter
      *
      * @param array $config
      *
-     * @throws \Koldy\Exception
      */
     public function __construct(array $config)
     {
@@ -195,6 +194,7 @@ class Files extends AbstractCacheAdapter
      * @param string $key
      * @param mixed $value
      * @param int $seconds [optional]
+     * @throws \Koldy\Filesystem\Exception
      */
     public function set(string $key, $value, int $seconds = null): void
     {
@@ -214,11 +214,31 @@ class Files extends AbstractCacheAdapter
         $object->created = time();
         $object->seconds = $seconds;
         $object->data = $value;
-        $object->action = 'set';
         $object->type = gettype($value);
         $this->data[$key] = $object;
 
-        $this->initShutdown();
+        switch ($object->type) {
+            default:
+                $data = $object->data;
+                break;
+
+            case 'array':
+            case 'object':
+                $data = serialize($object->data);
+                break;
+        }
+
+        if (!$this->checkedFolder) {
+            $directory = dirname($object->path);
+
+            if (!is_dir($directory)) {
+                Directory::mkdir($directory, 0755);
+            }
+
+            $this->checkedFolder = true;
+        }
+
+        file_put_contents($object->path, sprintf("%s;%d;%s\n%s", gmdate('r', $object->created), $object->seconds, $object->type, $data));
     }
 
     /**
@@ -227,6 +247,7 @@ class Files extends AbstractCacheAdapter
      * @param array $keyValuePairs
      * @param int $seconds
      *
+     * @throws \Koldy\Filesystem\Exception
      * @link http://koldy.net/docs/cache#set-multi
      */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
@@ -258,8 +279,7 @@ class Files extends AbstractCacheAdapter
 
         $ok = $object->created + $object->seconds > time();
         if (!$ok) {
-            $this->data[$key]->action = 'delete';
-            $this->initShutdown();
+            unlink($object->path);
         }
 
         return $ok;
@@ -276,12 +296,12 @@ class Files extends AbstractCacheAdapter
     public function delete(string $key): void
     {
         $this->checkKey($key);
+        $path = $this->getPath($key);
 
-        if (is_file($this->getPath($key))) {
+        if (is_file($path)) {
             if (isset($this->data[$key])) {
-                $this->data[$key]->action = 'delete';
-                $this->initShutdown();
-                // cache files will be deleted after request ends
+                unlink($path);
+                unset($this->data[$key]);
             } else {
                 $path = $this->getPath($key);
                 if (!@unlink($path)) {
@@ -296,6 +316,7 @@ class Files extends AbstractCacheAdapter
      *
      * @param array $keys
      *
+     * @throws CacheException
      * @link http://koldy.net/docs/cache#delete-multi
      */
     public function deleteMulti(array $keys): void
@@ -307,6 +328,8 @@ class Files extends AbstractCacheAdapter
 
     /**
      * Delete all files under cached folder
+     *
+     * @throws \Koldy\Filesystem\Exception
      */
     public function deleteAll(): void
     {
@@ -315,6 +338,7 @@ class Files extends AbstractCacheAdapter
 
     /**
      * @param int $olderThenSeconds
+     * @throws \Koldy\Filesystem\Exception
      */
     public function deleteOld(int $olderThenSeconds = null): void
     {
@@ -345,64 +369,6 @@ class Files extends AbstractCacheAdapter
     }
 
     /**
-     * Initialize the shutdown function when request execution ends
-     */
-    protected function initShutdown(): void
-    {
-        if (!$this->shutdown) {
-            $this->shutdown = true;
-            $self = $this;
-            register_shutdown_function(function () use ($self) {
-                $self->shutdown();
-            });
-        }
-    }
-
-    /**
-     * Execute this method on request's execution end. When you're working with
-     * cache, the idea is not to work all the time with the filesystem. All
-     * changes (new keys and keys that exists and needs to be deleted) will be
-     * applied here, on request shutdown
-     */
-    public function shutdown(): void
-    {
-        $checkedFolder = false;
-
-        foreach ($this->data as $key => $object) {
-            switch ($object->action) {
-                case 'set':
-                    switch ($object->type) {
-                        default:
-                            $data = $object->data;
-                            break;
-
-                        case 'array':
-                        case 'object':
-                            $data = serialize($object->data);
-                            break;
-                    }
-
-                    if (!$checkedFolder) {
-                        $directory = dirname($object->path);
-
-                        if (!is_dir($directory)) {
-                            Directory::mkdir($directory, 0755);
-                        }
-
-                        $checkedFolder = true;
-                    }
-
-                    file_put_contents($object->path, sprintf("%s;%d;%s\n%s", gmdate('r', $object->created), $object->seconds, $object->type, $data));
-                    break;
-
-                case 'delete':
-                    unlink($object->path);
-                    break;
-            }
-        }
-    }
-
-    /**
      * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
      * get \Memcached class instance. If you're working with files, then you'll get null.
      *
@@ -412,4 +378,5 @@ class Files extends AbstractCacheAdapter
     {
         return null;
     }
+
 }
