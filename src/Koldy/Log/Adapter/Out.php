@@ -32,6 +32,7 @@ class Out extends AbstractLogAdapter
      * @param array $config
      *
      * @throws Exception
+     * @throws \Koldy\Config\Exception
      */
     public function __construct(array $config)
     {

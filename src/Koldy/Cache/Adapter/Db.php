@@ -35,6 +35,9 @@ class Db extends AbstractCacheAdapter
 
     /**
      * @return AbstractAdapter
+     * @throws \Koldy\Config\Exception
+     * @throws \Koldy\Db\Exception
+     * @throws \Koldy\Exception
      */
     protected function getAdapter(): AbstractAdapter
     {
@@ -56,6 +59,8 @@ class Db extends AbstractCacheAdapter
      * @param string $key
      *
      * @return mixed|null
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      */
     public function get(string $key)
     {
@@ -78,6 +83,10 @@ class Db extends AbstractCacheAdapter
      * @param string $key
      * @param mixed $value
      * @param int|null $seconds
+     * @throws \Koldy\Db\Exception
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
+     * @throws \Koldy\Json\Exception
      */
     public function set(string $key, $value, int $seconds = null): void
     {
@@ -108,6 +117,8 @@ class Db extends AbstractCacheAdapter
      * @param string $key
      *
      * @return bool
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      */
     public function has(string $key): bool
     {
@@ -122,6 +133,8 @@ class Db extends AbstractCacheAdapter
 
     /**
      * @param string $key
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      */
     public function delete(string $key): void
     {
@@ -132,6 +145,9 @@ class Db extends AbstractCacheAdapter
 
     /**
      * Deletes all cache
+     *
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      */
     public function deleteAll(): void
     {
@@ -141,6 +157,8 @@ class Db extends AbstractCacheAdapter
 
     /**
      * @param int $olderThenSeconds
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      */
     public function deleteOld(int $olderThenSeconds = null): void
     {
@@ -155,6 +173,8 @@ class Db extends AbstractCacheAdapter
      *
      * @return array|mixed value or null if key doesn't exists or cache is disabled
      * @throws CacheException
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      * @link http://koldy.net/docs/cache#get-multi
      */
     public function getMulti(array $keys): array
@@ -195,6 +215,10 @@ class Db extends AbstractCacheAdapter
      * @param int|null $seconds
      *
      * @throws CacheException
+     * @throws \Koldy\Db\Exception
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
+     * @throws \Koldy\Json\Exception
      * @link http://koldy.net/docs/cache#set-multi
      */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
@@ -233,6 +257,8 @@ class Db extends AbstractCacheAdapter
      *
      * @return array
      * @throws CacheException
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      */
     public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
     {
@@ -270,6 +296,8 @@ class Db extends AbstractCacheAdapter
      *
      * @param array $keys
      *
+     * @throws \Koldy\Db\Query\Exception
+     * @throws \Koldy\Exception
      * @link http://koldy.net/docs/cache#delete-multi
      */
     public function deleteMulti(array $keys): void
@@ -283,6 +311,9 @@ class Db extends AbstractCacheAdapter
      * get \Memcached class instance. If you're working with files, then you'll get null.
      *
      * @return mixed
+     * @throws \Koldy\Config\Exception
+     * @throws \Koldy\Db\Exception
+     * @throws \Koldy\Exception
      */
     public function getNativeInstance()
     {

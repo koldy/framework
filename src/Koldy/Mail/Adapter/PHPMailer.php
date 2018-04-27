@@ -13,6 +13,7 @@ use Throwable;
  * in config/application.php under additional_include_path. Path defined there must be the path where class.phpmailer.php is located.
  *
  * @link http://koldy.net/docs/mail/phpmailer
+ * @deprecated Since this is 3rd party lib, it'll be moved to another repo which will automatically pull the required PHPMailer version
  */
 class PHPMailer extends AbstractMailAdapter
 {

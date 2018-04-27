@@ -339,6 +339,7 @@ class Request
      * Get the prepared curl options for the HTTP request
      *
      * @return array
+     * @throws Json\Exception
      */
     protected function getCurlOptions(): array
     {
@@ -387,8 +388,9 @@ class Request
 
     /**
      * Execute request
-     * @throws Exception
      * @return Response
+     * @throws Exception
+     * @throws Json\Exception
      */
     public function exec(): Response
     {
@@ -417,6 +419,8 @@ class Request
      * @param array|null $headers
      *
      * @return Response
+     * @throws Exception
+     * @throws Json\Exception
      */
     protected static function quickRequest(string $url, string $method, array $params = null, array $headers = null): Response
     {
@@ -446,6 +450,8 @@ class Request
      * @param array|null $headers
      *
      * @return Response
+     * @throws Exception
+     * @throws Json\Exception
      */
     public static function get(string $url, array $params = null, array $headers = null)
     {
@@ -460,6 +466,8 @@ class Request
      * @param array|null $headers
      *
      * @return Response
+     * @throws Exception
+     * @throws Json\Exception
      */
     public static function post(string $url, array $params = null, array $headers = null)
     {
@@ -474,6 +482,8 @@ class Request
      * @param array|null $headers
      *
      * @return Response
+     * @throws Exception
+     * @throws Json\Exception
      */
     public static function put(string $url, array $params = null, array $headers = null)
     {
@@ -488,6 +498,8 @@ class Request
      * @param array|null $headers
      *
      * @return Response
+     * @throws Exception
+     * @throws Json\Exception
      */
     public static function delete(string $url, array $params = null, array $headers = null)
     {
@@ -498,6 +510,7 @@ class Request
      * Print settings and all values useful for troubleshooting
      *
      * @return string
+     * @throws Json\Exception
      */
     public function debug()
     {
@@ -540,6 +553,7 @@ class Request
 
     /**
      * @return string
+     * @throws Json\Exception
      */
     public function __toString()
     {

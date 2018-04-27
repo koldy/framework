@@ -98,6 +98,7 @@ class Request
      * Get the host name of remote user. This will use gethostbyaddr function or its "cached" version
      *
      * @return string|null
+     * @throws Exception
      * @link http://php.net/manual/en/function.gethostbyaddr.php
      */
     public static function host(): ?string
@@ -159,6 +160,7 @@ class Request
      * @param string $delimiter
      *
      * @return string
+     * @throws Exception
      * @example 89.205.104.23,10.100.10.190
      */
     public static function ipWithProxy($delimiter = ','): string
@@ -303,6 +305,7 @@ class Request
      * Gets the current URL of this request. This is alias of \Koldy\Application::getCurrentURL()
      *
      * @return Url
+     * @throws Exception
      * @see \Koldy\Application::getCurrentURL()
      */
     public static function getCurrentURL(): Url
@@ -332,6 +335,7 @@ class Request
      * Get the input vars
      *
      * @return array
+     * @throws RequestException
      */
     private static function getInputVars(): array
     {
@@ -348,6 +352,8 @@ class Request
      * Get array from raw data posted as JSON
      *
      * @return array
+     * @throws Json\Exception
+     * @throws RequestException
      */
     public static function getDataFromJSON(): array
     {
@@ -444,6 +450,7 @@ class Request
      * @param array $allowed [optional]
      *
      * @return string
+     * @throws Exception
      * @link http://koldy.net/docs/input#get
      */
     public static function getGetParameter(string $name, string $default = null, array $allowed = null): string
@@ -482,6 +489,7 @@ class Request
      * @param array $allowed [optional]
      *
      * @return string
+     * @throws Exception
      * @link http://koldy.net/docs/input#post
      */
     public static function getPostParameter(string $name, string $default = null, array $allowed = null): string
@@ -505,6 +513,7 @@ class Request
      * @param string $name
      *
      * @return bool
+     * @throws RequestException
      * @link http://koldy.net/docs/input#put
      */
     public static function hasPutParameter(string $name): bool
@@ -524,6 +533,7 @@ class Request
      * @param array $allowed [optional]
      *
      * @return string
+     * @throws Exception
      * @link http://koldy.net/docs/input#put
      */
     public static function getPutParameter(string $name, string $default = null, array $allowed = null): string
@@ -533,6 +543,7 @@ class Request
 
     /**
      * @return array
+     * @throws RequestException
      */
     public static function getAllPutParameters(): array
     {
@@ -545,6 +556,7 @@ class Request
      * @param string $name
      *
      * @return bool
+     * @throws RequestException
      * @link http://koldy.net/docs/input#delete
      */
     public static function hasDeleteParameter(string $name): bool
@@ -564,6 +576,7 @@ class Request
      * @param array $allowed [optional]
      *
      * @return string
+     * @throws Exception
      * @link http://koldy.net/docs/input#delete
      */
     public static function getDeleteParameter(string $name, $default = null, array $allowed = null): string
@@ -626,9 +639,11 @@ class Request
     /**
      * Get required parameters as object
      *
-     * @param \string[] ...$requiredParameters
+     * @param string ...$requiredParameters
      *
      * @return stdClass
+     * @throws BadRequestException
+     * @throws Exception
      */
     public static function requireParamsObj(string ...$requiredParameters): stdClass
     {
@@ -674,6 +689,7 @@ class Request
      * Get all parameters in stdClass
      *
      * @return stdClass
+     * @throws Exception
      */
     public static function getAllParametersObj(): stdClass
     {
@@ -690,6 +706,7 @@ class Request
      * How many parameters are passed?
      *
      * @return int
+     * @throws Exception
      */
     public static function parametersCount(): int
     {
@@ -703,6 +720,7 @@ class Request
      * @param mixed ...$params
      *
      * @return bool
+     * @throws Exception
      */
     public static function only(...$params): bool
     {
@@ -720,6 +738,7 @@ class Request
      * @param mixed ...$params
      *
      * @return bool
+     * @throws Exception
      */
     public static function containsParams(...$params): bool
     {
@@ -740,6 +759,7 @@ class Request
      * @param array $params
      *
      * @return bool
+     * @throws Exception
      */
     public static function doesntContainParams(...$params): bool
     {

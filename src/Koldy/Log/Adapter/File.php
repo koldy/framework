@@ -156,8 +156,10 @@ class File extends AbstractLogAdapter
      *
      * @param Message $message
      *
+     * @throws ConfigException
      * @throws Exception
-     * @internal param string $level
+     * @throws \Koldy\Exception
+     * @throws \Koldy\Filesystem\Exception
      */
     public function logMessage(Message $message): void
     {

@@ -32,6 +32,7 @@ class Mail
      * Get mail config
      *
      * @return Config
+     * @throws Exception
      */
     public static function getConfig(): Config
     {
@@ -45,6 +46,7 @@ class Mail
      *
      * @return AbstractMailAdapter
      * @throws ConfigException
+     * @throws Exception
      */
     protected static function getAdapter(?string $adapter = null): AbstractMailAdapter
     {
@@ -88,6 +90,8 @@ class Mail
      * @param string|null $adapter
      *
      * @return Mail\Adapter\AbstractMailAdapter or false
+     * @throws ConfigException
+     * @throws Exception
      * @link http://koldy.net/docs/mail#create
      */
     public static function create(string $adapter = null): AbstractMailAdapter
@@ -101,6 +105,8 @@ class Mail
      * @param string $adapter
      *
      * @return boolean
+     * @throws ConfigException
+     * @throws Exception
      */
     public static function isEnabled(string $adapter): bool
     {

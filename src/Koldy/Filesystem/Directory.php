@@ -143,7 +143,9 @@ class Directory
      * @param int $chmod default 0644
      *
      * @return void
-     * @throws FilesystemException
+     * @throws Exception
+     * @throws \Koldy\Config\Exception
+     * @throws \Koldy\Exception
      * @example $chmod 0777, 0755, 0700
      */
     public static function mkdir(string $path, $chmod = null): void

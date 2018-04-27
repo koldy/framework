@@ -178,6 +178,9 @@ abstract class AbstractLogAdapter
 
     /**
      * Dump some common stuff into log according to config
+     *
+     * @throws Convert\Exception
+     * @throws \Koldy\Exception
      */
     public function dump(): void
     {

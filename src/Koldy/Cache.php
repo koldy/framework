@@ -24,6 +24,7 @@ class Cache
      * Get cache config
      *
      * @return Config
+     * @throws Exception
      */
     public static function getConfig(): Config
     {
@@ -79,6 +80,7 @@ class Cache
      * @param string $key
      *
      * @return mixed
+     * @throws Exception
      * @link http://koldy.net/docs/cache#get
      */
     public static function get(string $key)
@@ -92,6 +94,7 @@ class Cache
      * @param array $keys
      *
      * @return mixed[]
+     * @throws Exception
      * @link http://koldy.net/docs/cache#get-multi
      */
     public static function getMulti(array $keys): array
@@ -106,6 +109,7 @@ class Cache
      * @param mixed $value
      * @param int $seconds [optional]
      *
+     * @throws Exception
      * @link http://koldy.net/docs/cache#set
      */
     public static function set(string $key, $value, int $seconds = null): void
@@ -119,6 +123,7 @@ class Cache
      * @param array $keyValuePairs
      * @param int $seconds [optional]
      *
+     * @throws Exception
      * @link http://koldy.net/docs/cache#set-multi
      */
     public static function setMulti(array $keyValuePairs, int $seconds = null): void
@@ -132,6 +137,7 @@ class Cache
      * @param string $key
      *
      * @return boolean
+     * @throws Exception
      * @link http://koldy.net/docs/cache#has
      */
     public static function has(string $key): bool
@@ -144,6 +150,7 @@ class Cache
      *
      * @param string $key
      *
+     * @throws Exception
      * @link http://koldy.net/docs/cache#delete
      */
     public static function delete(string $key): void
@@ -156,6 +163,7 @@ class Cache
      *
      * @param array $keys
      *
+     * @throws Exception
      * @link http://koldy.net/docs/cache#delete-multi
      */
     public static function deleteMulti(array $keys): void
@@ -170,8 +178,9 @@ class Cache
      * @param \Closure $functionOnSet
      * @param int $seconds
      *
-     * @link http://koldy.net/docs/cache#get-or-set
      * @return mixed
+     * @throws Exception
+     * @link http://koldy.net/docs/cache#get-or-set
      */
     public static function getOrSet(string $key, \Closure $functionOnSet, int $seconds = null)
     {
@@ -186,6 +195,7 @@ class Cache
      *
      * @return int
      *
+     * @throws Exception
      * @link http://koldy.net/docs/cache#increment-decrement
      */
     public static function increment(string $key, int $howMuch = 1): int
@@ -201,6 +211,7 @@ class Cache
      *
      * @return int
      *
+     * @throws Exception
      * @link http://koldy.net/docs/cache#increment-decrement
      */
     public static function decrement(string $key, int $howMuch = 1): int
@@ -228,6 +239,7 @@ class Cache
      * @param string $adapter
      *
      * @return boolean
+     * @throws Exception
      */
     public static function isEnabled($adapter = null): bool
     {

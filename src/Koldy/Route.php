@@ -21,6 +21,7 @@ class Route
      * Get the initialized routing class
      *
      * @return AbstractRoute
+     * @throws Exception
      */
     public static function getRoute(): AbstractRoute
     {
@@ -34,6 +35,7 @@ class Route
      * @param mixed $default
      *
      * @return string
+     * @throws Exception
      */
     public static function getVar($whatVar, $default = null)
     {
@@ -44,6 +46,7 @@ class Route
      * Get the controller name in the exact format as its being used in URL
      *
      * @return string
+     * @throws Exception
      */
     public static function controller(): string
     {
@@ -56,6 +59,7 @@ class Route
      * @param string $controller the url format (e.g. "index"), not the class name such as "IndexController"
      *
      * @return bool
+     * @throws Exception
      */
     public static function isController(string $controller): bool
     {
@@ -66,6 +70,7 @@ class Route
      * Get the current action in the exact format as it is being used in URL
      *
      * @return string
+     * @throws Exception
      */
     public static function action(): string
     {
@@ -78,6 +83,7 @@ class Route
      * @param string $action the url format (e.g. "index"), not the method name such as "indexAction"
      *
      * @return bool
+     * @throws Exception
      */
     public static function isAction(string $action): bool
     {
@@ -91,6 +97,7 @@ class Route
      * @param string $action in the url format
      *
      * @return bool
+     * @throws Exception
      */
     public static function is(string $controller, string $action): bool
     {
@@ -105,6 +112,7 @@ class Route
      * @param string $action
      *
      * @return bool
+     * @throws Exception
      */
     public static function isModule(string $module, string $controller = null, string $action = null): bool
     {
@@ -137,6 +145,7 @@ class Route
      * @param array $params
      *
      * @return string
+     * @throws Exception
      */
     public static function href($controller = null, string $action = null, array $params = null): string
     {
@@ -153,6 +162,7 @@ class Route
      * @param array $params
      *
      * @return string
+     * @throws Exception
      */
     public static function siteHref(string $site, string $controller = null, string $action = null, array $params = null): string
     {
@@ -187,6 +197,7 @@ class Route
      * Generate the link to home page
      *
      * @return string
+     * @throws Exception
      */
     public static function home(): string
     {

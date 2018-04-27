@@ -6,6 +6,7 @@ namespace Koldy\Cache\Adapter;
  * This cache adapter holds cached data only in request's scope (memory). As soon as request ends, everything will disappear.
  *
  * @link http://koldy.net/docs/cache/request
+ * @deprecated
  */
 class Request extends AbstractCacheAdapter
 {

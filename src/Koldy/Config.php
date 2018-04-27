@@ -100,6 +100,7 @@ class Config
 
     /**
      * Reload configuration from file system if config was loaded from file system
+     * @throws Exception
      */
     public function reload(): void
     {
@@ -180,8 +181,6 @@ class Config
      *
      * @param string $key
      * @param $value
-     *
-     * @throws Exception
      */
     final public function set(string $key, $value): void
     {
@@ -277,6 +276,7 @@ class Config
      *
      * @return mixed
      * @throws ConfigException
+     * @throws Exception
      */
     public function getArrayItem(string $key, string $subKey, $defaultValue = null)
     {

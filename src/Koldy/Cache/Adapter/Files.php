@@ -194,6 +194,8 @@ class Files extends AbstractCacheAdapter
      * @param string $key
      * @param mixed $value
      * @param int $seconds [optional]
+     * @throws \Koldy\Config\Exception
+     * @throws \Koldy\Exception
      * @throws \Koldy\Filesystem\Exception
      */
     public function set(string $key, $value, int $seconds = null): void
@@ -247,6 +249,8 @@ class Files extends AbstractCacheAdapter
      * @param array $keyValuePairs
      * @param int $seconds
      *
+     * @throws \Koldy\Config\Exception
+     * @throws \Koldy\Exception
      * @throws \Koldy\Filesystem\Exception
      * @link http://koldy.net/docs/cache#set-multi
      */

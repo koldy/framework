@@ -54,6 +54,7 @@ class Cli
 
     /**
      * Parse the script arguments into parameters ready for later use
+     * @throws CliException
      */
     protected static function parseArgvIntoParameters(): void
     {
@@ -88,6 +89,7 @@ class Cli
      * @param string $parameter
      *
      * @return boolean
+     * @throws CliException
      * @example if called index.php -x --title-name="the title" --version=5,
      * then you can use hasParameterName('title-name') or hasParameterName('version')
      */
@@ -103,6 +105,7 @@ class Cli
      * @param string $name
      *
      * @return string or null if parameter doesn't exist
+     * @throws CliException
      * @example if called index.php -x --title-name="the title" --version=5,
      * then you can use getParameterValue('title-name') would return "the title" and getParameterValue('version') would return "5"
      */
@@ -119,6 +122,7 @@ class Cli
      *
      * @return string or null if parameter doesn't exists on that place
      *
+     * @throws CliException
      * @example if called "index.php 123 -p 2 --version=1.0.1 -h localhost"
      * and you call getParameterOnPosition(4), you'll get "--version=1.0.1"
      */
@@ -134,6 +138,7 @@ class Cli
      * @param int $index
      *
      * @return boolean
+     * @throws CliException
      */
     public static function hasParameterOnPosition(int $index): bool
     {
@@ -145,6 +150,7 @@ class Cli
      * Get all parsed parameters
      *
      * @return array
+     * @throws CliException
      */
     public static function getParameters(): array
     {

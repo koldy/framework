@@ -210,6 +210,7 @@ class Session
      * data to session!
      *
      * @link http://koldy.net/docs/session#close
+     * @throws Exception
      */
     public static function close(): void
     {
@@ -259,6 +260,7 @@ class Session
      * Destroy session completely
      *
      * @link http://koldy.net/docs/session#destroy
+     * @throws Exception
      */
     public static function destroy(): void
     {

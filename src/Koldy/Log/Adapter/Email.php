@@ -67,6 +67,9 @@ class Email extends AbstractLogAdapter
     /**
      * Get the Mail instance ready
      *
+     * @return AbstractMailAdapter
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     protected function getEmail(): AbstractMailAdapter
     {
@@ -138,6 +141,8 @@ class Email extends AbstractLogAdapter
 
     /**
      * @param Message $message
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     public function logMessage(Message $message): void
     {
@@ -156,6 +161,9 @@ class Email extends AbstractLogAdapter
 
     /**
      * Send e-mail report if system detected that e-mail should be sent
+     *
+     * @throws Exception
+     * @throws \Koldy\Exception
      */
     protected function sendEmail(): void
     {
@@ -173,6 +181,10 @@ class Email extends AbstractLogAdapter
         }
     }
 
+    /**
+     * @throws Exception
+     * @throws \Koldy\Exception
+     */
     public function shutdown(): void
     {
         if (count($this->messages) > 0) {

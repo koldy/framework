@@ -15,6 +15,10 @@ class Cookie
      * @param string $key
      *
      * @return string or null if cookie value doesn't exist
+     * @throws Config\Exception
+     * @throws Crypt\Exception
+     * @throws Crypt\MalformedException
+     * @throws Exception
      */
     public static function get(string $key): ?string
     {
@@ -52,9 +56,12 @@ class Cookie
      * @param boolean $secure [optional]
      * @param boolean $httpOnly [optional]
      *
+     * @return string
+     * @throws Config\Exception
+     * @throws Crypt\Exception
+     * @throws Exception
      * @link http://koldy.net/docs/cookies#set
      * @example Cookie::set('last_visited', date('r'));
-     * @return string
      */
     public static function set(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null): string
     {

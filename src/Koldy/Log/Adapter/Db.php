@@ -102,6 +102,9 @@ class Db extends AbstractLogAdapter
 
     /**
      * @return AbstractAdapter
+     * @throws ConfigException
+     * @throws \Koldy\Db\Exception
+     * @throws \Koldy\Exception
      */
     protected function getAdapter(): AbstractAdapter
     {

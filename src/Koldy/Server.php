@@ -64,6 +64,8 @@ class Server
      * Get the server's "signature" in this moment with all useful debug data
      *
      * @return array
+     * @throws Convert\Exception
+     * @throws Exception
      */
     public static function signatureArray(): array
     {
@@ -147,6 +149,8 @@ class Server
 
     /**
      * @return string
+     * @throws Convert\Exception
+     * @throws Exception
      */
     public static function signature(): string
     {

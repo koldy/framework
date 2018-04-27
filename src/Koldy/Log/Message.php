@@ -154,6 +154,7 @@ class Message
      * @param string $delimiter
      *
      * @return string
+     * @throws \Koldy\Exception
      */
     public function getMessage(string $delimiter = ' '): string
     {
@@ -247,6 +248,7 @@ class Message
      * Get the default "message line" that includes time, level, who triggered it and the information
      *
      * @return string
+     * @throws \Koldy\Exception
      */
     public function getDefaultLine(): string
     {
@@ -262,6 +264,7 @@ class Message
 
     /**
      * @return string
+     * @throws \Koldy\Exception
      */
     public function __toString(): string
     {
