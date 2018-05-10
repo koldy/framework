@@ -86,7 +86,6 @@ class Validator
      * @return Validator
      * @throws Exception
      * @throws InvalidDataException
-     * @throws ValidatorConfigException
      */
     public static function create(array $rules, array $data = null, bool $validateAndThrowException = true): Validator
     {
@@ -113,7 +112,6 @@ class Validator
      * @return Validator
      * @throws Exception
      * @throws InvalidDataException
-     * @throws ValidatorConfigException
      */
     public static function only(array $rules, array $data = null, bool $validateAndThrowException = true): Validator
     {
@@ -188,6 +186,8 @@ class Validator
      * @param bool $trimStrings
      *
      * @return array
+     * @throws Config\Exception
+     * @throws Exception
      */
     public function getData(bool $trimStrings = null): array
     {
@@ -243,6 +243,8 @@ class Validator
      * @param bool $trimStrings
      *
      * @return \stdClass
+     * @throws Config\Exception
+     * @throws Exception
      */
     public function getDataObj(bool $trimStrings = null): \stdClass
     {
@@ -624,6 +626,7 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
      * @throws ValidatorConfigException
@@ -702,6 +705,7 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
      * @throws ValidatorConfigException
@@ -778,6 +782,7 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
      * @throws ValidatorConfigException
@@ -838,6 +843,7 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
      * @throws ValidatorConfigException
@@ -897,6 +903,7 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
      * @throws ValidatorConfigException
@@ -956,10 +963,11 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
-     * @example 'param' => 'integer' - passed value must contain 0-9 digits only
      * @throws ValidatorConfigException
+     * @example 'param' => 'integer' - passed value must contain 0-9 digits only
      */
     protected function validateInteger($value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
     {
@@ -1523,7 +1531,7 @@ class Validator
             throw new ValidatorConfigException("Validator 'different' must have non-empty argument; parameter={$parameter}");
         }
 
-        $present = $this->validatePresent($differentAsField);
+        $present = $this->validatePresent(null, $differentAsField);
         if ($present !== null) {
             return $present;
         }
@@ -1540,7 +1548,7 @@ class Validator
             ]);
         }
 
-        $differentAsValue = $this->getValue($differentAsField);
+        $differentAsValue = $context[$differentAsField] ?? null;
 
         if (!is_scalar($differentAsValue)) {
             return Message::getMessage(Message::PRIMITIVE, [
@@ -1733,7 +1741,7 @@ class Validator
         if (is_string($exceptionValue)) {
             if (substr($exceptionValue, 0, 6) == 'field:') {
                 $exceptionFieldName = substr($exceptionValue, 6);
-                $exceptionFieldValue = $this->getValue($exceptionFieldName);
+                $exceptionFieldValue = $context[$exceptionFieldName] ?? null;
 
                 if ($exceptionFieldValue === null) {
                     throw new ValidatorConfigException("Can not validate unique parameter={$parameter} when exception field name={$exceptionFieldName} is not present or has the value of null");
@@ -1820,8 +1828,12 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
+     * @throws Config\Exception
+     * @throws Exception
+     * @throws Security\Exception
      * @throws ValidatorConfigException
      * @example 'csrf_token' => 'anyOf:one,two,3,four'
      */
@@ -1861,6 +1873,7 @@ class Validator
      * @param string $parameter
      * @param array $args
      * @param array $rules other rules
+     * @param array|null $context
      *
      * @return null|string
      * @throws Exception
