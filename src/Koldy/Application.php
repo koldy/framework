@@ -275,10 +275,6 @@ class Application
 
                         if ($domain == $_SERVER['HTTP_HOST']) {
 
-                            if (count($siteUrl) != 2) {
-                                throw new ConfigException('Defined site_url in application config must contain double slash (//)');
-                            }
-
                             static::$domain = $domain;
                             static::$isSSL = substr($domainWithSchema, 0, 6) == 'https:';
                         }
@@ -294,10 +290,6 @@ class Application
                     }
 
                     $domain = substr($domainWithSchema, $doubleSlashPosition + 2);
-
-                    if (count($siteUrl) != 2) {
-                        throw new ConfigException('Defined site_url in application config must contain double slash (//)');
-                    }
 
                     static::$domain = $domain;
                     static::$isSSL = substr($domainWithSchema, 0, 6) == 'https:';
