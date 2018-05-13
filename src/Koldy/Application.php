@@ -245,7 +245,7 @@ class Application
             $siteUrl = $configInstance->get('site_url');
 
             if ($siteUrl == null) {
-                static::$domain = $_SERVER['HTTP_HOST'];
+                static::$domain = $_SERVER['HTTP_HOST'] ?? null;
                 static::$isSSL = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off';
 
             } else if (is_string($siteUrl)) {
@@ -259,7 +259,34 @@ class Application
                 static::$isSSL = substr($siteUrl[0], 0, 6) == 'https:';
 
             } else if (is_array($siteUrl)) {
-                foreach ($siteUrl as $domainWithSchema) {
+                if (count($siteUrl) === 0) {
+                    throw new ConfigException('If site_url is defined as array, then it must be non-empty array');
+                }
+
+                if (isset($_SERVER['HTTP_HOST'])) {
+                    foreach ($siteUrl as $domainWithSchema) {
+                        $doubleSlashPosition = strpos($domainWithSchema, '//');
+
+                        if ($doubleSlashPosition === false) {
+                            throw new ConfigException('Every defined site_url in application config must contain double slash (//)');
+                        }
+
+                        $domain = substr($domainWithSchema, $doubleSlashPosition + 2);
+
+                        if ($domain == $_SERVER['HTTP_HOST']) {
+
+                            if (count($siteUrl) != 2) {
+                                throw new ConfigException('Defined site_url in application config must contain double slash (//)');
+                            }
+
+                            static::$domain = $domain;
+                            static::$isSSL = substr($domainWithSchema, 0, 6) == 'https:';
+                        }
+                    }
+                } else {
+                    // we are probably in CLI mode, so let's take the first value from 'site_url' config
+                    $domainWithSchema = $siteUrl[0];
+
                     $doubleSlashPosition = strpos($domainWithSchema, '//');
 
                     if ($doubleSlashPosition === false) {
@@ -268,15 +295,12 @@ class Application
 
                     $domain = substr($domainWithSchema, $doubleSlashPosition + 2);
 
-                    if ($domain == $_SERVER['HTTP_HOST']) {
-
-                        if (count($siteUrl) != 2) {
-                            throw new ConfigException('Defined site_url in application config must contain double slash (//)');
-                        }
-
-                        static::$domain = $domain;
-                        static::$isSSL = substr($domainWithSchema, 0, 6) == 'https:';
+                    if (count($siteUrl) != 2) {
+                        throw new ConfigException('Defined site_url in application config must contain double slash (//)');
                     }
+
+                    static::$domain = $domain;
+                    static::$isSSL = substr($domainWithSchema, 0, 6) == 'https:';
                 }
 
                 // beware then static::$domain might stay null, in this case, in run(), redirect to first domain if site_url is array
