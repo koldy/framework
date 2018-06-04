@@ -158,7 +158,17 @@ class Insert
      */
     public function hasDataToInsert(): bool
     {
-        return count($this->data) > 0;
+        return $this->countDataToInsert() > 0;
+    }
+
+    /**
+     * Get how many records is set to be inserted in database table
+     *
+     * @return int
+     */
+    public function countDataToInsert(): int
+    {
+        return count($this->data);
     }
 
     /**
