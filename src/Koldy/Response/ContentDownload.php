@@ -1,9 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App;
-
-use Koldy\Response\AbstractResponse;
-use Koldy\Response\Exception;
+namespace Koldy\Response;
 
 /**
  * Force content download to output buffer, so it'll be downloaded same as file.
