@@ -186,10 +186,14 @@ class Route
             throw new Exception("Unable to construct URL to site={$site}, site is not defined in configs/sites.php");
         }
 
-        if ($uri === null) {
+        if ($uri === null || strlen($uri) === 0) {
             return $otherSite;
         } else {
-            return $otherSite . '/' . $uri;
+            if ($uri[0] != '/') {
+                $uri = '/' . $uri;
+            }
+
+            return $otherSite . $uri;
         }
     }
 
