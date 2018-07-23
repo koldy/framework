@@ -26,7 +26,7 @@ class Url
      *
      * @param string $url
      *
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function __construct(string $url)
     {
@@ -41,7 +41,7 @@ class Url
      * Get URL's scheme
      *
      * @return string
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getScheme(): string
     {
@@ -56,7 +56,7 @@ class Url
      * Get URL's host
      *
      * @return string
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getHost(): string
     {
@@ -71,7 +71,7 @@ class Url
      * Get URL's port
      *
      * @return int
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getPort(): int
     {
@@ -86,7 +86,7 @@ class Url
      * Get URL's user
      *
      * @return string
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getUser(): string
     {
@@ -101,7 +101,7 @@ class Url
      * Get URL's pass
      *
      * @return string
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getPass(): string
     {
@@ -116,7 +116,7 @@ class Url
      * Get URL's path (part after domain, also known as URI)
      *
      * @return string
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getPath(): string
     {
@@ -131,7 +131,7 @@ class Url
      * Get URL's query (part after question mark (?))
      *
      * @return string
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getQuery(): string
     {
@@ -146,7 +146,7 @@ class Url
      * Get URL's fragment (part after the hash (#))
      *
      * @return string
-     * @throws Exception
+     * @throws \Koldy\Url\Exception
      */
     public function getFragment(): string
     {
