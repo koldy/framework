@@ -117,7 +117,6 @@ class ContentDownload extends AbstractResponse
             ->setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0')
             ->setHeader('Cache-Control', 'public')
             ->setHeader('Content-Description', 'File Transfer')
-            ->setHeader('Content-Length', mb_strlen($this->content))
             ->setHeader('Content-Type', $contentType)
             ->setHeader('Content-Disposition', "attachment; filename=\"{$asName}\";")
             ->setHeader('Content-Transfer-Encoding', 'binary');
@@ -125,7 +124,7 @@ class ContentDownload extends AbstractResponse
         set_time_limit(0);
         $this->flushHeaders();
 
-        print($this->content);
+        file_put_contents('php://output', $this->content);
 
         @ob_flush();
         flush();
