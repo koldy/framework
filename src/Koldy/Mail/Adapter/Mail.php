@@ -18,6 +18,16 @@ class Mail extends CommonMailAdapter
      */
     public function send(): void
     {
+        if ($this->fromEmail !== null) {
+            if ($this->fromName !== null) {
+                $from = "{$this->fromName} <{$this->fromEmail}>";
+            } else {
+                $from = $this->fromEmail;
+            }
+
+            $this->setHeader('From', $from);
+        }
+
         $to = $cc = $bcc = [];
 
         if (count($this->to) == 0) {
