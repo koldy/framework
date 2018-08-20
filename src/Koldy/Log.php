@@ -54,6 +54,14 @@ class Log
      */
     private static $who = null;
 
+	/**
+	 * Random number generated only once per script (either HTTP or CLI), so if you reset the "who", random number
+	 * will stay the same
+	 *
+	 * @var null|int
+	 */
+    private static $randomNumber = null;
+
     /**
      * The array of enabled classes, stored as class name string
      *
@@ -77,17 +85,17 @@ class Log
     {
     }
 
-    /**
-     * Initialize, load config and etc.
-     */
+	/**
+	 * Initialize, load config and etc.
+	 * @throws Exception
+	 */
     public static function init(): void
     {
         if (static::$adapters === null) {
-            if (Application::isCli()) {
-                static::$who = Application::getCliName() . '-' . time();
-            } else {
-                static::$who = Request::ip() . '-' . rand(100000, 999999);
-            }
+        	static::$randomNumber = rand(100000, 999999);
+
+        	// set the "who"
+            static::resetWho();
 
             static::$adapters = [];
             $configs = Application::getConfig('application')->get('log', []);
@@ -158,16 +166,30 @@ class Log
         return isset(static::$enabledAdapters[$className]);
     }
 
-    /**
-     * Set the "who" - it'll be visible in logs as "who did that".
-     *
-     * If you pass string, you'll set the "who"
-     *
-     * @param string $who
-     */
+	/**
+	 * Set the "who" - it'll be visible in logs as "who did that".
+	 *
+	 * If you pass string, you'll set the "who"
+	 *
+	 * @param string $who
+	 */
     public static function setWho(string $who): void
     {
-        static::$who = $who;
+	    static::$who = $who;
+    }
+
+	/**
+	 * Reset the "who" value
+	 *
+	 * @throws Exception
+	 */
+    public static function resetWho(): void
+    {
+	    if (Application::isCli()) {
+		    static::$who = Application::getCliName() . '-' . static::$randomNumber;
+	    } else {
+		    static::$who = Request::ip() . '-' . static::$randomNumber;
+	    }
     }
 
     /**
