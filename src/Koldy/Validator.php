@@ -215,7 +215,7 @@ class Validator
             }
 
             if (isset($data[$field]) && is_string($data[$field]) && $rules !== null) {
-                $rules = explode('|', $rules);
+	            $rules = explode('|', is_object($rules) && method_exists($rules, '__toString') ? $rules->__toString() : $rules);
 
                 // case booleans
                 if (in_array('bool', $rules) || in_array('boolean', $rules)) {
@@ -445,15 +445,23 @@ class Validator
      * Test given value on given rules
      *
      * @param mixed $parameter
-     * @param string $rules
+     * @param string|object $rules
      * @param mixed $value
      * @param array $context
      *
      * @throws InvalidDataException
      * @throws ValidatorConfigException
      */
-    protected function testDataWithRule($parameter, string $rules, $value, array $context): void
+    protected function testDataWithRule($parameter, $rules, $value, array $context): void
     {
+	    if (is_object($rules)) {
+		    if (method_exists($rules, '__toString')) {
+			    $rules = $rules->__toString();
+		    } else {
+			    throw new ConfigException('Invalid validator configuration, expected string or object with __toString(), got just object without __toString()');
+		    }
+	    }
+
         $rules = trim($rules);
 
         if ($rules === '') {
