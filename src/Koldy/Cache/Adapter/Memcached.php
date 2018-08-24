@@ -202,7 +202,11 @@ class Memcached extends AbstractCacheAdapter
         }
 
         if (count($missing) > 0) {
-            $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
+	        try {
+		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
+	        } catch (\Exception | \Throwable $e) {
+		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
+	        }
 
             if (!is_array($setValues)) {
                 throw new CacheException('Return value from function passed to getOrSetMulti must return array; got ' . gettype($setValues));

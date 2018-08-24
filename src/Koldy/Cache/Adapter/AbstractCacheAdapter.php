@@ -2,6 +2,8 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Koldy\Cache\Exception as CacheException;
+
 /**
  * Abstract class for making any kind of new cache adapter. If you want to create your own cache adapter, then extend this class.
  *
@@ -170,22 +172,23 @@ abstract class AbstractCacheAdapter
      */
     abstract public function deleteOld(int $olderThen = null): void;
 
-    /**
-     * Get the value from cache if exists, otherwise, set the value returned
-     * from the function you pass. The function may contain more steps, such as
-     * fetching data from database or etc.
-     *
-     * @param string $key
-     * @param \Closure $functionOnSet
-     * @param int|null $seconds
-     *
-     * @return mixed
-     *
-     * @example
-     * Cache::getOrSet('key', function() {
-     *    return "the value";
-     * });
-     */
+	/**
+	 * Get the value from cache if exists, otherwise, set the value returned
+	 * from the function you pass. The function may contain more steps, such as
+	 * fetching data from database or etc.
+	 *
+	 * @param string $key
+	 * @param \Closure $functionOnSet
+	 * @param int|null $seconds
+	 *
+	 * @return mixed
+	 *
+	 * @throws CacheException
+	 * @example
+	 * Cache::getOrSet('key', function() {
+	 *    return "the value";
+	 * });
+	 */
     public function getOrSet(string $key, \Closure $functionOnSet, int $seconds = null)
     {
         $this->checkKey($key);
@@ -193,7 +196,12 @@ abstract class AbstractCacheAdapter
         if (($value = $this->get($key)) !== null) {
             return $value;
         } else {
-            $value = call_user_func($functionOnSet);
+	        try {
+		        $value = call_user_func($functionOnSet);
+	        } catch (\Exception | \Throwable $e) {
+		        throw new CacheException("Unable to cache value with key={$key} because of exception thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
+	        }
+
             $this->set($key, $value, $seconds);
             return $value;
         }

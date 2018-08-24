@@ -2,6 +2,8 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Koldy\Cache\Exception as CacheException;
+
 /**
  * If you don't want to use your cache adapter, you can redirect all cache data into black whole! Learn more at http://en.wikipedia.org/wiki//dev/null
  *
@@ -127,20 +129,27 @@ class DevNull extends AbstractCacheAdapter
         return call_user_func($functionOnSet, $key, $seconds);
     }
 
-    /**
-     * @param array $keys
-     * @param \Closure $functionOnMissingKeys
-     * @param int|null $seconds
-     *
-     * @return array
-     */
+	/**
+	 * @param array $keys
+	 * @param \Closure $functionOnMissingKeys
+	 * @param int|null $seconds
+	 *
+	 * @return array
+	 * @throws CacheException
+	 */
     public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
     {
         foreach (array_values($keys) as $key) {
             $this->checkKey($key);
         }
 
-        return call_user_func($functionOnMissingKeys, $keys, $keys, $seconds); // calling function, red keys, missing keys, seconds
+	    try {
+		    $values = call_user_func($functionOnMissingKeys, $keys, $keys, $seconds); // calling function, red keys, missing keys, seconds
+	    } catch (\Exception | \Throwable $e) {
+		    throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
+	    }
+
+        return $values;
     }
 
     /**
