@@ -312,8 +312,9 @@ class Query
         $field = str_replace('.', '_', $field);
         $field = str_replace('(', '', $field);
         $field = str_replace(')', '', $field);
+	    $field = str_replace('*', '', $field);
 
-        return $field . static::getKeyIndex();
+	    return strtolower($field) . static::getKeyIndex();
     }
 
     /**

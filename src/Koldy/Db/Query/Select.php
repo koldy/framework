@@ -543,9 +543,9 @@ class Select extends Where
                 if ($having['value'] instanceof Expr) {
                     $query .= "{$nl}{$link}{$having['field']} {$having['operator']} {$having['value']}";
                 } else {
-                    $query .= "{$nl}{$link}{$having['field']} {$having['operator']} :having{$index}";
-                    //$bindings[':having' . $index] = $having['value'];
-                    $this->bind($index, $having['value'], 'h');
+	                $bindName = $this->bind($having['field'], $having['value'], 'h');
+	                $query .= "{$nl}{$link}{$having['field']} {$having['operator']} :{$bindName}";
+	                //$bindings[':having' . $index] = $having['value'];
                 }
             }
         }
