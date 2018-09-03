@@ -33,13 +33,15 @@ class Update extends Where
      */
     protected $orderBy = [];
 
-    /**
-     * @param string $table
-     * @param array|null $values [optional] auto set values in this query
-     * @param string|null $adapter
-     *
-     * @link http://koldy.net/docs/database/query-builder#update
-     */
+	/**
+	 * @param string $table
+	 * @param array|null $values [optional] auto set values in this query
+	 * @param string|null $adapter
+	 *
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/query-builder#update
+	 */
     public function __construct(string $table = null, array $values = null, string $adapter = null)
     {
         $this->table = $table;
@@ -176,10 +178,9 @@ class Update extends Where
             if ($value instanceof Expr) {
                 $sql .= "{$value},\n";
             } else {
-                //$key = Query::getBindFieldName($field);
-                $key = $this->bind($field, $value);
+                //$key = $this->bind($field, $value);
+	            $key = $this->getBindings()->makeAndSet($field, $value);
                 $sql .= ":{$key},\n";
-                //$bindings[$key] = $value;
             }
         }
 

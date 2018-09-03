@@ -3,6 +3,7 @@
 namespace Koldy\Db;
 
 use Koldy\Db\Exception as DbException;
+use Koldy\Db\Query\Bindings;
 
 class Where
 {
@@ -16,7 +17,7 @@ class Where
     /**
      * @var array
      */
-    protected $bindings = [];
+    protected $bindings = null;
 
     /**
      * Bind some value for PDO
@@ -29,9 +30,13 @@ class Where
      */
     public function bind(string $field, $value, string $prefix = ''): string
     {
-        $bindFieldName = $prefix . Query::getBindFieldName($field);
-        $this->bindings[$bindFieldName] = $value;
-        return $bindFieldName;
+    	if ($this->bindings === null) {
+    		$this->bindings = new Bindings();
+	    }
+
+    	$parameter = $prefix . $field;
+    	$bindName = $this->bindings->makeAndSet($parameter, $value);
+        return $bindName;
     }
 
     /**
@@ -326,10 +331,14 @@ class Where
     }
 
     /**
-     * @return array
+     * @return Bindings
      */
-    public function getBindings(): array
+    public function getBindings(): Bindings
     {
+    	if ($this->bindings === null) {
+    		$this->bindings = new Bindings();
+	    }
+
         return $this->bindings;
     }
 
@@ -338,7 +347,7 @@ class Where
      */
     public function resetBindings(): void
     {
-        $this->bindings = [];
+        $this->bindings = new Bindings();
     }
 
     /**
@@ -352,6 +361,10 @@ class Where
      */
     protected function getWhereSql(array $whereArray = null, $cnt = 0): string
     {
+    	if ($this->bindings === null) {
+    		$this->bindings = new Bindings();
+	    }
+
         $query = '';
 
         if ($whereArray === null) {
@@ -379,9 +392,14 @@ class Where
                 $whereSql = str_replace("\t", '', $whereSql);
 
                 $query .= " ({$whereSql})\n";
+
+                /*
                 foreach ($q->getBindings() as $k => $v) {
                     $this->bindings[$k] = $v;
                 }
+                */
+
+                $this->bindings->addBindingsFromInstance($q->getBindings());
 
             } else if ($value instanceof Expr) {
                 $query .= " ({$field} {$where['operator']} {$value})\n";
@@ -396,9 +414,9 @@ class Where
                         if ($value[0] instanceof Expr) {
                             $query .= $value[0];
                         } else {
-                            $key = $this->bind($field, $value[0]);
+                            //$key = $this->bind($field, $value[0]);
+	                        $key = $this->bindings->makeAndSet($field, $value[0]);
                             $query .= ":{$key}";
-                            //$this->bindings[':' . $key] = $value[0];
                         }
 
                         $query .= ' AND ';
@@ -406,10 +424,9 @@ class Where
                         if ($value[1] instanceof Expr) {
                             $query .= $value[1];
                         } else {
-                            //$key = Query::getBindFieldName($field);
-                            $key = $this->bind($field, $value[1]);
+                            //$key = $this->bind($field, $value[1]);
+	                        $key = $this->bindings->makeAndSet($field, $value[1]);
                             $query .= ":{$key}";
-                            //$this->bindings[':' . $key] = $value[1];
                         }
 
                         $query .= ")\n";
@@ -420,10 +437,9 @@ class Where
                         $query .= " ({$field} {$where['operator']} (";
 
                         foreach ($value as $val) {
-                            //$key = Query::getBindFieldName($field);
-                            $key = $this->bind($field, $val);
+                            //$key = $this->bind($field, $val);
+	                        $key = $this->bindings->makeAndSet($field, $val);
                             $query .= ":{$key},";
-                            //$this->bindings[':' . $key] = $val;
                         }
 
                         $query = substr($query, 0, -1);
@@ -434,10 +450,9 @@ class Where
                 }
 
             } else {
-                //$key = Query::getBindFieldName($field);
-                $key = $this->bind($field, $where['value']);
+                //$key = $this->bind($field, $where['value']);
+	            $key = $this->bindings->makeAndSet($field, $where['value']);
                 $query .= " ({$field} {$where['operator']} :{$key})\n";
-                //$this->bindings[':' . $key] = $where['value'];
 
             }
 

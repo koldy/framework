@@ -214,41 +214,53 @@ abstract class Model implements Serializable
         return static::$adapter;
     }
 
-    /**
-     * Get the adapter for this model
-     *
-     * @return AbstractAdapter
-     */
+	/**
+	 * Get the adapter for this model
+	 *
+	 * @return AbstractAdapter
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function getAdapter(): AbstractAdapter
     {
         return Db::getAdapter(static::getAdapterConnection());
     }
 
-    /**
-     * Begin transaction using this model's DB adapter
-     *
-     * @throws Adapter\Exception
-     */
+	/**
+	 * Begin transaction using this model's DB adapter
+	 *
+	 * @throws Adapter\Exception
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function beginTransaction(): void
     {
         static::getAdapter()->beginTransaction();
     }
 
-    /**
-     * Commit current transaction using this model's DB adapter
-     *
-     * @throws Adapter\Exception
-     */
+	/**
+	 * Commit current transaction using this model's DB adapter
+	 *
+	 * @throws Adapter\Exception
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function commit(): void
     {
         static::getAdapter()->commit();
     }
 
-    /**
-     * Rollback current transaction on this model's DB adapter
-     *
-     * @throws Adapter\Exception
-     */
+	/**
+	 * Rollback current transaction on this model's DB adapter
+	 *
+	 * @throws Adapter\Exception
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function rollBack(): void
     {
         static::getAdapter()->rollBack();
@@ -297,13 +309,15 @@ abstract class Model implements Serializable
         return new static($data);
     }
 
-    /**
-     * Reloads this model with the latest data from database. It's using primary key to fetch the data. If primary key
-     * contains multiple columns, then all columns must be present in the model in order to refresh the data successfully.
-     *
-     * @return Model
-     * @throws Exception
-     */
+	/**
+	 * Reloads this model with the latest data from database. It's using primary key to fetch the data. If primary key
+	 * contains multiple columns, then all columns must be present in the model in order to refresh the data successfully.
+	 *
+	 * @return Model
+	 * @throws Exception
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function reload(): Model
     {
         $pk = static::$primaryKey;
@@ -356,21 +370,23 @@ abstract class Model implements Serializable
         return $this->setData($row);
     }
 
-    /**
-     * If you statically created new record in database to the table with auto
-     * incrementing field, then you can use this static method to get the
-     * generated primary key
-     *
-     * @param null|string $keyName
-     *
-     * @return int|string
-     * @throws Exception
-     * @example
-     *
-     *    if (User::create(array('first_name' => 'John', 'last_name' => 'Doe'))) {
-     *      echo User::getLastInsertId();
-     *    }
-     */
+	/**
+	 * If you statically created new record in database to the table with auto
+	 * incrementing field, then you can use this static method to get the
+	 * generated primary key
+	 *
+	 * @param null|string $keyName
+	 *
+	 * @return int|string
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @example
+	 *
+	 *    if (User::create(array('first_name' => 'John', 'last_name' => 'Doe'))) {
+	 *      echo User::getLastInsertId();
+	 *    }
+	 */
     public static function getLastInsertId(string $keyName = null)
     {
         if (static::$autoIncrement) {
@@ -626,22 +642,24 @@ abstract class Model implements Serializable
         }
     }
 
-    /**
-     * Fetch one record from database. You can pass one or two parameters.
-     * If you pass only one parameter, framework will assume that you want to
-     * fetch the record from database according to primary key defined in
-     * model. Otherwise, you can fetch the record by any other field you have.
-     * If your criteria returns more then one records, only first record will
-     * be taken.
-     *
-     * @param  mixed $field primaryKey value, single field or assoc array of arguments for query
-     * @param  mixed $value
-     * @param array $fields
-     *
-     * @throws Exception
-     * @return Model|null null will be returned if record is not found
-     * @link http://koldy.net/docs/database/models#fetchOne
-     */
+	/**
+	 * Fetch one record from database. You can pass one or two parameters.
+	 * If you pass only one parameter, framework will assume that you want to
+	 * fetch the record from database according to primary key defined in
+	 * model. Otherwise, you can fetch the record by any other field you have.
+	 * If your criteria returns more then one records, only first record will
+	 * be taken.
+	 *
+	 * @param  mixed $field primaryKey value, single field or assoc array of arguments for query
+	 * @param  mixed $value
+	 * @param array $fields
+	 *
+	 * @return Model|null null will be returned if record is not found
+	 * @throws Exception
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/models#fetchOne
+	 */
     public static function fetchOne($field, $value = null, array $fields = null): ?Model
     {
         $select = static::select();
@@ -677,22 +695,25 @@ abstract class Model implements Serializable
         return ($record === null) ? null : new static($record);
     }
 
-    /**
-     * Fetch one record from database. You can pass one or two parameters.
-     * If you pass only one parameter, framework will assume that you want to
-     * fetch the record from database according to primary key defined in
-     * model. Otherwise, you can fetch the record by any other field you have.
-     * If your criteria returns more then one records, only first record will
-     * be taken.
-     *
-     * @param  mixed $field primaryKey value, single field or assoc array of arguments for query
-     * @param  mixed $value
-     * @param array $fields
-     *
-     * @throws Exception
-     * @return Model
-     * @link http://koldy.net/docs/database/models#fetchOne
-     */
+	/**
+	 * Fetch one record from database. You can pass one or two parameters.
+	 * If you pass only one parameter, framework will assume that you want to
+	 * fetch the record from database according to primary key defined in
+	 * model. Otherwise, you can fetch the record by any other field you have.
+	 * If your criteria returns more then one records, only first record will
+	 * be taken.
+	 *
+	 * @param  mixed $field primaryKey value, single field or assoc array of arguments for query
+	 * @param  mixed $value
+	 * @param array $fields
+	 *
+	 * @return Model
+	 * @throws Exception
+	 * @throws NotFoundException
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/models#fetchOne
+	 */
     public static function fetchOneOrFail($field, $value = null, array $fields = null): Model
     {
         $record = static::fetchOne($field, $value, $fields);
@@ -704,21 +725,23 @@ abstract class Model implements Serializable
         return $record;
     }
 
-    /**
-     * Fetch the array of initialized records from database
-     *
-     * @param mixed $where the WHERE condition
-     * @param array $fields array of fields to select; by default, all fields will be fetched
-     * @param string|null $orderField
-     * @param string|null $orderDirection
-     * @param int|null $limit
-     *
-     * @param int|null $start
-     * @return Model[]
-     *
-     * @throws Query\Exception
-     * @link http://koldy.net/docs/database/models#fetch
-     */
+	/**
+	 * Fetch the array of initialized records from database
+	 *
+	 * @param mixed $where the WHERE condition
+	 * @param array $fields array of fields to select; by default, all fields will be fetched
+	 * @param string|null $orderField
+	 * @param string|null $orderDirection
+	 * @param int|null $limit
+	 *
+	 * @param int|null $start
+	 *
+	 * @return Model[]
+	 *
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/models#fetch
+	 */
     public static function fetch(
       $where,
       array $fields = null,
@@ -759,23 +782,24 @@ abstract class Model implements Serializable
         return $data;
     }
 
-    /**
-     * Fetch the array of initialized records from database, where key in the returned array is something from the
-     * results
-     *
-     * @param string $key The name of the column which will be taken from results to be used as key in array
-     * @param mixed $where the WHERE condition
-     * @param array $fields array of fields to select; by default, all fields will be fetched
-     * @param string|null $orderField
-     * @param string|null $orderDirection
-     * @param int|null $limit
-     *
-     * @param int|null $start
-     *
-     * @return array
-     * @throws Query\Exception
-     * @link http://koldy.net/docs/database/models#fetch
-     */
+	/**
+	 * Fetch the array of initialized records from database, where key in the returned array is something from the
+	 * results
+	 *
+	 * @param string $key The name of the column which will be taken from results to be used as key in array
+	 * @param mixed $where the WHERE condition
+	 * @param array $fields array of fields to select; by default, all fields will be fetched
+	 * @param string|null $orderField
+	 * @param string|null $orderDirection
+	 * @param int|null $limit
+	 *
+	 * @param int|null $start
+	 *
+	 * @return array
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/models#fetch
+	 */
     public static function fetchWithKey(
         string $key,
         $where,
@@ -794,16 +818,17 @@ abstract class Model implements Serializable
         return $data;
     }
 
-    /**
-     * Fetch all records from database
-     *
-     * @param string $orderField
-     * @param string $orderDirection
-     *
-     * @return Model[]
-     * @throws Query\Exception
-     * @link http://www.php.net/manual/en/pdo.constants.php
-     */
+	/**
+	 * Fetch all records from database
+	 *
+	 * @param string $orderField
+	 * @param string $orderDirection
+	 *
+	 * @return Model[]
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://www.php.net/manual/en/pdo.constants.php
+	 */
     public static function all(string $orderField = null, string $orderDirection = null): array
     {
         $select = static::select();
@@ -820,21 +845,23 @@ abstract class Model implements Serializable
         return $data;
     }
 
-    /**
-     * Fetch key value pairs from database table
-     *
-     * @param string $keyField
-     * @param string $valueField
-     * @param mixed $where
-     * @param string|null $orderField
-     * @param string|null $orderDirection
-     * @param int|null $limit
-     *
-     * @param int|null $start
-     * @return array
-     * @throws Query\Exception
-     * @link http://koldy.net/docs/database/models#fetchKeyValue
-     */
+	/**
+	 * Fetch key value pairs from database table
+	 *
+	 * @param string $keyField
+	 * @param string $valueField
+	 * @param mixed $where
+	 * @param string|null $orderField
+	 * @param string|null $orderDirection
+	 * @param int|null $limit
+	 *
+	 * @param int|null $start
+	 *
+	 * @return array
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/models#fetchKeyValue
+	 */
     public static function fetchKeyValue(
       string $keyField,
       string $valueField,
@@ -874,21 +901,22 @@ abstract class Model implements Serializable
         return $data;
     }
 
-    /**
-     * Fetch numeric array of values from one column in database
-     *
-     * @param string $field
-     * @param mixed $where
-     * @param string $orderField
-     * @param string $orderDirection
-     * @param integer $limit
-     * @param integer $start
-     *
-     * @return array or empty array if not found
-     * @throws Query\Exception
-     * @example User::fetchArrayOf('id', Where::init()->where('id', '>', 50), 'id', 'asc') would return array(51,52,53,54,55,...)
-     * @link http://koldy.net/docs/database/models#fetchArrayOf
-     */
+	/**
+	 * Fetch numeric array of values from one column in database
+	 *
+	 * @param string $field
+	 * @param mixed $where
+	 * @param string $orderField
+	 * @param string $orderDirection
+	 * @param integer $limit
+	 * @param integer $start
+	 *
+	 * @return array or empty array if not found
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @example User::fetchArrayOf('id', Where::init()->where('id', '>', 50), 'id', 'asc') would return array(51,52,53,54,55,...)
+	 * @link http://koldy.net/docs/database/models#fetchArrayOf
+	 */
     public static function fetchArrayOf(
       string $field,
       $where = null,
@@ -927,17 +955,18 @@ abstract class Model implements Serializable
         return $data;
     }
 
-    /**
-     * Fetch only one record and return value from given column
-     *
-     * @param string $field
-     * @param mixed|null $where
-     * @param string|null $orderField
-     * @param string|null $orderDirection
-     *
-     * @return mixed|null
-     * @throws Query\Exception
-     */
+	/**
+	 * Fetch only one record and return value from given column
+	 *
+	 * @param string $field
+	 * @param mixed|null $where
+	 * @param string|null $orderField
+	 * @param string|null $orderDirection
+	 *
+	 * @return mixed|null
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function fetchOneValue(string $field, $where = null, $orderField = null, $orderDirection = null)
     {
         $select = static::select()->field($field, 'key_field')->limit(0, 1);
@@ -966,18 +995,19 @@ abstract class Model implements Serializable
         return $records[0]['key_field'];
     }
 
-    /**
-     * Fetch only one record and return value from given column
-     *
-     * @param string $field
-     * @param mixed|null $where
-     * @param string|null $orderField
-     * @param string|null $orderDirection
-     *
-     * @return mixed
-     * @throws NotFoundException
-     * @throws Query\Exception
-     */
+	/**
+	 * Fetch only one record and return value from given column
+	 *
+	 * @param string $field
+	 * @param mixed|null $where
+	 * @param string|null $orderField
+	 * @param string|null $orderDirection
+	 *
+	 * @return mixed
+	 * @throws NotFoundException
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function fetchOneValueOrFail(string $field, $where = null, $orderField = null, $orderDirection = null)
     {
         $value = static::fetchOneValue($field, $where, $orderField, $orderDirection);
@@ -989,30 +1019,31 @@ abstract class Model implements Serializable
         return $value;
     }
 
-    /**
-     * Check if some value exists in database or not. This is useful if you
-     * want, for an example, check if user's e-mail already is in database
-     * before you try to insert your data.
-     *
-     * @param  string $field
-     * @param  mixed $value
-     * @param  mixed $exceptionValue OPTIONAL
-     * @param  string $exceptionField OPTIONAL
-     *
-     * @return bool
-     * @throws Query\Exception
-     * @link http://koldy.net/docs/database/models#isUnique
-     *
-     * @example
-     *          User::isUnique('email', 'email@domain.com'); will execute:
-     *          SELECT COUNT(*) FROM user WHERE email = 'email@domain.com'
-     *
-     *          User::isUnique('email', 'email@domain.com', 'other@mail.com');
-     *          SELECT COUNT(*) FROM user WHERE email = 'email@domain.com' AND email != 'other@mail.com'
-     *
-     *          User::isUnique('email', 'email@domain.com', 5, 'id');
-     *          SELECT COUNT(*) FROM user WHERE email = 'email@domain.com' AND id != 5
-     */
+	/**
+	 * Check if some value exists in database or not. This is useful if you
+	 * want, for an example, check if user's e-mail already is in database
+	 * before you try to insert your data.
+	 *
+	 * @param  string $field
+	 * @param  mixed $value
+	 * @param  mixed $exceptionValue OPTIONAL
+	 * @param  string $exceptionField OPTIONAL
+	 *
+	 * @return bool
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/models#isUnique
+	 *
+	 * @example
+	 *          User::isUnique('email', 'email@domain.com'); will execute:
+	 *          SELECT COUNT(*) FROM user WHERE email = 'email@domain.com'
+	 *
+	 *          User::isUnique('email', 'email@domain.com', 'other@mail.com');
+	 *          SELECT COUNT(*) FROM user WHERE email = 'email@domain.com' AND email != 'other@mail.com'
+	 *
+	 *          User::isUnique('email', 'email@domain.com', 5, 'id');
+	 *          SELECT COUNT(*) FROM user WHERE email = 'email@domain.com' AND id != 5
+	 */
     public static function isUnique(
       string $field,
       $value,
@@ -1039,15 +1070,16 @@ abstract class Model implements Serializable
         return true;
     }
 
-    /**
-     * Count the records in table according to the parameters
-     *
-     * @param mixed $where
-     *
-     * @return int
-     * @throws Query\Exception
-     * @link http://koldy.net/docs/database/models#count
-     */
+	/**
+	 * Count the records in table according to the parameters
+	 *
+	 * @param mixed $where
+	 *
+	 * @return int
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/models#count
+	 */
     public static function count($where = null): int
     {
         $select = static::select();
@@ -1087,13 +1119,15 @@ abstract class Model implements Serializable
         }
     }
 
-    /**
-     * Get the ResultSet object of this model
-     *
-     * @param null|string $tableAlias
-     *
-     * @return ResultSet
-     */
+	/**
+	 * Get the ResultSet object of this model
+	 *
+	 * @param null|string $tableAlias
+	 *
+	 * @return ResultSet
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function resultSet(string $tableAlias = null): ResultSet
     {
         $rs = new ResultSet(static::getTableName(), $tableAlias);
@@ -1101,13 +1135,15 @@ abstract class Model implements Serializable
         return $rs;
     }
 
-    /**
-     * Get the initialized Select object with populated FROM and connection adapter set
-     *
-     * @param string $tableAlias
-     *
-     * @return Select
-     */
+	/**
+	 * Get the initialized Select object with populated FROM and connection adapter set
+	 *
+	 * @param string $tableAlias
+	 *
+	 * @return Select
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function select(string $tableAlias = null): Select
     {
         $select = new Select(static::getTableName(), $tableAlias);

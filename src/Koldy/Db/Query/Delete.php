@@ -71,12 +71,15 @@ class Delete extends Where
         return new Query($sql, $this->getBindings(), $this->getAdapterConnection());
     }
 
-    /**
-     * Get how many rows was deleted
-     *
-     * @return int
-     * @throws Exception
-     */
+	/**
+	 * Get how many rows was deleted
+	 *
+	 * @return int
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Db\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function rowCount(): int
     {
         if (!$this->wasExecuted()) {

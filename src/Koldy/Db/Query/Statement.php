@@ -19,10 +19,13 @@ trait Statement
      */
     private $lastQuery = null;
 
-    /**
-     * Get the adapter on which query will be performed
-     * @return AbstractAdapter
-     */
+	/**
+	 * Get the adapter on which query will be performed
+	 * @return AbstractAdapter
+	 * @throws Db\Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function getAdapter(): AbstractAdapter
     {
         return Db::getAdapter($this->adapter);
@@ -38,11 +41,13 @@ trait Statement
         return $this->adapter;
     }
 
-    /**
-     * @param string|null $adapter
-     *
-     * @return Statement
-     */
+	/**
+	 * @param string|null $adapter
+	 *
+	 * @return Statement
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function setAdapter(string $adapter = null)
     {
         $this->adapter = $adapter ?? Db::getDefaultAdapterKey();

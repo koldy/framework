@@ -5,6 +5,7 @@ namespace Koldy\Db;
 use Generator;
 use Koldy\Db;
 use Koldy\Db\Adapter\AbstractAdapter;
+use Koldy\Db\Query\Bindings;
 use Koldy\Db\Query\Exception as QueryException;
 use Koldy\Log;
 use PDO;
@@ -25,7 +26,7 @@ class Query
     protected $query = null;
 
     /**
-     * @var array|null
+     * @var Bindings|null
      */
     protected $bindings = null;
 
@@ -48,31 +49,54 @@ class Query
      * Query constructor.
      *
      * @param string|object|null $query
-     * @param array|null $bindings
+     * @param Bindings|array|null $bindings
      * @param string|null $adapter
      */
-    public function __construct($query = null, array $bindings = null, string $adapter = null)
+    public function __construct($query = null, $bindings = null, string $adapter = null)
     {
         $this->query = $query;
-        $this->bindings = $bindings;
         $this->adapter = $adapter;
+
+        if ($bindings === null) {
+        	$this->bindings = new Bindings();
+
+        } else if (is_array($bindings)) {
+	        $this->bindings = new Bindings();
+	        $this->bindings->setFromArray($bindings);
+
+        } else if ($bindings instanceof Bindings) {
+        	$this->bindings = $bindings;
+
+        } else {
+        	throw new \InvalidArgumentException('Invalid second argument provided, expected null, array or instance of Bindings');
+        }
     }
 
     /**
      * Set query that will be executed
      *
      * @param string $query
-     * @param array|null $bindings
+     * @param Bindings|array|null $bindings
      *
      * @return Query
      */
-    public function setQuery(string $query, array $bindings = []): Query
+    public function setQuery(string $query, $bindings = null): Query
     {
         $this->query = $query;
 
-        if (count($bindings) > 0) {
-            $this->bindings = $bindings;
-        }
+	    if ($bindings === null) {
+		    $this->bindings = new Bindings();
+
+	    } else if (is_array($bindings)) {
+		    $this->bindings = new Bindings();
+		    $this->bindings->setFromArray($bindings);
+
+	    } else if ($bindings instanceof Bindings) {
+		    $this->bindings = $bindings;
+
+	    } else {
+		    throw new \InvalidArgumentException('Invalid second argument provided, expected null, array or instance of Bindings');
+	    }
 
         return $this;
     }
@@ -148,22 +172,32 @@ class Query
     }
 
     /**
-     * @param array $bindings
+     * @param Bindings|array $bindings
      *
      * @return Query
      */
-    public function setBindings(array $bindings): Query
+    public function setBindings($bindings): Query
     {
-        $this->bindings = $bindings;
+	    if (is_array($bindings)) {
+		    $this->bindings = new Bindings();
+		    $this->bindings->setFromArray($bindings);
+
+	    } else if ($bindings instanceof Bindings) {
+		    $this->bindings = $bindings;
+
+	    } else {
+		    throw new \InvalidArgumentException('Invalid second argument provided, expected null, array or instance of Bindings');
+	    }
+
         return $this;
     }
 
     /**
-     * @return array
+     * @return Bindings
      */
-    public function getBindings(): array
+    public function getBindings(): Bindings
     {
-        return $this->bindings ?? [];
+        return $this->bindings;
     }
 
     /**
@@ -176,16 +210,17 @@ class Query
     {
         $this->queryExecuted = false;
         $sql = $this->getSQL();
+        $adapter = $this->getAdapter();
 
-        $this->getAdapter()->prepare($sql);
+        $adapter->prepare($sql);
         $bindings = $this->getBindings();
 
         try {
-            if (count($bindings) == 0) {
-                $this->getAdapter()->getStatement()->execute();
-            } else {
-                $this->getAdapter()->getStatement()->execute($bindings);
+            foreach ($bindings->getBindings() as $bind) {
+	            $adapter->getStatement()->bindValue($bind->getParameter(), $bind->getValue(), $bind->getType());
             }
+
+	        $adapter->getStatement()->execute();
 
             Log::sql("{$this->adapter}>>>\n{$this->debug()}");
         } catch (PDOException $e) {
@@ -193,7 +228,7 @@ class Query
             switch ($e->getCode()) {
                 case 'HY093': // PDO missmatch parameter count
                     Log::debug("[{$e->getCode()}] Tried and failed to execute SQL query:\n{$sql}");
-                    Log::debug('BINDINGS', $bindings);
+                    Log::debug('BINDINGS', $bindings->getAsArray());
                     break;
 
                 default:
@@ -290,6 +325,8 @@ class Query
      * Get next key index
      *
      * @return int
+     *
+     * @deprecated
      */
     public static function getKeyIndex(): int
     {
@@ -306,6 +343,8 @@ class Query
      * @param string $field
      *
      * @return string
+     *
+     * @deprecated
      */
     public static function getBindFieldName(string $field): string
     {
@@ -331,62 +370,45 @@ class Query
     {
         $query = $this->getSQL();
 
-        foreach ($this->getBindings() as $key => $value) {
-            if ($key[0] == ':') {
-                $key = substr($key, 1);
+        foreach ($this->getBindings()->getBindings() as $parameter => $bind) {
+            if ($parameter[0] == ':') {
+                $parameter = substr($parameter, 1);
             }
+
+            $value = $bind->getValue();
 
             $type = gettype($value);
             switch ($type) {
                 case 'string':
-                    $query = str_replace(":{$key}", ("'" . addslashes((string) $value) . "'"), $query);
+                    $query = str_replace(":{$parameter}", ("'" . addslashes((string) $value) . "'"), $query);
                     break;
 
                 case 'integer':
                 case 'float':
                 case 'double':
-                    $query = str_replace(":{$key}", $value, $query);
+                    $query = str_replace(":{$parameter}", $value, $query);
                     break;
 
                 case 'NULL':
-                    $query = str_replace(":{$key}", 'NULL', $query);
+                    $query = str_replace(":{$parameter}", 'NULL', $query);
                     break;
 
                 case 'boolean':
                     $true = (bool)$value;
-                    $query = str_replace(":{$key}", $true ? 'true' : 'false', $query);
+                    $query = str_replace(":{$parameter}", $true ? 'true' : 'false', $query);
                     break;
 
                 case 'object':
                 case 'array':
                 case 'resource':
                 case 'unknown type':
-                    throw new QueryException('Unsupported type: ' . $type);
+                    throw new QueryException("Unsupported type ({$type}) was passed as parameter ({$parameter}) to SQL query");
                     break;
 
                 default:
                     throw new \Koldy\Exception('Unknown type: ' . $type);
                     break;
             }
-
-            /*
-            if (is_numeric($value) && substr((string)$value, 0, 1) != '0') {
-                $value = (string)$value;
-
-                if (strlen($value) > 10) {
-                    $query = str_replace(":{$key}", "'{$value}'", $query);
-                } else {
-                    $query = str_replace(":{$key}", $value, $query);
-                }
-
-            } else {
-                if (is_null($value)) {
-                    $query = str_replace(":{$key}", 'NULL', $query);
-                } else {
-                    $query = str_replace(":{$key}", ("'" . addslashes((string) $value) . "'"), $query);
-                }
-            }
-            */
         }
 
         if ($oneLine) {

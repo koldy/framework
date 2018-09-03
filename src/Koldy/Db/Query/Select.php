@@ -428,6 +428,8 @@ class Select extends Where
      */
     public function getQuery(): Query
     {
+    	// TODO: Bindings could be defined only locally in this method because it has to be regenerated on every call
+
         if (count($this->from) == 0) {
             throw new Exception('Can not build SELECT query, there is no FROM table defined');
         }
@@ -462,8 +464,8 @@ class Select extends Where
                 $query .= " (\n\t{$subSql}\n) {$from['alias']}\n";
 
                 $subSelectBindings = $subSelect->getBindings();
-                if (count($subSelectBindings) > 0) {
-                    $this->bindings += $subSelectBindings;
+                if (!$subSelectBindings->isEmpty()) {
+                    $this->getBindings()->addBindingsFromInstance($subSelectBindings);
                 }
             } else {
                 $query .= "\n\t{$from['table']}";
@@ -495,7 +497,7 @@ class Select extends Where
                             $query = substr($query, 0, -5);
                         }
 
-                        $query .= " {$joinArg[0]} {$joinArg[1]} {$joinArg[2]}  {$joinArg[3]} AND ";
+                        $query .= " {$joinArg[0]} {$joinArg[1]} {$joinArg[2]} {$joinArg[3]} AND ";
 
                     } else {
                         throw new Exception('Unknown JOIN argument');
@@ -543,9 +545,9 @@ class Select extends Where
                 if ($having['value'] instanceof Expr) {
                     $query .= "{$nl}{$link}{$having['field']} {$having['operator']} {$having['value']}";
                 } else {
-	                $bindName = $this->bind($having['field'], $having['value'], 'h');
+	                //$bindName = $this->bind($having['field'], $having['value'], 'h');
+	                $bindName = $this->getBindings()->makeAndSet('h' . $having['field'], $having['value']);
 	                $query .= "{$nl}{$link}{$having['field']} {$having['operator']} :{$bindName}";
-	                //$bindings[':having' . $index] = $having['value'];
                 }
             }
         }
@@ -754,7 +756,7 @@ class Select extends Where
             }
         }
 
-        $this->bindings = [];
+        $this->resetBindings();
         $this->resetLastQuery();
     }
 

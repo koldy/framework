@@ -1,0 +1,189 @@
+<?php declare(strict_types=1);
+
+namespace Koldy\Db\Query;
+
+/**
+ * Class Bindings is used for easier parameter binding within the SQL statements.
+ * It's using PDO's bindValue() method. To keep everything simple, we don't use any
+ * bindParam() nor any other reference to value because that might lead to unexpected
+ * behaviour which is hard to catch.
+ *
+ * @package Koldy\Db\Query
+ */
+class Bindings
+{
+
+	/**
+	 * Current index for uniqueness on SQL statements
+	 *
+	 * @var int
+	 */
+	protected static $index = 0;
+
+	/**
+	 * The actual data for bindings
+	 * @var Bind[]
+	 */
+	protected $bindings = [];
+
+	/**
+	 * Get next unique index for binding to SQL statements
+	 *
+	 * @return int
+	 */
+	public static function getNextIndex(): int
+	{
+		if (static::$index === PHP_INT_MAX) {
+			/*
+			 * If we reach overflow, we'll reset index to zero, because
+			 * it's really unlikely that anyone will ever be able to execute
+			 * that many binded variables within one SQL statement
+			 */
+			static::$index = 0;
+		}
+
+		return static::$index++;
+	}
+
+	/**
+	 * @param string $parameter
+	 * @param $value
+	 * @param int|null $typeConstant
+	 *
+	 * @return string
+	 */
+	public function set(string $parameter, $value, int $typeConstant = null): string
+	{
+		$this->bindings[$parameter] = new Bind($parameter, $value, $typeConstant);
+		return $parameter;
+	}
+
+	/**
+	 * Make unique bind name according to given parameter name
+	 *
+	 * @param string $parameter
+	 *
+	 * @return string
+	 */
+	public static function make(string $parameter): string
+	{
+		$parameter = str_replace('.', '_', $parameter);
+		$parameter = str_replace('(', '', $parameter);
+		$parameter = str_replace(')', '', $parameter);
+		$parameter = str_replace('*', '', $parameter);
+
+		return strtolower($parameter) . static::getNextIndex();
+	}
+
+	/**
+	 * @param string $parameter
+	 * @param $value
+	 * @param int|null $typeConstant
+	 *
+	 * @return string
+	 */
+	public function makeAndSet(string $parameter, $value, int $typeConstant = null): string
+	{
+		$bindName = static::make($parameter);
+		$this->bindings[$bindName] = new Bind($bindName, $value, $typeConstant);
+		return $bindName;
+	}
+
+	/**
+	 * @param string $parameter
+	 *
+	 * @return bool
+	 */
+	public function has(string $parameter): bool
+	{
+		return isset($this->bindings[$parameter]);
+	}
+
+	/**
+	 * Get already binded parameter
+	 *
+	 * @param string $parameter
+	 *
+	 * @return Bind
+	 * @throws Exception
+	 */
+	public function get(string $parameter): Bind
+	{
+		if (!$this->has($parameter)) {
+			throw new Exception("Bind name \"{$parameter}\" does not exists");
+		}
+
+		return $this->bindings[$parameter];
+	}
+
+	/**
+	 * Get the array of all bindings where key is the parameter name and value is instance of Bind
+	 *
+	 * @return Bind[]
+	 */
+	public function getBindings(): array
+	{
+		return $this->bindings;
+	}
+
+	/**
+	 * @param array $bindings
+	 */
+	public function addBindings(array $bindings): void
+	{
+		$this->bindings = array_merge($this->bindings, $bindings);
+	}
+
+	/**
+	 * @param Bind $bind
+	 */
+	public function addBind(Bind $bind): void
+	{
+		$this->bindings[$bind->getParameter()] = clone $bind;
+	}
+
+	/**
+	 * @param Bindings $bindings
+	 */
+	public function addBindingsFromInstance(self $bindings): void
+	{
+		$this->bindings = array_merge($this->bindings, $bindings->getBindings());
+	}
+
+	/**
+	 * Gets all bindings as key value assoc array where key is parameter and value is its value.
+	 * @return array
+	 */
+	public function getAsArray(): array
+	{
+		$data = [];
+
+		foreach ($this->getBindings() as $bind) {
+			$data[$bind->getParameter()] = $bind->getValue();
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Set the bindings by providing assoc array of parameter => value
+	 *
+	 * @param array $data
+	 */
+	public function setFromArray(array $data): void
+	{
+		foreach ($data as $parameter => $value) {
+			$this->bindings[$parameter] = new Bind($parameter, $value);
+		}
+	}
+
+	/**
+	 * Returns true if nothing was binded
+	 *
+	 * @return bool
+	 */
+	public function isEmpty(): bool
+	{
+		return count($this->bindings) === 0;
+	}
+}

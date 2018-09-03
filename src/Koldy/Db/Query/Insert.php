@@ -45,17 +45,19 @@ class Insert
      */
     protected $select = null;
 
-    /**
-     * Construct the object
-     *
-     * @param string|null $table
-     * @param array $rowValues is key => value array to insert into database
-     * @param string|null $adapter
-     *
-     * @throws Exception
-     * @throws Json\Exception
-     * @link http://koldy.net/docs/database/query-builder#insert
-     */
+	/**
+	 * Construct the object
+	 *
+	 * @param string|null $table
+	 * @param array $rowValues is key => value array to insert into database
+	 * @param string|null $adapter
+	 *
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @link http://koldy.net/docs/database/query-builder#insert
+	 */
     public function __construct(string $table = null, array $rowValues = null, string $adapter = null)
     {
         if ($table !== null) {
@@ -199,15 +201,17 @@ class Insert
         return $this;
     }
 
-    /**
-     * Get the Query string
-     *
-     * @throws Exception
-     * @return Query
-     */
+	/**
+	 * Get the Query string
+	 *
+	 * @return Query
+	 * @throws Exception
+	 * @throws \Koldy\Db\Query\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function getQuery(): Query
     {
-        $bindings = [];
+        $bindings = new Bindings();
 
         if (count($this->data) == 0 && $this->select === null) {
             throw new Exception('Can not execute Insert query, no records to insert');
@@ -234,7 +238,7 @@ class Insert
         if ($this->select !== null) {
             if ($this->select instanceof Select || $this->select instanceof Query) {
                 $query .= "\n(\n\t" . str_replace("\n", "\n\t", $this->select->__toString()) . "\n)";
-                $bindings = $this->select->getBindings();
+                $bindings->addBindingsFromInstance($this->select->getBindings());
             } else {
                 throw new Exception('Can not use non-Select or non-Query instance in INSERT INTO SELECT statement - use Query instance to pass Select query');
             }
@@ -252,9 +256,9 @@ class Insert
                             if ($val instanceof Expr) {
                                 $query .= "{$val},";
                             } else {
-                                $key = 'i' . $i1 . Query::getKeyIndex();
+                                //$key = 'i' . $i1 . Query::getKeyIndex();
+	                            $key = $bindings->makeAndSet("i{$i1}", $val);
                                 $query .= ":{$key},";
-                                $bindings[$key] = $val;
                             }
                         } else {
                             $query .= 'NULL,';
@@ -270,9 +274,9 @@ class Insert
                         if ($val instanceof Expr) {
                             $query .= "{$val},";
                         } else {
-                            $key = 'i' . $i2 . Query::getKeyIndex();
+                            //$key = 'i' . $i2 . Query::getKeyIndex();
+	                        $key = $bindings->makeAndSet("i{$i2}", $val);
                             $query .= ":{$key},";
-                            $bindings[$key] = $val;
                         }
                     }
 
