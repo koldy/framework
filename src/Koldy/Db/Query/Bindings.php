@@ -68,9 +68,15 @@ class Bindings
 	public static function make(string $parameter): string
 	{
 		$parameter = str_replace('.', '_', $parameter);
+		$parameter = str_replace('-', '_', $parameter);
 		$parameter = str_replace('(', '', $parameter);
 		$parameter = str_replace(')', '', $parameter);
 		$parameter = str_replace('*', '', $parameter);
+		$parameter = str_replace('>', '_', $parameter);
+		$parameter = str_replace('<', '_', $parameter);
+		$parameter = str_replace('\'', '', $parameter);
+		$parameter = str_replace('"', '', $parameter);
+		$parameter = str_replace('__', '_', $parameter);
 
 		return strtolower($parameter) . static::getNextIndex();
 	}
