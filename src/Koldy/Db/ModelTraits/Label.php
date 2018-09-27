@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Db\ModelTraits;
+namespace Koldy\Db\ModelTraits;
 
 /**
  * Trait Label - very common in database tables, usually used for naming records.
