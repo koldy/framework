@@ -16,7 +16,16 @@
 		}
 	],
 	"require": {
-		"php": ">=7.1.0"
+		"php": ">=7.1.0",
+		"ext-pdo": "*",
+		"ext-mbstring": "*",
+		"ext-memcached": "*",
+		"ext-openssl": "*",
+		"ext-json": "*",
+		"ext-bcmath": "*",
+		"ext-curl": "*",
+		"ext-iconv": "*",
+		"ext-ctype": "*"
 	},
 	"autoload": {
 		"psr-4": {
