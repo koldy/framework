@@ -17,18 +17,9 @@ trait UpdatedAt
     /**
      * @return bool
      */
-    public function isUpdated(): bool
-    {
-        return $this->updated_at !== null && is_string($this->updated_at) && strlen($this->updated_at) > 0;
-    }
-
-    /**
-     * @return bool
-     * @alias \Koldy\Db\ModelTraits\UpdatedAt::isUpdated()
-     */
     public function hasUpdatedAt(): bool
     {
-        return $this->isUpdated();
+	    return $this->updated_at !== null && is_string($this->updated_at) && strlen($this->updated_at) > 0;
     }
 
     /**
@@ -36,7 +27,7 @@ trait UpdatedAt
      */
     public function getUpdatedAt(): ?string
     {
-        if (!$this->isUpdated()) {
+        if (!$this->hasUpdatedAt()) {
             return null;
         }
 
@@ -49,7 +40,7 @@ trait UpdatedAt
      */
     public function getUpdatedAtDatetime(string $timezone = null): ?DateTime
     {
-        if (!$this->isUpdated()) {
+        if (!$this->hasUpdatedAt()) {
             return null;
         }
 
@@ -66,7 +57,7 @@ trait UpdatedAt
      */
     public function getUpdatedAtTimestamp(): ?int
     {
-        if (!$this->isUpdated()) {
+        if (!$this->hasUpdatedAt()) {
             return null;
         }
 
@@ -77,24 +68,20 @@ trait UpdatedAt
      * Sets the updated at value
      *
      * @param string $updatedAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value, or leave undefined
-     * @return $this
      */
-    public function setUpdatedAt(string $updatedAt = null)
+    public function setUpdatedAt(?string $updatedAt): void
     {
-        $this->updated_at = $updatedAt ?? gmdate('Y-m-d H:i:s');
-        return $this;
+        $this->updated_at = $updatedAt;
     }
 
     /**
      * Set the updated at date time by passing instance of updatedAt
      *
      * @param DateTime $updatedAt
-     * @return $this
      */
-    public function setUpdatedAtDateTime(DateTime $updatedAt)
+    public function setUpdatedAtDateTime(DateTime $updatedAt): void
     {
         $this->updated_at = $updatedAt->format('Y-m-d H:i:s');
-        return $this;
     }
 
 }
