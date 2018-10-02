@@ -200,7 +200,7 @@ class Cache
      */
     public static function increment(string $key, int $howMuch = 1): int
     {
-        static::getAdapter()->increment($key, $howMuch);
+        return static::getAdapter()->increment($key, $howMuch);
     }
 
     /**
@@ -216,7 +216,7 @@ class Cache
      */
     public static function decrement(string $key, int $howMuch = 1): int
     {
-        static::getAdapter()->decrement($key, $howMuch);
+        return static::getAdapter()->decrement($key, $howMuch);
     }
 
     /**

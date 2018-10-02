@@ -12,6 +12,8 @@ trait Id
 {
 
 	/**
+	 * Get the ID
+	 *
 	 * @return int
 	 */
 	public function getId(): int
@@ -20,11 +22,23 @@ trait Id
 	}
 
 	/**
+	 * Is ID set or not
+	 *
 	 * @return bool
 	 */
 	public function hasId(): bool
 	{
 		return $this->id !== null;
+	}
+
+	/**
+	 * Set the ID
+	 *
+	 * @param int $id
+	 */
+	public function setId(int $id): void
+	{
+		$this->id = $id;
 	}
 
 }
