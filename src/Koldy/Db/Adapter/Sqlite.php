@@ -25,12 +25,14 @@ class Sqlite extends AbstractAdapter
         }
     }
 
-    /**
-     * Connect to database
-     *
-     * @throws Exception
-     * @throws \Koldy\Filesystem\Exception
-     */
+	/**
+	 * Connect to database
+	 *
+	 * @throws ConfigException
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Filesystem\Exception
+	 */
     public function connect(): void
     {
         try {
@@ -43,11 +45,13 @@ class Sqlite extends AbstractAdapter
         }
     }
 
-    /**
-     * Actually connect to database
-     *
-     * @throws \Koldy\Filesystem\Exception
-     */
+	/**
+	 * Actually connect to database
+	 *
+	 * @throws ConfigException
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Filesystem\Exception
+	 */
     private function tryConnect(): void
     {
         $config = $this->getConfig();

@@ -208,12 +208,14 @@ abstract class AbstractAdapter
         return $this->lastQuery;
     }
 
-    /**
-     * @param string|null $table
-     * @param string|null $tableAlias
-     *
-     * @return Query\Select
-     */
+	/**
+	 * @param string|null $table
+	 * @param string|null $tableAlias
+	 *
+	 * @return Query\Select
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function select(string $table = null, string $tableAlias = null): Query\Select
     {
         $select = new Query\Select($table, $tableAlias);
@@ -221,25 +223,29 @@ abstract class AbstractAdapter
         return $select;
     }
 
-    /**
-     * @param string|null $table
-     * @param array|null $rowValues
-     *
-     * @return Query\Insert
-     * @throws \Koldy\Db\Exception
-     * @throws \Koldy\Json\Exception
-     */
+	/**
+	 * @param string|null $table
+	 * @param array|null $rowValues
+	 *
+	 * @return Query\Insert
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Db\Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Json\Exception
+	 */
     public function insert(string $table = null, array $rowValues = null): Query\Insert
     {
         return new Query\Insert($table, $rowValues, $this->getConfigKey());
     }
 
-    /**
-     * @param string|null $table
-     * @param array|null $values
-     *
-     * @return Query\Update
-     */
+	/**
+	 * @param string|null $table
+	 * @param array|null $values
+	 *
+	 * @return Query\Update
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function update(string $table = null, array $values = null): Query\Update
     {
         return new Query\Update($table, $values, $this->getConfigKey());
@@ -255,14 +261,21 @@ abstract class AbstractAdapter
         return new Query\Delete($table, $this->getConfigKey());
     }
 
-    /**
-     * @param string|null $keyName
-     *
-     * @return string
-     */
-    public function getLastInsertId(string $keyName = null)
-    {
-        return $this->getPDO()->lastInsertId($keyName);
-    }
+	/**
+	 * @param string|null $keyName
+	 *
+	 * @return string
+	 * @throws QueryException
+	 */
+	public function getLastInsertId(string $keyName = null)
+	{
+		try {
+			$id = $this->getPDO()->lastInsertId($keyName);
+		} catch (PDOException $e) {
+			throw new QueryException('Unable to get last insert ID' . ($keyName !== null ? " named \"{$keyName}\"" : ''));
+		}
+
+		return $id;
+	}
 
 }
