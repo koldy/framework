@@ -105,12 +105,12 @@ class Query
      * Get the SQL query, without bindings
      *
      * @return string
-     * @throws QueryException
+     * @throws Exception
      */
     public function getSQL(): string
     {
         if ($this->query === null) {
-            throw new QueryException('Query wasn\'t set');
+            throw new Exception('Query wasn\'t set');
         }
 
         if (is_object($this->query)) {
@@ -122,7 +122,7 @@ class Query
         }
 
         $className = get_class($this->query);
-        throw new QueryException("Can not use class={$className} as database query because it can't be used as string");
+        throw new Exception("Can not use class={$className} as database query because it can't be used as string");
     }
 
     /**
@@ -157,15 +157,15 @@ class Query
         return $this;
     }
 
-    /**
-     * Get the last statement
-     *
-     * @return PDOStatement
-     * @throws Exception
-     * @throws QueryException
-     * @throws \Koldy\Config\Exception
-     * @throws \Koldy\Exception
-     */
+	/**
+	 * Get the last statement
+	 *
+	 * @return PDOStatement
+	 * @throws Adapter\Exception
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function getStatement(): PDOStatement
     {
         return $this->getAdapter()->getStatement();
@@ -225,17 +225,25 @@ class Query
             Log::sql("{$this->adapter}>>>\n{$this->debug()}");
         } catch (PDOException $e) {
             // more descriptive error handling when query fails
+
             switch ($e->getCode()) {
-                case 'HY093': // PDO missmatch parameter count
-                    Log::debug("[{$e->getCode()}] Tried and failed to execute SQL query:\n{$sql}");
-                    Log::debug('BINDINGS', $bindings->getAsArray());
+                case 'HY093': // PDO miss match parameter count
+                    //Log::debug("[{$e->getCode()}] Tried and failed to execute SQL query:\n{$sql}");
+                    //Log::debug('BINDINGS', $bindings->getAsArray());
+	                $exception = new QueryException("[{$e->getCode()}] Query bindings parameter miss match: {$e->getMessage()}", (int) $e->getCode(), $e);
                     break;
 
                 default:
-                    Log::debug("[{$e->getCode()}] Tried and failed to execute SQL query:\n{$this->debug()}");
+                    //Log::debug("[{$e->getCode()}] Tried and failed to execute SQL query:\n{$this->debug()}");
+	                $exception = new QueryException("[{$e->getCode()}] Tried and failed to execute SQL query: {$e->getMessage()}", (int) $e->getCode(), $e);
                     break;
             }
-            throw new QueryException($e->getMessage(), (int) $e->getCode(), $e);
+
+            $exception->setAdapter($adapter->getConfigKey());
+	        $exception->setSql($sql);
+	        $exception->setBindings($bindings);
+	        $exception->setWasPrepared(true);
+            throw $exception;
         }
 
         $this->queryExecuted = true;
@@ -428,7 +436,7 @@ class Query
     {
         try {
             return $this->debug(true);
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             return 'Query [NOT SET]';
         }
     }

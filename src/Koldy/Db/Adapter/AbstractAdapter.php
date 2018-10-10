@@ -4,7 +4,6 @@ namespace Koldy\Db\Adapter;
 
 use Koldy\Db\Query;
 use Koldy\Db\Query\Exception as QueryException;
-use Koldy\Log;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -129,14 +128,14 @@ abstract class AbstractAdapter
      */
     abstract public function close(): void;
 
-    /**
-     * @return PDOStatement
-     * @throws QueryException
-     */
+	/**
+	 * @return PDOStatement
+	 * @throws Exception
+	 */
     public function getStatement(): PDOStatement
     {
         if ($this->stmt === null) {
-            throw new QueryException('Can not get statement when it\'s not set; did you prepare your query before getting the PDO statement?');
+            throw new Exception('Can not get statement when it\'s not set; did you prepare your query before getting the PDO statement?');
         }
 
         return $this->stmt;
@@ -152,9 +151,12 @@ abstract class AbstractAdapter
         try {
             $this->stmt = $this->getPDO()->prepare($queryStatement);
         } catch (PDOException $e) {
-            $dashes = str_repeat('=', 50);
-            Log::notice("Can't prepare query statement ({$this->getConfigKey()}):\n{$dashes}\n{$queryStatement}\n{$dashes}");
-            throw new QueryException($e->getMessage(), (int)$e->getCode(), $e);
+            //$dashes = str_repeat('=', 50);
+            //Log::notice("Can't prepare query statement ({$this->getConfigKey()}):\n{$dashes}\n{$queryStatement}\n{$dashes}");
+
+            $exception = new QueryException($e->getMessage(), (int)$e->getCode(), $e);
+            $exception->setSql($queryStatement);
+            throw $exception;
         }
     }
 
@@ -265,14 +267,14 @@ abstract class AbstractAdapter
 	 * @param string|null $keyName
 	 *
 	 * @return string
-	 * @throws QueryException
+	 * @throws Exception
 	 */
 	public function getLastInsertId(string $keyName = null)
 	{
 		try {
 			$id = $this->getPDO()->lastInsertId($keyName);
 		} catch (PDOException $e) {
-			throw new QueryException('Unable to get last insert ID' . ($keyName !== null ? " named \"{$keyName}\"" : ''));
+			throw new Exception('Unable to get last insert ID' . ($keyName !== null ? " named \"{$keyName}\"" : ''));
 		}
 
 		return $id;
