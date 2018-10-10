@@ -240,7 +240,7 @@ class Query
             }
 
             $exception->setAdapter($adapter->getConfigKey());
-	        $exception->setSql($sql);
+	        $exception->setSql($this->debug());
 	        $exception->setBindings($bindings);
 	        $exception->setWasPrepared(true);
             throw $exception;
