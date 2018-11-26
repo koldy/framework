@@ -2,6 +2,7 @@
 
 namespace Koldy;
 
+use Koldy\Config\Exception as ConfigException;
 use Koldy\Db\Adapter\{
   AbstractAdapter, MySQL, PostgreSQL, Sqlite
 };
@@ -17,12 +18,12 @@ class Db
      *
      * @var AbstractAdapter[]
      */
-    private static $adapters = [];
+    protected static $adapters = [];
 
     /**
      * @var array
      */
-    private static $types = [
+    protected static $types = [
       'mysql' => MySQL::class,
       'postgres' => PostgreSQL::class,
       'postgresql' => PostgreSQL::class,
@@ -50,36 +51,41 @@ class Db
         return static::getConfig()->getFirstKey();
     }
 
-    /**
-     * @param string|null $configKey
-     *
-     * @return AbstractAdapter
-     * @throws Config\Exception
-     * @throws DbException
-     * @throws Exception
-     */
+	/**
+	 * @param string|null $configKey
+	 *
+	 * @return AbstractAdapter
+	 * @throws ConfigException
+	 * @throws Exception
+	 */
     public static function getAdapter(string $configKey = null): AbstractAdapter
     {
         $key = $configKey ?? static::getDefaultAdapterKey();
 
         if (!isset(static::$adapters[$key])) {
-            static::$adapters[$key] = static::resolve(static::getConfig()->get($key));
+        	$config = static::getConfig()->get($key);
+
+        	if ($config === null) {
+        		throw new ConfigException("There is no \"{$key}\" key defined in database config");
+	        }
+
+            static::$adapters[$key] = static::resolve($config);
             static::$adapters[$key]->setConfigKey($key);
         }
 
         return static::$adapters[$key];
     }
 
-    /**
-     * @param array $config
-     *
-     * @return AbstractAdapter
-     * @throws DbException
-     */
+	/**
+	 * @param array $config
+	 *
+	 * @return AbstractAdapter
+	 * @throws ConfigException
+	 */
     private static function resolve(array $config): AbstractAdapter
     {
         if (!isset($config['type'])) {
-            throw new DbException('Can not resolve database config when there\'s no type key');
+            throw new ConfigException('Can not resolve database config when there\'s no "type" key');
         }
 
         $type = strtolower($config['type']);
@@ -88,36 +94,36 @@ class Db
             return new $class($config);
         }
 
-        throw new DbException("Trying to use invalid database adapter type {$config['type']}");
+        throw new ConfigException("Trying to use invalid database adapter type {$config['type']}");
     }
 
-    /**
-     * Register another database type
-     *
-     * @param string $type
-     * @param string $class
-     *
-     * @throws DbException
-     */
+	/**
+	 * Register another database type
+	 *
+	 * @param string $type
+	 * @param string $class
+	 *
+	 * @throws ConfigException
+	 */
     public static function registerType(string $type, string $class): void
     {
         if (isset(static::$types[$type])) {
-            throw new DbException("Can not register database type={$type} when it was already registered");
+            throw new ConfigException("Can not register database type={$type} when it was already registered");
         }
 
         static::$types[$type] = $class;
     }
 
-    /**
-     * @param string $keyIdentifier
-     * @param AbstractAdapter $adapter
-     *
-     * @throws DbException
-     */
+	/**
+	 * @param string $keyIdentifier
+	 * @param AbstractAdapter $adapter
+	 *
+	 * @throws ConfigException
+	 */
     public static function addAdapter(string $keyIdentifier, AbstractAdapter $adapter): void
     {
         if (isset(static::$adapters[$keyIdentifier])) {
-            throw new DbException("Can not add database adapter={$keyIdentifier} when it already exists");
+            throw new ConfigException("Can not add database adapter={$keyIdentifier} when it already exists");
         }
 
         static::$adapters[$keyIdentifier] = $adapter;
