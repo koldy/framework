@@ -30,10 +30,12 @@ trait CreatedAt
         return $this->created_at;
     }
 
-    /**
-     * @param string|null $timezone
-     * @return DateTime
-     */
+	/**
+	 * @param string|null $timezone
+	 *
+	 * @return DateTime
+	 * @throws \Exception
+	 */
     public function getCreatedAtDatetime(string $timezone = null): DateTime
     {
         if ($timezone === null) {
@@ -42,12 +44,13 @@ trait CreatedAt
         return new DateTime($this->getCreatedAt(), new DateTimeZone($timezone));
     }
 
-    /**
-     * @param int $seconds
-     *
-     * @param string|null $timezone
-     * @return bool
-     */
+	/**
+	 * @param int $seconds
+	 * @param string|null $timezone
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 */
     public function isCreatedInLast(int $seconds = 86400, string $timezone = null): bool
     {
         if (!$this->hasCreatedAt()) {

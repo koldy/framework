@@ -34,10 +34,12 @@ trait UpdatedAt
         return $this->updated_at;
     }
 
-    /**
-     * @param string|null $timezone
-     * @return DateTime|null
-     */
+	/**
+	 * @param string|null $timezone
+	 *
+	 * @return DateTime|null
+	 * @throws \Exception
+	 */
     public function getUpdatedAtDatetime(string $timezone = null): ?DateTime
     {
         if (!$this->hasUpdatedAt()) {
