@@ -410,11 +410,11 @@ class Query
                 case 'array':
                 case 'resource':
                 case 'unknown type':
-                    throw new QueryException("Unsupported type ({$type}) was passed as parameter ({$parameter}) to SQL query");
+	                throw new QueryException("Unsupported type ({$type}) was passed as parameter ({$parameter}) to SQL statement");
                     break;
 
                 default:
-                    throw new \Koldy\Exception('Unknown type: ' . $type);
+	                throw new \Koldy\Exception('Unknown data type (' . $type . ') was passed to SQL statement');
                     break;
             }
         }

@@ -9,6 +9,7 @@ use Koldy\Db\Adapter\{
 use Koldy\Db\Migration;
 use Koldy\Db\Model;
 use Koldy\Db\Exception as DbException;
+use Koldy\Db\Query\Exception as QueryException;
 use Koldy\Filesystem\Directory;
 use Koldy\Log;
 use Koldy\Util;
@@ -16,14 +17,16 @@ use Koldy\Util;
 class Manager
 {
 
-    /**
-     * Create migration with given name
-     *
-     * @param string $name
-     *
-     * @throws Application\Exception
-     * @throws \Koldy\Filesystem\Exception
-     */
+	/**
+	 * Create migration with given name
+	 *
+	 * @param string $name
+	 *
+	 * @throws Application\Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Filesystem\Exception
+	 */
     public static function createMigration(string $name): void
     {
         $directory = Application::getApplicationPath('migrations');
@@ -255,11 +258,21 @@ class Manager
                     $dashes = str_repeat('-', 50);
                     Log::info($dashes);
 
-                    /*********************************/
-                    /**/                           /**/
-                    /**/     $migration->up();     /**/
-                    /**/                           /**/
-                    /*********************************/
+	                try {
+		                /*********************************/
+		                /**/                           /**/
+		                /**/     $migration->up();     /**/
+		                /**/                           /**/
+		                /*********************************/
+	                } catch (QueryException $e) {
+		                $sql = $e->getSql();
+
+		                if ($sql !== null) {
+			                Log::error('Error executing SQL: ', $sql);
+		                }
+
+		                throw $e;
+	                }
 
                     Log::info($dashes);
                     $endTime = microtime(true);
@@ -282,14 +295,18 @@ class Manager
         }
     }
 
-    /**
-     * Roll back one or ore migration(s)
-     *
-     * @param int $stepsDown
-     *
-     * @throws Exception
-     * @throws \Koldy\Db\Query\Exception
-     */
+	/**
+	 * Roll back one or ore migration(s)
+	 *
+	 * @param int $stepsDown
+	 *
+	 * @throws DbException
+	 * @throws Exception
+	 * @throws QueryException
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Db\Adapter\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function rollBack(int $stepsDown = 1): void
     {
         if ($stepsDown < 1) {
@@ -327,11 +344,21 @@ class Manager
             $startTime = microtime(true);
             Log::debug($dashes);
 
-            /***********************************/
-            /**/                             /**/
-            /**/     $migration->down();     /**/
-            /**/                             /**/
-            /***********************************/
+	        try {
+		        /***********************************/
+		        /**/                             /**/
+		        /**/     $migration->down();     /**/
+		        /**/                             /**/
+		        /***********************************/
+	        } catch (QueryException $e) {
+		        $sql = $e->getSql();
+
+		        if ($sql !== null) {
+			        Log::error('Error executing SQL: ', $sql);
+		        }
+
+		        throw $e;
+	        }
 
             Log::debug($dashes);
             $endTime = microtime(true);
