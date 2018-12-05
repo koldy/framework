@@ -1539,7 +1539,7 @@ class Validator
             throw new ValidatorConfigException("Validator 'different' must have non-empty argument; parameter={$parameter}");
         }
 
-        $present = $this->validatePresent(null, $differentAsField);
+	    $present = $this->validatePresent($value, $differentAsField, [], $rules, $context);
         if ($present !== null) {
             return $present;
         }
