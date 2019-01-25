@@ -46,14 +46,14 @@ abstract class AbstractResponse
      *
      * @var array
      */
-    private $headers = [];
+    protected $headers = [];
 
     /**
      * The HTTP status code
      *
      * @var int
      */
-    private $statusCode = 200;
+    protected $statusCode = 200;
 
     /**
      * Set response header

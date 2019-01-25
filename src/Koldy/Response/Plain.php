@@ -95,8 +95,14 @@ class Plain extends AbstractResponse
         $this->prepareFlush();
         $this->runBeforeFlush();
 
-        $size = mb_strlen($this->content, Application::getEncoding());
-        $this->setHeader('Content-Length', $size);
+	    $statusCode = $this->statusCode;
+	    $statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
+
+	    if (!$statusCodeIs1XX && $statusCode !== 204) {
+		    $size = mb_strlen($this->content, Application::getEncoding());
+		    $this->setHeader('Content-Length', $size);
+	    }
+
         $this->flushHeaders();
 
         // print the text stored in this object

@@ -59,8 +59,15 @@ class Json extends AbstractResponse
         $this->runBeforeFlush();
 
         $content = json_encode($this->getData());
-        $size = mb_strlen($content, Application::getEncoding());
-        $this->setHeader('Content-Length', $size);
+
+	    $statusCode = $this->statusCode;
+	    $statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
+
+	    if (!$statusCodeIs1XX && $statusCode !== 204) {
+		    $size = mb_strlen($content, Application::getEncoding());
+		    $this->setHeader('Content-Length', $size);
+	    }
+
         $this->flushHeaders();
 
         print $content;

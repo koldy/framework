@@ -233,11 +233,12 @@ class View extends AbstractResponse
         flush();
     }
 
-    /**
-     * This method is called by framework, but in some cases, you'll want to call it by yourself.
-     *
-     * @throws Exception
-     */
+	/**
+	 * This method is called by framework, but in some cases, you'll want to call it by yourself.
+	 *
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
     public function flush(): void
     {
         $this->prepareFlush();
@@ -253,8 +254,13 @@ class View extends AbstractResponse
 
         require $path;
 
-        $size = ob_get_length();
-        $this->setHeader('Content-Length', $size);
+	    $statusCode = $this->statusCode;
+	    $statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
+
+	    if (!$statusCodeIs1XX && $statusCode !== 204) {
+		    $size = ob_get_length();
+		    $this->setHeader('Content-Length', $size);
+	    }
 
         $this->flushBuffer();
 
