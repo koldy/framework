@@ -20,12 +20,26 @@ abstract class AbstractResponse
      */
     protected $workBeforeResponse = [];
 
+	/**
+	 * Array of names of "before" functions to execute
+	 *
+	 * @var string[]
+	 */
+    protected $workBeforeIndex = [];
+
     /**
-     * The function(s) that will be called when script closes client's connection
+     * Array of names of "before" functions to execute
      *
      * @var Closure[]
      */
     protected $workAfterResponse = [];
+
+	/**
+	 * Ability to define name of the executing function
+	 *
+	 * @var string[]
+	 */
+    protected $workAfterIndex = [];
 
     /**
      * The array of headers that will be printed before outputting anything
@@ -196,26 +210,65 @@ abstract class AbstractResponse
         }
     }
 
-    /**
-     * Set the function for before flush
-     *
-     * @param Closure $function
-     *
-     * @throws \InvalidArgumentException
-     * @return \Koldy\Response\AbstractResponse
-     */
-    public function before(Closure $function): AbstractResponse
+	/**
+	 * Set the function to execute BEFORE flushing output buffer. If needed, add more than once and if you want,
+	 * add custom name for each function.
+	 *
+	 * @param Closure $function
+	 * @param string|null $name
+	 *
+	 * @return \Koldy\Response\AbstractResponse
+	 */
+    public function before(Closure $function, string $name = null): AbstractResponse
     {
         $this->workBeforeResponse[] = $function;
+        $this->workBeforeIndex[] = $name;
         return $this;
     }
 
-    /**
-     */
+	/**
+	 * Is there "before" function registered with given name
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+    public function hasBeforeFunction(string $name): bool
+    {
+    	return in_array($name, $this->workBeforeIndex);
+    }
+
+	/**
+	 * Count how many functions was added to "before response" with given name, or functions without name (with NULL)
+	 *
+	 * @param string|null $withName
+	 *
+	 * @return int
+	 */
+    public function countBeforeFunctions(string $withName = null): int
+    {
+    	$counter = 0;
+
+    	foreach ($this->workBeforeIndex as $functionName) {
+    		if ($withName === $functionName) {
+    			$counter++;
+		    }
+	    }
+
+    	return $counter;
+    }
+
+	/**
+	 * @throws Exception
+	 */
     protected function runBeforeFlush(): void
     {
         foreach ($this->workBeforeResponse as $fn) {
-            call_user_func($fn, $this);
+	        try {
+		        call_user_func($fn, $this);
+	        } catch (\Exception | \Throwable $e) {
+		        throw new Exception("Failed to execute function before flush: {$e->getMessage()}", $e->getCode(), $e);
+	        }
         }
     }
 
@@ -231,9 +284,9 @@ abstract class AbstractResponse
      */
     abstract public function flush(): void;
 
-    /**
-     *
-     */
+	/**
+	 * @throws \Koldy\Exception
+	 */
     protected function runAfterFlush(): void
     {
         if (isset($_SESSION)) {
@@ -246,22 +299,60 @@ abstract class AbstractResponse
         }
 
         foreach ($this->workAfterResponse as $fn) {
-            call_user_func($fn, $this);
+	        try {
+		        call_user_func($fn, $this);
+	        } catch (\Exception | \Throwable $e) {
+		        throw new Exception("Failed to execute function after flush: {$e->getMessage()}", $e->getCode(), $e);
+	        }
         }
     }
 
-    /**
-     * Set the function for after work. If needed, add more than once.
-     *
-     * @param Closure $function
-     *
-     * @throws Exception
-     * @return \Koldy\Response\AbstractResponse
-     */
-    public function after(Closure $function): AbstractResponse
+	/**
+	 * Set the function to execute AFTER flushing output buffer. If needed, add more than once and if you want,
+	 * add custom name for each function.
+	 *
+	 * @param Closure $function
+	 * @param string|null $name
+	 *
+	 * @return \Koldy\Response\AbstractResponse
+	 */
+    public function after(Closure $function, string $name = null): AbstractResponse
     {
         $this->workAfterResponse[] = $function;
+	    $this->workAfterIndex[] = $name;
         return $this;
     }
+
+	/**
+	 * Is there "after" function registered with given name
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	public function hasAfterFunction(string $name): bool
+	{
+		return in_array($name, $this->workAfterIndex);
+	}
+
+	/**
+	 * Count how many functions was added to "after response" with given name, or functions without name (with NULL)
+	 *
+	 * @param string|null $withName
+	 *
+	 * @return int
+	 */
+	public function countAfterFunctions(string $withName = null): int
+	{
+		$counter = 0;
+
+		foreach ($this->workAfterIndex as $functionName) {
+			if ($withName === $functionName) {
+				$counter++;
+			}
+		}
+
+		return $counter;
+	}
 
 }
