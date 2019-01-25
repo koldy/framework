@@ -105,13 +105,14 @@ class Message
         return static::$initialized;
     }
 
-    /**
-     * @param int $constant
-     * @param array|null $data
-     *
-     * @return string
-     * @throws ValidatorException
-     */
+	/**
+	 * @param int $constant
+	 * @param array|null $data
+	 *
+	 * @return string
+	 * @throws ConfigException
+	 * @throws Exception
+	 */
     public static function getMessage(int $constant, array $data = null): string
     {
         if (!static::isInitialized()) {
@@ -126,7 +127,11 @@ class Message
         $return = null;
 
         if ($msg instanceof \Closure) {
-            $return = call_user_func($msg, $data);
+	        try {
+		        $return = call_user_func($msg, $data);
+	        } catch (\Exception | \Throwable $e) {
+		        throw new Exception("Failed to execute custom validator function: {$e->getMessage()}", $e->getCode(), $e);
+	        }
 
             if (!is_string($return)) {
                 throw new ValidatorException("Returned type after calling user function on validator message constant={$constant} is not string");

@@ -197,7 +197,11 @@ class Session
                 throw new SessionException('Can not set any other value to session because all data has been already committed');
             }
 
-            $_SESSION[$key] = call_user_func($functionOnSet);
+	        try {
+		        $_SESSION[$key] = call_user_func($functionOnSet);
+	        } catch (\Exception | \Throwable $e) {
+		        throw new SessionException("Unable to set session value because exception was thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
+	        }
         }
 
         return $_SESSION[$key];

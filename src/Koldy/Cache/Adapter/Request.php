@@ -2,6 +2,8 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Koldy\Cache\Exception as CacheException;
+
 /**
  * This cache adapter holds cached data only in request's scope (memory). As soon as request ends, everything will disappear.
  *
@@ -53,13 +55,14 @@ class Request extends AbstractCacheAdapter
         return $result;
     }
 
-    /**
-     * @param array $keys
-     * @param \Closure $functionOnMissingKeys
-     * @param int|null $seconds
-     *
-     * @return array
-     */
+	/**
+	 * @param array $keys
+	 * @param \Closure $functionOnMissingKeys
+	 * @param int|null $seconds
+	 *
+	 * @return array
+	 * @throws CacheException
+	 */
     public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
     {
         $found = [];
@@ -79,7 +82,11 @@ class Request extends AbstractCacheAdapter
         }
 
         if (count($missing) > 0) {
-            $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
+	        try {
+		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
+	        } catch (\Exception | \Throwable $e) {
+		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
+	        }
             $return = array_merge($return, $setValues);
         }
 
