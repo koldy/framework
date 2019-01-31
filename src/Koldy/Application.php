@@ -553,9 +553,14 @@ class Application
             return static::$configs[$name];
         }
 
-        // otherwise, lookup for config on file system
-        $applicationConfig = static::$configs['application'];
-        $configFiles = $applicationConfig->get('config', []);
+	    // otherwise, lookup for config on file system
+	    $applicationConfig = static::$configs['application'] ?? null;
+
+	    if ($applicationConfig === null) {
+		    throw new ConfigException('The main "application" config is NOT passed to the web app so framework can\'t load other configs because it doesn\'t know where they are');
+	    }
+
+	    $configFiles = $applicationConfig->get('config', []);
 
         $config = new Config($name, $isPointerConfig);
 
@@ -878,7 +883,11 @@ class Application
      */
     public static function getEncoding(): string
     {
-        return static::getConfig('application')->get('encoding', 'UTF-8');
+	    if (static::hasConfig('application')) {
+		    return static::getConfig('application')->get('encoding', 'UTF-8');
+	    } else {
+		    return 'UTF-8';
+	    }
     }
 
     /**
