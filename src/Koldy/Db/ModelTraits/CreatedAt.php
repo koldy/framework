@@ -4,6 +4,7 @@ namespace Koldy\Db\ModelTraits;
 
 use DateTime;
 use DateTimeZone;
+use Koldy\Exception;
 
 /**
  * Trait CreatedAt
@@ -23,9 +24,9 @@ trait CreatedAt
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getCreatedAt(): string
+    public function getCreatedAt(): ?string
     {
         return $this->created_at;
     }
@@ -33,15 +34,16 @@ trait CreatedAt
 	/**
 	 * @param string|null $timezone
 	 *
-	 * @return DateTime
+	 * @return DateTime|null
 	 * @throws \Exception
 	 */
-    public function getCreatedAtDatetime(string $timezone = null): DateTime
+    public function getCreatedAtDatetime(string $timezone = null): ?DateTime
     {
-        if ($timezone === null) {
-            $timezone = 'UTC';
-        }
-        return new DateTime($this->getCreatedAt(), new DateTimeZone($timezone));
+    	if ($this->created_at === null) {
+    		return null;
+	    }
+
+        return new DateTime($this->created_at, new DateTimeZone($timezone ?? 'UTC'));
     }
 
 	/**
@@ -68,27 +70,34 @@ trait CreatedAt
         return $date->getTimestamp() >= $now->getTimestamp();
     }
 
-    /**
-     * Get the timestamp of the created_at value
-     *
-     * @return int
-     */
+	/**
+	 * Get the timestamp of the created_at value
+	 *
+	 * @return int|null
+	 * @throws Exception
+	 */
     public function getCreatedAtTimestamp(): ?int
     {
         if (!$this->hasCreatedAt()) {
             return null;
         }
 
-        return strtotime($this->getCreatedAt() . 'UTC');
+	    $timestamp = strtotime($this->getCreatedAt() . 'UTC');
+
+	    if ($timestamp === false) {
+		    throw new Exception("Unable to get timestamp from \"{$this->getCreatedAt()}\"");
+	    }
+
+	    return $timestamp;
     }
 
     /**
      * Sets the created at value
      *
-     * @param string $createdAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value
+     * @param string|null $createdAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value
      * @return $this
      */
-    public function setCreatedAt(string $createdAt)
+    public function setCreatedAt(?string $createdAt)
     {
         $this->created_at = $createdAt;
         return $this;
@@ -100,9 +109,9 @@ trait CreatedAt
      * @param DateTime $createdAt
      * @return $this
      */
-    public function setCreatedAtDateTime(DateTime $createdAt)
+    public function setCreatedAtDateTime(?DateTime $createdAt)
     {
-        $this->created_at = $createdAt->format('Y-m-d H:i:s');
+        $this->created_at = $createdAt === null ? null : $createdAt->format('Y-m-d H:i:s');
         return $this;
     }
 

@@ -4,6 +4,7 @@ namespace Koldy\Db\ModelTraits;
 
 use DateTime;
 use DateTimeZone;
+use Koldy\Exception;
 
 /**
  * Trait UpdatedAt
@@ -49,21 +50,29 @@ trait UpdatedAt
         if ($timezone === null) {
             $timezone = 'UTC';
         }
+
         return new DateTime($this->getUpdatedAt(), new DateTimeZone($timezone));
     }
 
-    /**
-     * Get the timestamp of the created_at value
-     *
-     * @return int
-     */
+	/**
+	 * Get the timestamp of the created_at value
+	 *
+	 * @return int
+	 * @throws Exception
+	 */
     public function getUpdatedAtTimestamp(): ?int
     {
         if (!$this->hasUpdatedAt()) {
             return null;
         }
 
-        return strtotime($this->getUpdatedAt() . 'UTC');
+        $timestamp = strtotime($this->getUpdatedAt() . 'UTC');
+
+        if ($timestamp === false) {
+        	throw new Exception("Unable to get timestamp from \"{$this->getUpdatedAt()}\"");
+        }
+
+        return $timestamp;
     }
 
     /**
@@ -81,9 +90,9 @@ trait UpdatedAt
      *
      * @param DateTime $updatedAt
      */
-    public function setUpdatedAtDateTime(DateTime $updatedAt): void
+    public function setUpdatedAtDateTime(?DateTime $updatedAt): void
     {
-        $this->updated_at = $updatedAt->format('Y-m-d H:i:s');
+        $this->updated_at = $updatedAt === null ? null : $updatedAt->format('Y-m-d H:i:s');
     }
 
 }

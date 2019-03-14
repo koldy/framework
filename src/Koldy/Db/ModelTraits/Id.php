@@ -12,12 +12,16 @@ trait Id
 {
 
 	/**
-	 * Get the ID
+	 * Get the ID or null.
 	 *
-	 * @return int
+	 * @return int|null
 	 */
-	public function getId(): int
+	public function getId(): ?int
 	{
+		if ($this->id === null) {
+			return null;
+		}
+
 		return (int)$this->id;
 	}
 
@@ -34,9 +38,9 @@ trait Id
 	/**
 	 * Set the ID
 	 *
-	 * @param int $id
+	 * @param int|null $id
 	 */
-	public function setId(int $id): void
+	public function setId(?int $id): void
 	{
 		$this->id = $id;
 	}

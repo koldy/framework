@@ -4,6 +4,7 @@ namespace Koldy\Db\ModelTraits;
 
 use DateTime;
 use DateTimeZone;
+use Koldy\Exception;
 
 /**
  * Trait DeletedAt
@@ -23,7 +24,7 @@ trait DeletedAt
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getDeletedAt(): ?string
     {
@@ -46,30 +47,34 @@ trait DeletedAt
             return null;
         }
 
-        if ($timezone === null) {
-            $timezone = 'UTC';
-        }
-        return new DateTime($this->getDeletedAt(), new DateTimeZone($timezone));
+        return new DateTime($this->getDeletedAt(), new DateTimeZone($timezone ?? 'UTC'));
     }
 
-    /**
-     * Get the timestamp of the created_at value
-     *
-     * @return int
-     */
+	/**
+	 * Get the timestamp of the created_at value
+	 *
+	 * @return int|null
+	 * @throws Exception
+	 */
     public function getDeletedAtTimestamp(): ?int
     {
         if (!$this->isDeleted()) {
             return null;
         }
 
-        return strtotime($this->getDeletedAt() . 'UTC');
+	    $timestamp = strtotime($this->getDeletedAt() . 'UTC');
+
+	    if ($timestamp === false) {
+		    throw new Exception("Unable to get timestamp from \"{$this->getDeletedAt()}\"");
+	    }
+
+	    return $timestamp;
     }
 
     /**
      * Sets the deleted at value
      *
-     * @param string $deletedAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value, or leave undefined
+     * @param string|null $deletedAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value, or leave undefined
      */
     public function setDeletedAt(?string $deletedAt): void
     {
@@ -79,11 +84,11 @@ trait DeletedAt
     /**
      * Set the deleted at date time by passing instance of deletedAt
      *
-     * @param DateTime $deletedAt
+     * @param DateTime|null $deletedAt
      */
-    public function setDeletedAtDateTime(DateTime $deletedAt): void
+    public function setDeletedAtDateTime(?DateTime $deletedAt): void
     {
-        $this->deleted_at = $deletedAt->format('Y-m-d H:i:s');
+        $this->deleted_at = $deletedAt === null ? null : $deletedAt->format('Y-m-d H:i:s');
     }
 
 }
