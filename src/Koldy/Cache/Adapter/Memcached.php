@@ -11,15 +11,17 @@ use Koldy\Cache\Exception as CacheException;
  * In order the use this adapter, your PHP installation must have Memcached extension available. To be sure, run your
  * phpinfo() and check if Memcache adapter is mentioned.
  *
- * @link http://koldy.net/docs/cache/memcached
+ * @link https://koldy.net/framework/docs/2.0/cache/memcached.md
  */
 class Memcached extends AbstractCacheAdapter
 {
 
     /**
+     * If you need access to native instance, you may use this public property
+     *
      * @var NativeMemcached
      */
-    private $memcached = null;
+    public $memcached = null;
 
     /**
      * Get the instance of \Memcached
@@ -44,7 +46,7 @@ class Memcached extends AbstractCacheAdapter
             $this->memcached = isset($this->config['persistent_id']) ? new NativeMemcached($this->config['persistent_id']) : new NativeMemcached();
 
             $adapterOptions = [
-              NativeMemcached::OPT_LIBKETAMA_COMPATIBLE => true // recommended on http://php.net/manual/en/memcached.constants.php
+              NativeMemcached::OPT_LIBKETAMA_COMPATIBLE => true // recommended on https://www.php.net/manual/en/memcached.constants.php
             ];
 
             if (isset($this->config['adapter_options']) && is_array($this->config['adapter_options']) && count($this->config['adapter_options']) > 0) {
@@ -56,7 +58,7 @@ class Memcached extends AbstractCacheAdapter
             /**
              * The following IF will prevent opening new connections on every new class instance
              *
-             * @link http://php.net/manual/en/memcached.construct.php#93536
+             * @link https://www.php.net/manual/en/memcached.construct.php#93536
              */
             if (count($this->memcached->getServerList()) < $serversCount) {
                 $this->memcached->addServers($this->config['servers']);
@@ -85,7 +87,7 @@ class Memcached extends AbstractCacheAdapter
      *
      * @return mixed value or null if key doesn't exists or cache is disabled
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#get
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function get(string $key)
     {
@@ -107,7 +109,7 @@ class Memcached extends AbstractCacheAdapter
      * @return array
      * @throws CacheException
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#get-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function getMulti(array $keys): array
     {
@@ -141,7 +143,7 @@ class Memcached extends AbstractCacheAdapter
      * @param int $seconds [optional] if not set, default is used
      *
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#set
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function set(string $key, $value, int $seconds = null): void
     {
@@ -157,7 +159,7 @@ class Memcached extends AbstractCacheAdapter
      *
      * @throws CacheException
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#set-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
@@ -225,7 +227,7 @@ class Memcached extends AbstractCacheAdapter
      *
      * @return boolean
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#has
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function has(string $key): bool
     {
@@ -239,7 +241,7 @@ class Memcached extends AbstractCacheAdapter
      * @param string $key
      *
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#delete
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function delete(string $key): void
     {
@@ -253,7 +255,7 @@ class Memcached extends AbstractCacheAdapter
      * @param array $keys
      *
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#delete-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function deleteMulti(array $keys): void
     {
@@ -294,7 +296,7 @@ class Memcached extends AbstractCacheAdapter
      *
      * @return int
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#increment-decrement
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function increment(string $key, int $howMuch = 1): int
     {
@@ -310,7 +312,7 @@ class Memcached extends AbstractCacheAdapter
      *
      * @return int
      * @throws ConfigException
-     * @link http://koldy.net/docs/cache#increment-decrement
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function decrement(string $key, int $howMuch = 1): int
     {
@@ -318,15 +320,4 @@ class Memcached extends AbstractCacheAdapter
         return $this->getInstance()->decrement($key, $howMuch);
     }
 
-    /**
-     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
-     * get \Memcached class instance. If you're working with files, then you'll get null.
-     *
-     * @return mixed
-     * @throws ConfigException
-     */
-    public function getNativeInstance()
-    {
-        return $this->getInstance();
-    }
 }

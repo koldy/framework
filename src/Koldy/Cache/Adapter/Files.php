@@ -10,7 +10,7 @@ use Koldy\Log;
 /**
  * This cache adapter will store all of your data into files somewhere on the server's filesystem. Every stored key represents one file on filesystem.
  *
- * @link http://koldy.net/docs/cache/files
+ * @link https://koldy.net/framework/docs/2.0/cache/files.md
  */
 class Files extends AbstractCacheAdapter
 {
@@ -144,7 +144,7 @@ class Files extends AbstractCacheAdapter
      * @param array $keys
      *
      * @return mixed[]
-     * @link http://koldy.net/docs/cache#get-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function getMulti(array $keys): array
     {
@@ -258,7 +258,7 @@ class Files extends AbstractCacheAdapter
      * @throws \Koldy\Config\Exception
      * @throws \Koldy\Exception
      * @throws \Koldy\Filesystem\Exception
-     * @link http://koldy.net/docs/cache#set-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
@@ -301,7 +301,7 @@ class Files extends AbstractCacheAdapter
      * @param string $key
      *
      * @throws CacheException
-     * @link http://koldy.net/docs/cache#delete
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function delete(string $key): void
     {
@@ -327,7 +327,7 @@ class Files extends AbstractCacheAdapter
      * @param array $keys
      *
      * @throws CacheException
-     * @link http://koldy.net/docs/cache#delete-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function deleteMulti(array $keys): void
     {
@@ -376,17 +376,6 @@ class Files extends AbstractCacheAdapter
                 }
             }
         }
-    }
-
-    /**
-     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
-     * get \Memcached class instance. If you're working with files, then you'll get null.
-     *
-     * @return mixed
-     */
-    public function getNativeInstance()
-    {
-        return null;
     }
 
 }

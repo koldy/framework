@@ -12,7 +12,7 @@ use Koldy\Cache\Exception as CacheException;
 /**
  * This cache adapter will store your cache data into database.
  *
- * @link http://koldy.net/docs/cache/db
+ * @link https://koldy.net/framework/docs/2.0/cache/database.md
  */
 class Db extends AbstractCacheAdapter
 {
@@ -33,12 +33,11 @@ class Db extends AbstractCacheAdapter
         return $this->config['adapter'] ?? null;
     }
 
-    /**
-     * @return AbstractAdapter
-     * @throws \Koldy\Config\Exception
-     * @throws \Koldy\Db\Exception
-     * @throws \Koldy\Exception
-     */
+	/**
+	 * @return AbstractAdapter
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     protected function getAdapter(): AbstractAdapter
     {
         return DbAdapter::getAdapter($this->getAdapterConnection());
@@ -175,7 +174,7 @@ class Db extends AbstractCacheAdapter
      * @throws CacheException
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
-     * @link http://koldy.net/docs/cache#get-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function getMulti(array $keys): array
     {
@@ -219,7 +218,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      * @throws \Koldy\Json\Exception
-     * @link http://koldy.net/docs/cache#set-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
@@ -302,7 +301,7 @@ class Db extends AbstractCacheAdapter
      *
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
-     * @link http://koldy.net/docs/cache#delete-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function deleteMulti(array $keys): void
     {
@@ -310,17 +309,4 @@ class Db extends AbstractCacheAdapter
         $delete->whereIn('id', $keys)->exec();
     }
 
-    /**
-     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
-     * get \Memcached class instance. If you're working with files, then you'll get null.
-     *
-     * @return mixed
-     * @throws \Koldy\Config\Exception
-     * @throws \Koldy\Db\Exception
-     * @throws \Koldy\Exception
-     */
-    public function getNativeInstance()
-    {
-        return $this->getAdapter();
-    }
 }

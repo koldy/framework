@@ -5,12 +5,12 @@ namespace Koldy\Cache\Adapter;
 use Koldy\Cache\Exception as CacheException;
 
 /**
- * This cache adapter holds cached data only in request's scope (memory). As soon as request ends, everything will disappear.
+ * This cache adapter holds cached data only in request's scope (memory, or runtime). As soon as request/script ends, everything will
+ * disappear. It's best use is in CLI scripts.
  *
- * @link http://koldy.net/docs/cache/request
- * @deprecated
+ * @link https://koldy.net/framework/docs/2.0/cache/runtime.md
  */
-class Request extends AbstractCacheAdapter
+class Runtime extends AbstractCacheAdapter
 {
 
     /**
@@ -42,7 +42,7 @@ class Request extends AbstractCacheAdapter
      * @param array $keys
      *
      * @return array
-     * @link http://koldy.net/docs/cache#get-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function getMulti(array $keys): array
     {
@@ -103,6 +103,7 @@ class Request extends AbstractCacheAdapter
     public function set(string $key, $value, int $seconds = null): void
     {
         $this->data[$key] = $value;
+        // TODO: Respect time limit
     }
 
     /**
@@ -111,7 +112,7 @@ class Request extends AbstractCacheAdapter
      * @param array $keyValuePairs
      * @param int $seconds [optional] if not set, default is used
      *
-     * @link http://koldy.net/docs/cache#set-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
@@ -145,7 +146,7 @@ class Request extends AbstractCacheAdapter
      *
      * @param array $keys
      *
-     * @link http://koldy.net/docs/cache#delete-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function deleteMulti(array $keys): void
     {
@@ -170,14 +171,4 @@ class Request extends AbstractCacheAdapter
         // nothing to do
     }
 
-    /**
-     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
-     * get \Memcached class instance. If you're working with files, then you'll get null.
-     *
-     * @return mixed
-     */
-    public function getNativeInstance()
-    {
-        return null;
-    }
 }

@@ -7,7 +7,7 @@ use Koldy\Cache\Exception as CacheException;
 /**
  * Abstract class for making any kind of new cache adapter. If you want to create your own cache adapter, then extend this class.
  *
- * @link http://koldy.net/docs/cache#custom
+ * @link https://koldy.net/framework/docs/2.0/cache.md#creating-custom-cache-storage-adapter
  */
 abstract class AbstractCacheAdapter
 {
@@ -75,7 +75,7 @@ abstract class AbstractCacheAdapter
      * @param string $key
      *
      * @return mixed value or null if key doesn't exists or cache is disabled
-     * @link http://koldy.net/docs/cache#get
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function get(string $key);
 
@@ -85,7 +85,7 @@ abstract class AbstractCacheAdapter
      * @param array $keys
      *
      * @return mixed value or null if key doesn't exists or cache is disabled
-     * @link http://koldy.net/docs/cache#get-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function getMulti(array $keys): array;
 
@@ -96,7 +96,7 @@ abstract class AbstractCacheAdapter
      * @param mixed $value
      * @param int|null $seconds [optional] if not set, default is used
      *
-     * @link http://koldy.net/docs/cache#set
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function set(string $key, $value, int $seconds = null): void;
 
@@ -106,7 +106,7 @@ abstract class AbstractCacheAdapter
      * @param array $keyValuePairs
      * @param int|null $seconds
      *
-     * @link http://koldy.net/docs/cache#set-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function setMulti(array $keyValuePairs, int $seconds = null): void;
 
@@ -138,7 +138,7 @@ abstract class AbstractCacheAdapter
      * @param string $key
      *
      * @return boolean
-     * @link http://koldy.net/docs/cache#has
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function has(string $key): bool;
 
@@ -147,7 +147,7 @@ abstract class AbstractCacheAdapter
      *
      * @param string $key
      *
-     * @link http://koldy.net/docs/cache#delete
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function delete(string $key): void;
 
@@ -156,7 +156,7 @@ abstract class AbstractCacheAdapter
      *
      * @param array $keys
      *
-     * @link http://koldy.net/docs/cache#delete-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function deleteMulti(array $keys): void;
 
@@ -214,7 +214,7 @@ abstract class AbstractCacheAdapter
      * @param int $howMuch [optional] default 1
      *
      * @return int
-     * @link http://koldy.net/docs/cache#increment-decrement
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function increment(string $key, int $howMuch = 1): int
     {
@@ -238,7 +238,7 @@ abstract class AbstractCacheAdapter
      * @param int $howMuch
      *
      * @return int
-     * @link http://koldy.net/docs/cache#increment-decrement
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function decrement(string $key, int $howMuch = 1): int
     {
@@ -254,13 +254,5 @@ abstract class AbstractCacheAdapter
             return -1;
         }
     }
-
-    /**
-     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
-     * get \Memcached class instance. If you're working with files, then you'll get null.
-     *
-     * @return mixed
-     */
-    abstract public function getNativeInstance();
 
 }

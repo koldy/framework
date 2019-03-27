@@ -9,7 +9,7 @@ use Koldy\Cache\Exception as CacheException;
  *
  * This class handles the cache adapter instance, but using it, nothing will happen. This class will be initialized if you try to use adapter that is disabled.
  *
- * @link http://koldy.net/docs/cache/devnull
+ * @link https://koldy.net/framework/docs/2.0/cache/dev-null.md
  */
 class DevNull extends AbstractCacheAdapter
 {
@@ -31,7 +31,7 @@ class DevNull extends AbstractCacheAdapter
      * @param array $keys
      *
      * @return mixed[]
-     * @link http://koldy.net/docs/cache#get-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function getMulti(array $keys): array
     {
@@ -58,7 +58,7 @@ class DevNull extends AbstractCacheAdapter
      * @param array $keyValuePairs
      * @param int|null $seconds
      *
-     * @link http://koldy.net/docs/cache#set-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
@@ -91,7 +91,7 @@ class DevNull extends AbstractCacheAdapter
      *
      * @param array $keys
      *
-     * @link http://koldy.net/docs/cache#delete-multi
+     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function deleteMulti(array $keys): void
     {
@@ -182,14 +182,4 @@ class DevNull extends AbstractCacheAdapter
         return $howMuch;
     }
 
-    /**
-     * Gets native instance of the adapter on which we're working on. If we're working with Memcached, then you'll
-     * get \Memcached class instance. If you're working with files, then you'll get null.
-     *
-     * @return mixed
-     */
-    public function getNativeInstance()
-    {
-        return null;
-    }
 }
