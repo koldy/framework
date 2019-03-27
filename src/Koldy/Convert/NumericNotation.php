@@ -2,6 +2,8 @@
 
 namespace Koldy\Convert;
 
+use Koldy\Exception\ExtensionException;
+
 /**
  * Someday, you'll encounter the situation when PHP can't handle really big numbers. If you search the internet, you'll
  * find out that you should be using PHP's BC Math lib that treats big numbers as string, which is fine. But, after a
@@ -11,7 +13,7 @@ namespace Koldy\Convert;
  * getAvailableNumbers() method.
  *
  * This class requires BC Math which is available since PHP 4.0.4
- * @link http://php.net/manual/en/book.bc.php
+ * @link https://www.php.net/manual/en/book.bc.php
  */
 class NumericNotation
 {
@@ -84,17 +86,30 @@ class NumericNotation
       61 => 'Z'
     ];
 
-    /**
-     * Convert decimal number into your numeric system
-     *
-     * @param string $number
-     *
-     * @return string
-     * @throws Exception
-     * @example 40487 is ax1
-     */
+	/**
+	 * @throws ExtensionException
+	 */
+    private static function checkExtensionOrFail(): void
+    {
+    	if (!extension_loaded('bcmath')) {
+    		throw new ExtensionException('BCMath extension is not loaded. Visit https://www.php.net/manual/en/bc.installation.php for more info');
+	    }
+    }
+
+	/**
+	 * Convert decimal number into your numeric system
+	 *
+	 * @param string $number
+	 *
+	 * @return string
+	 * @throws Exception
+	 * @throws ExtensionException
+	 * @example 40487 is ax1
+	 */
     public static function dec2big(string $number): string
     {
+    	static::checkExtensionOrFail();
+
         $alphabet = static::NUMBERS;
         $number = trim((string)$number);
 
@@ -117,17 +132,20 @@ class NumericNotation
         return $s;
     }
 
-    /**
-     * The reverse procedure, convert number from your numeric system into decimal number
-     *
-     * @param string $alpha
-     *
-     * @return string because real number can reach the MAX_INT
-     * @throws Exception
-     * @example ax1 is 40487
-     */
+	/**
+	 * The reverse procedure, convert number from your numeric system into decimal number
+	 *
+	 * @param string $alpha
+	 *
+	 * @return string because real number can reach the MAX_INT
+	 * @throws Exception
+	 * @throws ExtensionException
+	 * @example ax1 is 40487
+	 */
     public static function big2dec(string $alpha): string
     {
+	    static::checkExtensionOrFail();
+
         if (strlen($alpha) <= 0) {
             throw new Exception('Got empty string in big2dec, can not proceed');
         }

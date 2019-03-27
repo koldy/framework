@@ -22,7 +22,6 @@
 		"ext-memcached": "*",
 		"ext-openssl": "*",
 		"ext-json": "*",
-		"ext-bcmath": "*",
 		"ext-curl": "*",
 		"ext-iconv": "*",
 		"ext-ctype": "*"
