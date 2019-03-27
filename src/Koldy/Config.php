@@ -73,14 +73,14 @@ class Config
         return $this->path;
     }
 
-    /**
-     * After config instance is constructed, you should load configuration from file by using this method. Otherwise,
-     * configuration should be set by using set or setData methods.
-     *
-     * @param string $path
-     *
-     * @throws Exception
-     */
+	/**
+	 * After config instance is constructed, you should load configuration from file by using this method. Otherwise,
+	 * configuration should be set by using set or setData methods.
+	 *
+	 * @param string $path
+	 *
+	 * @throws ConfigException
+	 */
     public function loadFrom(string $path): void
     {
         $this->path = $path;
@@ -98,10 +98,10 @@ class Config
         }
     }
 
-    /**
-     * Reload configuration from file system if config was loaded from file system
-     * @throws Exception
-     */
+	/**
+	 * Reload configuration from file system if config was loaded from file system
+	 * @throws ConfigException
+	 */
     public function reload(): void
     {
         if ($this->path !== null) {
@@ -131,12 +131,12 @@ class Config
         return $this->isPointerConfig;
     }
 
-    /**
-     * Gets the whole configuration array
-     *
-     * @return array
-     * @throws Exception
-     */
+	/**
+	 * Gets the whole configuration array
+	 *
+	 * @return array
+	 * @throws ConfigException
+	 */
     public function getData(): array
     {
         if (!is_array($this->data)) {
@@ -156,16 +156,16 @@ class Config
         return $this->data !== null && count($this->data) > 0;
     }
 
-    /**
-     * Returns true if loaded configuration is older then the seconds passed as first argument, `false` otherwise.
-     * This is useful if your CLI script is running for the long time and there's possibility that config
-     * was updated in meantime.
-     *
-     * @param int $numberOfSeconds
-     *
-     * @return bool
-     * @throws Exception
-     */
+	/**
+	 * Returns true if loaded configuration is older then the seconds passed as first argument, `false` otherwise.
+	 * This is useful if your CLI script is running for the long time and there's possibility that config
+	 * was updated in meantime.
+	 *
+	 * @param int $numberOfSeconds
+	 *
+	 * @return bool
+	 * @throws ConfigException
+	 */
     public function isOlderThen(int $numberOfSeconds): bool
     {
         if ($this->loadedAt == null) {
@@ -191,14 +191,14 @@ class Config
         $this->data[$key] = $value;
     }
 
-    /**
-     * Returns true if requested key exists in current configuration, false otherwise.
-     *
-     * @param string $key
-     *
-     * @return bool
-     * @throws Exception
-     */
+	/**
+	 * Returns true if requested key exists in current configuration, false otherwise.
+	 *
+	 * @param string $key
+	 *
+	 * @return bool
+	 * @throws ConfigException
+	 */
     public function has(string $key): bool
     {
         if (!is_array($this->data)) {
@@ -208,16 +208,16 @@ class Config
         return array_key_exists($key, $this->data);
     }
 
-    /**
-     * Gets the value on requested key. First argument is key's name, second argument is default value you want
-     * to get if key is not set.
-     *
-     * @param string $key
-     * @param mixed $defaultValue
-     *
-     * @return mixed
-     * @throws Exception
-     */
+	/**
+	 * Gets the value on requested key. First argument is key's name, second argument is default value you want
+	 * to get if key is not set.
+	 *
+	 * @param string $key
+	 * @param mixed $defaultValue
+	 *
+	 * @return mixed
+	 * @throws ConfigException
+	 */
     public function get(string $key, $defaultValue = null)
     {
         if (!is_array($this->data)) {
@@ -321,7 +321,7 @@ class Config
             }
 
             if ($counter == 50) {
-                throw new ConfigException('Unable to get first key in config after 50 \'redirects\'');
+                throw new ConfigException('Unable to get first key in config after 50 "redirects"');
             }
         }
 

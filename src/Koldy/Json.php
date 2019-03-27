@@ -17,7 +17,7 @@ class Json
      *
      * @return mixed in JSON format
      * @throws Exception
-     * @link http://koldy.net/docs/json#encode-decode
+     * @link https://koldy.net/framework/docs/2.0/json.md
      */
     public static function encode($data): string
     {
@@ -40,7 +40,7 @@ class Json
      *
      * @return array
      * @throws Exception
-     * @link http://koldy.net/docs/json#encode-decode
+     * @link https://koldy.net/framework/docs/2.0/json.md
      */
     public static function decode(string $stringData): array
     {
@@ -63,7 +63,7 @@ class Json
      *
      * @return \stdClass
      * @throws Exception
-     * @link http://koldy.net/docs/json#encode-decode
+     * @link https://koldy.net/framework/docs/2.0/json.md
      */
     public static function decodeToObj(string $stringData): \stdClass
     {

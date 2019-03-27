@@ -17,7 +17,7 @@ use stdClass;
  * You MUSTN'T use it! This class will use PHP internally by it self. You just
  * configure it all and watch the magic.
  *
- * @link http://koldy.net/docs/session/db
+ * @link https://koldy.net/framework/docs/2.0/session/database.md
  */
 class Db implements SessionHandlerInterface
 {
@@ -64,9 +64,11 @@ class Db implements SessionHandlerInterface
         return $this->config['connection'];
     }
 
-    /**
-     * @return AbstractAdapter
-     */
+	/**
+	 * @return AbstractAdapter
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     protected function getAdapter(): AbstractAdapter
     {
         return KoldyDb::getAdapter($this->getAdapterConnection());
@@ -100,14 +102,16 @@ class Db implements SessionHandlerInterface
         return true;
     }
 
-    /**
-     * Get the session data from database
-     *
-     * @param string $sessionid
-     *
-     * @return null|stdClass if data doesn't exist in database
-     * @throws DbException
-     */
+	/**
+	 * Get the session data from database
+	 *
+	 * @param string $sessionid
+	 *
+	 * @return null|stdClass if data doesn't exist in database
+	 * @throws DbException
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     private function getDbData($sessionid): ?stdClass
     {
         $r = null;
@@ -136,12 +140,14 @@ class Db implements SessionHandlerInterface
         return $r;
     }
 
-    /**
-     * @param string $sessionid
-     *
-     * @return string
-     * @throws DbException
-     */
+	/**
+	 * @param string $sessionid
+	 *
+	 * @return string
+	 * @throws DbException
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function read($sessionid)
     {
         $sess = $this->getDbData($sessionid);
@@ -157,13 +163,16 @@ class Db implements SessionHandlerInterface
         }
     }
 
-    /**
-     * @param string $sessionid
-     * @param string $sessiondata
-     *
-     * @return bool
-     * @throws DbException
-     */
+	/**
+	 * @param string $sessionid
+	 * @param string $sessiondata
+	 *
+	 * @return bool
+	 * @throws DbException
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Json\Exception
+	 */
     public function write($sessionid, $sessiondata)
     {
         $adapter = $this->getAdapter();
@@ -222,11 +231,13 @@ class Db implements SessionHandlerInterface
         }
     }
 
-    /**
-     * @param string $sessionid
-     *
-     * @return bool
-     */
+	/**
+	 * @param string $sessionid
+	 *
+	 * @return bool
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function destroy($sessionid)
     {
         if ($this->disableLog) {
@@ -249,11 +260,13 @@ class Db implements SessionHandlerInterface
         }
     }
 
-    /**
-     * @param int $maxlifetime
-     *
-     * @return bool
-     */
+	/**
+	 * @param int $maxlifetime
+	 *
+	 * @return bool
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function gc($maxlifetime)
     {
         $timestamp = time() - $maxlifetime;

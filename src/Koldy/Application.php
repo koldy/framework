@@ -16,7 +16,7 @@ use Throwable;
  *
  * Enjoy!
  *
- * @link http://koldy.net/docs/how-framework-works
+ * @link https://koldy.net/framework/docs/2.0/architecture-concepts.md
  */
 class Application
 {
@@ -617,9 +617,10 @@ class Application
         return isset(static::$configs[$name]);
     }
 
-    /**
-     * Reload all configs that were loaded from file system
-     */
+	/**
+	 * Reload all configs that were loaded from file system
+	 * @throws ConfigException
+	 */
     public static function reloadConfig(): void
     {
         foreach (static::$configs as $config) {
@@ -879,7 +880,7 @@ class Application
      * @return string
      * @throws Exception
      *
-     * @link http://www.php.net/manual/en/mbstring.supported-encodings.php
+     * @link https://www.php.net/manual/en/mbstring.supported-encodings.php
      */
     public static function getEncoding(): string
     {

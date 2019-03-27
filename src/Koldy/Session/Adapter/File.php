@@ -11,7 +11,7 @@ use SessionHandlerInterface;
  * storage folder. You MUSTN'T use it! This class will use PHP internally
  * by it self. You just configure it all and watch the magic.
  *
- * @link http://koldy.net/docs/session/file
+ * @link https://koldy.net/framework/docs/2.0/session/file.md
  */
 class File implements SessionHandlerInterface
 {
@@ -81,12 +81,15 @@ class File implements SessionHandlerInterface
         return (string)@file_get_contents("{$this->savePath}{$sessionid}.txt");
     }
 
-    /**
-     * @param string $sessionid
-     * @param string $sessiondata
-     *
-     * @return bool
-     */
+	/**
+	 * @param string $sessionid
+	 * @param string $sessiondata
+	 *
+	 * @return bool
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Filesystem\Exception
+	 */
     public function write($sessionid, $sessiondata)
     {
         $wasWritten = !(file_put_contents("{$this->savePath}{$sessionid}.txt", $sessiondata) === false);
