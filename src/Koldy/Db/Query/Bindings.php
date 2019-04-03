@@ -77,6 +77,7 @@ class Bindings
 		$parameter = str_replace('\'', '', $parameter);
 		$parameter = str_replace('"', '', $parameter);
 		$parameter = str_replace('__', '_', $parameter);
+		$parameter = str_replace(':', '_', $parameter);
 
 		return strtolower($parameter) . static::getNextIndex();
 	}
