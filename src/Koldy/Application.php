@@ -109,6 +109,14 @@ class Application
     protected static $cliName = null;
 
     /**
+     * The name of the app. Can be set to anything. Not required, but sometimes useful when working with huge multi-domain system.
+     *
+     * @var string
+     * @example website
+     */
+    protected static $appName = null;
+
+    /**
      * Current domain on which we're running
      *
      * @var string
@@ -379,6 +387,7 @@ class Application
 
         static::$isLive = $configInstance->get('live') === true;
         static::$configs['application'] = $configInstance;
+	    static::$appName = $configInstance->get('app_name');
     }
 
     /**
@@ -641,6 +650,16 @@ class Application
         }
 
         return static::$domain;
+    }
+
+	/**
+	 * Get the application name from config or null if not set
+	 *
+	 * @return string|null
+	 */
+    public static function name(): ?string
+    {
+    	return static::$appName;
     }
 
     /**
