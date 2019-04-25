@@ -56,7 +56,8 @@ class Log
 
 	/**
 	 * Random number generated only once per script (either HTTP or CLI), so if you reset the "who", random number
-	 * will stay the same
+	 * will stay the same. This is used in logging so you can distinguish the same log message in two different
+	 * HTTP requests or the same log message in two same CLI scripts running in parallel.
 	 *
 	 * @var null|int
 	 */
@@ -200,6 +201,17 @@ class Log
     public static function getWho(): string
     {
         return static::$who;
+    }
+
+	/**
+	 * Get the "unique" random number generated on log class initialization. This number can be used for some other
+	 * logging identifications.
+	 *
+	 * @return int
+	 */
+    public static function getRandomNumber(): int
+    {
+    	return static::$randomNumber;
     }
 
     /**
