@@ -83,8 +83,8 @@ class Message
       self::NO_RECORD => 'This value does not exists in database', // {param}, {value}, {field}
       self::CSRF_FAILED => 'CSRF check has failed', // {param}
       self::BOOL => 'Parameter is not boolean', // {param}
-      self::STARTS_WITH => 'Value should start with {param}', // {param}, {value}
-      self::ENDS_WITH => 'Value should end with {param}' // {param}, {value}
+      self::STARTS_WITH => 'Value should start with {startsWith}', // {param}, {value}, {startsWith}
+      self::ENDS_WITH => 'Value should end with {endsWith}' // {param}, {value}, {endsWith}
     ];
 
     /**

@@ -1920,6 +1920,7 @@ class Validator
 
         if (!Util::startsWith($value, $startsWith)) {
             return Message::getMessage(Message::STARTS_WITH, [
+            	'startsWith' => $startsWith,
                 'param' => $parameter,
                 'value' => $value
             ]);
@@ -1973,6 +1974,7 @@ class Validator
 
         if (!Util::endsWith($value, $endsWith)) {
             return Message::getMessage(Message::ENDS_WITH, [
+            	'endsWith' => $endsWith,
                 'param' => $parameter,
                 'value' => $value
             ]);
