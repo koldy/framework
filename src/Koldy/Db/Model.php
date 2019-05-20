@@ -231,46 +231,40 @@ abstract class Model implements Serializable
 	/**
 	 * Begin transaction using this model's DB adapter
 	 *
-	 * @param bool $forceBeginTransaction - if false, then transaction won't be started if there's already active transaction
-	 *
 	 * @throws Adapter\Exception
 	 * @throws Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-	public static function beginTransaction(bool $forceBeginTransaction = true): void
+	public static function beginTransaction(): void
 	{
-		static::getAdapter()->beginTransaction($forceBeginTransaction);
+		static::getAdapter()->beginTransaction();
 	}
 
 	/**
 	 * Commit current transaction using this model's DB adapter
 	 *
-	 * @param bool $forceCommit - if false, then commit won't be made if there's already another active transaction
-	 *
 	 * @throws Adapter\Exception
 	 * @throws Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-	public static function commit(bool $forceCommit = true): void
+	public static function commit(): void
 	{
-		static::getAdapter()->commit($forceCommit);
+		static::getAdapter()->commit();
 	}
 
 	/**
 	 * Rollback current transaction on this model's DB adapter
 	 *
-	 * @param bool $forceRollback - if false, then rollback won't be made if there's already another active transaction
-	 *
 	 * @throws Adapter\Exception
 	 * @throws Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-	public static function rollBack(bool $forceRollback = true): void
+	public static function rollBack(): void
 	{
-		static::getAdapter()->rollBack($forceRollback);
+		static::getAdapter()->rollBack();
 	}
 
     /**

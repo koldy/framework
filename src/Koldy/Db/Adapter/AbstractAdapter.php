@@ -4,6 +4,7 @@ namespace Koldy\Db\Adapter;
 
 use Koldy\Db\Query;
 use Koldy\Db\Query\Exception as QueryException;
+use Koldy\Log;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -37,9 +38,11 @@ abstract class AbstractAdapter
     private $lastQuery = null;
 
 	/**
-	 * @var bool
+	 * Number of "active" database transactions; allows "nesting" multiple db transactions
+	 *
+	 * @var int
 	 */
-	private $inTransaction = false;
+	private $transactions = 0;
 
     /**
      * AbstractAdapter constructor.
@@ -168,55 +171,55 @@ abstract class AbstractAdapter
 	/**
 	 * Begin SQL transaction
 	 *
-	 * @param bool $forceBeginTransaction - if false, then transaction won't be started if there's already active transaction
-	 *
 	 * @throws Exception
 	 */
-	public function beginTransaction(bool $forceBeginTransaction = true): void
+	public function beginTransaction(): void
 	{
-		if ($forceBeginTransaction || (!$forceBeginTransaction && !$this->inTransaction)) {
-			if ($this->getPDO()->beginTransaction() === false) {
+		if ($this->transactions === 0) {
+			if ($this->getPDO()->beginTransaction()) {
+				Log::sql("{$this->configKey}>>>PDO beginTransaction");
+			} else {
 				throw new Exception("Can not start PDO transaction for adapter={$this->getConfigKey()}");
 			}
-
-			$this->inTransaction = true;
 		}
+
+		$this->transactions++;
 	}
 
 	/**
 	 * Commit SQL transaction
 	 *
-	 * @param bool $forceCommit - if false, then commit won't be made if there's already another active transaction
-	 *
 	 * @throws Exception
 	 */
-	public function commit(bool $forceCommit = true): void
+	public function commit(): void
 	{
-		if ($forceCommit || (!$forceCommit && !$this->inTransaction)) {
-			if ($this->getPDO()->commit() === false) {
+		if ($this->transactions === 1) {
+			if ($this->getPDO()->commit()) {
+				Log::sql("{$this->configKey}>>>PDO commit");
+			} else {
 				throw new Exception("Can not commit PDO transaction for adapter={$this->getConfigKey()}");
 			}
-
-			$this->inTransaction = false;
 		}
+
+		$this->transactions--;
 	}
 
 	/**
 	 * Rollback previously started SQL transaction
 	 *
-	 * @param bool $forceRollback - if false, then rollback won't be made if there's already another active transaction
-	 *
 	 * @throws Exception
 	 */
-	public function rollBack(bool $forceRollback = true): void
+	public function rollBack(): void
 	{
-		if ($forceRollback || (!$forceRollback && !$this->inTransaction)) {
-			if ($this->getPDO()->rollBack() === false) {
+		if ($this->transactions === 1) {
+			if ($this->getPDO()->rollBack()) {
+				Log::sql("{$this->configKey}>>>PDO rollBack");
+			} else {
 				throw new Exception("Can not commit PDO transaction for adapter={$this->getConfigKey()}");
 			}
-
-			$this->inTransaction = false;
 		}
+
+		$this->transactions--;
 	}
 
     /**
