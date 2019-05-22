@@ -3,6 +3,7 @@
 namespace Koldy\Mail\Adapter;
 
 use Koldy\Application;
+use Koldy\Convert;
 use Koldy\Exception;
 use Koldy\Log;
 
@@ -41,20 +42,42 @@ class Simulate extends CommonMailAdapter
 
         $to = implode(', ', $to);
 
-        if (count($cc) > 0) {
-            $cc = ' CC=' . implode(', ', $cc);
+        $log = ['SIMULATION of e-mail that would be sent'];
+        $log[] = "From: {$from}";
+        $log[] = "To: {$to}";
+
+        if (count($cc)) {
+        	$log[] = 'CC: ' . implode(', ', $cc);
         }
 
-        if (count($bcc) > 0) {
-            $bcc = ' BCC=' . implode(', ', $bcc);
+        if (count($bcc)) {
+        	$log[] = 'BCC: ' . implode(', ', $bcc);
         }
 
-        $replyTo = '';
-        if ($this->replyTo != null) {
-            $replyTo = ' replyTo=' . $this->replyTo;
+        $log[] = "Subject: {$this->subject}";
+
+        if ($this->replyTo !== null) {
+        	$log[] = "Reply-to: {$this->replyTo}";
         }
 
-        Log::info("E-mail [SIMULATED] is sent FROM={$from}{$replyTo} TO={$to}{$cc}{$bcc} with subject \"{$this->subject}\" and content length: " . mb_strlen($this->body, Application::getEncoding()));
+        $log[] = 'Content length: ' . mb_strlen($this->body, Application::getEncoding());
+
+	    $totalFiles = count($this->attachedFiles);
+
+        if ($totalFiles > 0) {
+        	$totalFileSize = 0;
+
+        	foreach ($this->attachedFiles as $key => $file) {
+        		$index = $key + 1;
+        		$log[] = "Attached file {$index}: {$file['name']} ({$file['path']})";
+        		$totalFileSize += filesize($file['path']);
+	        }
+
+        	$totalSize = Convert::bytesToString($totalFileSize);
+        	$log[] = "Total size of {$totalFiles} attached file(s): {$totalSize}";
+        }
+
+        Log::info(implode("\n", $log));
     }
 
 }

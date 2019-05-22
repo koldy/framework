@@ -2,6 +2,8 @@
 
 namespace Koldy\Mail\Adapter;
 
+use InvalidArgumentException;
+
 /**
  * Class CommonMailAdapter
  * @package Koldy\Mail\Adapter
@@ -187,16 +189,34 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
     /**
      * Attach file to e-mail
      *
-     * @param string $filePath
-     * @param string $name [optional]
+     * @param string $fullFilePath
+     * @param string $attachedAsName [optional]
      *
      * @return $this
      */
-    public function attachFile(string $filePath, string $name = null)
+    public function attachFile(string $fullFilePath, string $attachedAsName = null)
     {
+    	if (strlen($fullFilePath) == 0) {
+    		throw new InvalidArgumentException('Attached file path can not be empty string');
+	    }
+
+    	if ($attachedAsName === null) {
+    		$attachedAsName = basename($fullFilePath);
+	    }
+
+	    $fileName = basename($fullFilePath);
+
+    	if (strpos($fileName, '.') === false) {
+    		throw new InvalidArgumentException("Unable to attach file from path={$fullFilePath} because file extension can't be detected");
+	    }
+
+    	$extension = substr($fileName, strrpos($fileName, '.') + 1);
+
         $this->attachedFiles[] = [
-          'path' => $filePath,
-          'name' => $name
+          'fullFilePath' => $fullFilePath,
+          'fileName' => $fileName,
+	      'extension' => $extension,
+          'attachedAsName' => $attachedAsName
         ];
 
         return $this;

@@ -185,14 +185,14 @@ class PHPMailer extends AbstractMailAdapter
     }
 
     /**
-     * @param string $filePath
-     * @param string $name
+     * @param string $fullFilePath
+     * @param string $attachedAsName
      *
      * @return $this
      */
-    public function attachFile(string $filePath, string $name = null)
+    public function attachFile(string $fullFilePath, string $attachedAsName = null)
     {
-        $this->mailer->addAttachment($filePath, $name ?? '');
+        $this->mailer->addAttachment($fullFilePath, $attachedAsName ?? '');
         return $this;
     }
 

@@ -2,7 +2,9 @@
 
 namespace Koldy\Mail\Adapter;
 
+use Koldy\Http\Mime;
 use Koldy\Mail\Exception;
+use Koldy\Util;
 
 /**
  * This mail adapter class will use just internal mail() function to send an e-mail.
@@ -13,9 +15,11 @@ use Koldy\Mail\Exception;
 class Mail extends CommonMailAdapter
 {
 
-    /**
-     * @throws Exception
-     */
+	/**
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Http\Exception
+	 */
     public function send(): void
     {
         $charset = $this->config['charset'] ?? 'utf-8';
@@ -61,8 +65,50 @@ class Mail extends CommonMailAdapter
 
         $body = $this->body;
 
-        if (count($this->attachedFiles) > 0) {
-            throw new Exception('Unable to use sendmail to send file attachments, feature not implemented yet');
+        $attachmentsCount = count($this->attachedFiles);
+
+        if ($attachmentsCount > 0) {
+	        $boundary = md5(Util::randomString(17)); // boundary token to be used
+	        $originalBody = $body;
+
+            $this->setHeader('MIME-Version', '1.0');
+            $this->setHeader('Content-Type', "multipart/mixed; boundary = {$boundary}\r\n");
+
+	        $body = "--$boundary\r\n";
+	        $body .= "Content-Type: text/plain; charset=ISO-8859-1\r\n";
+	        $body .= "Content-Transfer-Encoding: base64\r\n\r\n";
+	        $body .= chunk_split(base64_encode($originalBody));
+
+	        foreach ($this->attachedFiles as $file) {
+	        	$fullFilePath = $file['fullFilePath'];
+	        	$extension = $file['extension'];
+	        	$attachedAsName = $file['attachedAsName'];
+	        	$fileSize = filesize($fullFilePath);
+	        	$fileType = Mime::getMimeByExtension($extension);
+
+		        //read file
+		        $fp = fopen($fullFilePath, 'r');
+
+		        if ($fp === false) {
+		        	if (is_file($fullFilePath)) {
+				        throw new Exception("Can not attach file to email because file can not be opened; path={$fullFilePath}");
+			        } else {
+		        		throw new Exception("Can not attach file to email because file is not found on {$fullFilePath}");
+			        }
+		        }
+
+		        $fileContent = fread($fp, $fileSize);
+		        fclose($fp);
+		        $encodedFileContent = chunk_split(base64_encode($fileContent)); // (RFC 2045)
+		        $attachmentId = rand(1000, 99999);
+
+		        $body .= "--{$boundary}\r\n";
+		        $body .= "Content-Type: {$fileType}; name={$attachedAsName}\r\n";
+		        $body .= "Content-Disposition: attachment; filename={$attachedAsName}\r\n";
+		        $body .= "Content-Transfer-Encoding: base64\r\n";
+		        $body .= "X-Attachment-Id: {$attachmentId}\r\n\r\n";
+		        $body .= $encodedFileContent;
+	        }
         }
 
         if (mail($to, $this->subject, $body, implode("\r\n", $this->getHeadersList())) === false) {

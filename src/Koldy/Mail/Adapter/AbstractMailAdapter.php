@@ -113,13 +113,13 @@ abstract class AbstractMailAdapter
     /**
      * Attach file into this e-mail
      *
-     * @param string $filePath
-     * @param string $name
+     * @param string $fullFilePath
+     * @param string $attachedAsName
      *
      * @return $this
      * @link http://koldy.net/docs/mail#header-and-files
      */
-    abstract public function attachFile(string $filePath, string $name = null);
+    abstract public function attachFile(string $fullFilePath, string $attachedAsName = null);
 
     /**
      * Actually sends an e-mail
