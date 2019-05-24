@@ -72,9 +72,9 @@ class Mail extends CommonMailAdapter
 	        $originalBody = $body;
 
             $this->setHeader('MIME-Version', '1.0');
-            $this->setHeader('Content-Type', "multipart/mixed; boundary = {$boundary}\r\n");
+            $this->setHeader('Content-Type', "multipart/mixed; boundary = {$boundary}");
 
-	        $body = "--$boundary\r\n";
+	        $body = "--{$boundary}\r\n";
 	        $body .= "Content-Type: text/plain; charset=ISO-8859-1\r\n";
 	        $body .= "Content-Transfer-Encoding: base64\r\n\r\n";
 	        $body .= chunk_split(base64_encode($originalBody));
