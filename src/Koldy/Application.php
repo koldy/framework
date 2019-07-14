@@ -919,6 +919,8 @@ class Application
      */
     public static function init(string $uri = null): void
     {
+    	static::$uri = $uri;
+
         if (!defined('KOLDY_CLI')) {
             // KOLDY_CLI is not defined, which probably means useConfig() wasn't called
             static::terminateWithError('Don\'t call \Koldy\Application::run() before calling useConfig(). Check the documentation');
