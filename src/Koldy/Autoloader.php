@@ -41,6 +41,14 @@ class Autoloader
     }
 
     /**
+     * Unregisters the autoloader class with the PHP SPL autoloader. It's opposite from register function.
+     */
+    public static function unregister(): void
+    {
+        spl_autoload_unregister(array(new self(), 'autoload'));
+    }
+
+    /**
      * Loads a class from a file using its fully qualified name.
      *
      * @param string $className Fully qualified name of a class.
