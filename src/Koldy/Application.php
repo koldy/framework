@@ -927,6 +927,7 @@ class Application
         }
 
         spl_autoload_register('\Koldy\Application::autoload');
+        // if you want to unregister Koldy autoloader, then manually call spl_autoload_unregister('\Koldy\Application::autoload');
 
         // set the error reporting in development mode
         if (static::inDevelopment()) {

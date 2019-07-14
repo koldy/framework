@@ -2,32 +2,39 @@
 
 namespace Koldy;
 
+/**
+ * Class Autoloader - Provides ability to manually register Koldy framework autoload with non-default settings. Otherwise,
+ * if you're looking for internal autoloader that is automatically being used, then look for Koldy\Application::autoload()
+ * @package Koldy
+ */
 class Autoloader
 {
 
     /**
      * @var string
      */
-    private $directory;
+    private static $directory = null;
 
     /**
      * @var string
      */
-    private $prefix;
+    private static $prefix = null;
 
     /**
      * @var int
      */
-    private $prefixLength;
+    private static $prefixLength = null;
 
     /**
      * @param string $baseDirectory Base directory where the source files are located.
      */
-    public function __construct(string $baseDirectory = __DIR__)
+    public static function init(string $baseDirectory = null)
     {
-        $this->directory = $baseDirectory;
-        $this->prefix = __NAMESPACE__ . '\\';
-        $this->prefixLength = strlen($this->prefix);
+        if (static::$directory === null || $baseDirectory !== null) {
+	        static::$directory = $baseDirectory ?? __DIR__;
+	        static::$prefix = __NAMESPACE__ . '\\';
+	        static::$prefixLength = strlen(static::$prefix);
+        }
     }
 
     /**
@@ -37,7 +44,8 @@ class Autoloader
      */
     public static function register(bool $prepend = false): void
     {
-        spl_autoload_register(array(new self(), 'autoload'), true, $prepend);
+	    static::init();
+        spl_autoload_register('\Koldy\Autoloader::autoload', true, $prepend);
     }
 
     /**
@@ -45,7 +53,7 @@ class Autoloader
      */
     public static function unregister(): void
     {
-        spl_autoload_unregister(array(new self(), 'autoload'));
+        spl_autoload_unregister('\Koldy\Autoloader::autoload');
     }
 
     /**
@@ -53,11 +61,11 @@ class Autoloader
      *
      * @param string $className Fully qualified name of a class.
      */
-    public function autoload(string $className): void
+    public static function autoload(string $className): void
     {
-        if (0 === strpos($className, $this->prefix)) {
-            $parts = explode('\\', substr($className, $this->prefixLength));
-            $filepath = $this->directory . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts) . '.php';
+        if (0 === strpos($className, static::$prefix)) {
+            $parts = explode('\\', substr($className, static::$prefixLength));
+            $filepath = static::$directory . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts) . '.php';
 
             if (is_file($filepath)) {
                 require $filepath;
