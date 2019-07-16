@@ -156,6 +156,11 @@ class NumericNotation
         $x = '0';
         for ($i = 0, $j = strlen($alpha) - 1; $i < strlen($alpha); $i++, $j--) {
             $char = substr($alpha, $j, 1);
+
+            if (!array_key_exists($char, $alphabet)) {
+            	throw new Exception("Invalid numeric notation character on position {$i}: {$char}");
+            }
+
             $val = $alphabet[$char];
 
             $x = bcadd($x, bcmul((string)$val, bcpow($mod, (string)$i)));
