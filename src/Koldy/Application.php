@@ -192,22 +192,23 @@ class Application
 
     /**
      * Calling Koldy\Autoloader::register() will just register framework itself to be used as library. Calling this
-     * autoload() method will allow controllers and other root clases to load properly
+     * autoload() method will allow controllers and other root classes to load properly
      *
      * @param string $className
-     *
-     * @throws ApplicationException
      */
     public static function autoload(string $className): void
     {
         $classPath = str_replace('\\', DS, $className);
         $path = $classPath . '.php';
 
-        if ((@include $path) === false) {
-            // if we fail to include a file, let's throw an exception so we can see where it happened - it'll speed up troubleshooting
-            $includePath = get_include_path();
-            throw new ApplicationException("Unable to load class {$className} in current include path={$includePath}");
-        }
+	    @include $path;
+
+        // if ((@include $path) === false) {
+            // -- OLD -- if we fail to include a file, let's throw an exception so we can see where it happened - it'll speed up troubleshooting
+            // -- OLD -- $includePath = get_include_path();
+            // -- OLD -- throw new ApplicationException("Unable to load class {$className} in current include path={$includePath}");
+	        // if we fail here, let's do nothing, so the eventual "next autoload" can do its thing
+        // }
     }
 
     /**
@@ -926,7 +927,7 @@ class Application
             static::terminateWithError('Don\'t call \Koldy\Application::run() before calling useConfig(). Check the documentation');
         }
 
-        spl_autoload_register('\Koldy\Application::autoload');
+        spl_autoload_register('\Koldy\Application::autoload', true, false);
         // if you want to unregister Koldy autoloader, then manually call spl_autoload_unregister('\Koldy\Application::autoload');
 
         // set the error reporting in development mode
