@@ -2,6 +2,7 @@
 
 namespace Koldy\Db\Query;
 
+use Closure;
 use Koldy\Db\Adapter\{
   PostgreSQL, Sqlite
 };
@@ -22,6 +23,11 @@ class ResultSet extends Select
      * @var Select
      */
     protected $countQuery = null;
+
+	/**
+	 * @var null|Closure
+	 */
+    protected $countQueryAdjustableFunction = null;
 
     /**
      * The search string
@@ -121,6 +127,18 @@ class ResultSet extends Select
         return $query;
     }
 
+	/**
+	 * Execute adjustments on count query when needed. First parameter of given function will be instance of Select.
+	 *
+	 * If it's used in combination with setCountQuery, then you'll get that query as parameter which doesn't have much sense.
+	 *
+	 * @param Closure $fn
+	 */
+    public function adjustCountQuery(Closure $fn): void
+    {
+    	$this->countQueryAdjustableFunction = $fn;
+    }
+
     /**
      * Set search fields
      *
@@ -164,14 +182,22 @@ class ResultSet extends Select
         return $this;
     }
 
-    /**
-     * Count results
-     *
-     * @return int
-     */
+	/**
+	 * Count results
+	 *
+	 * @return int
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
     public function count(): int
     {
-        $result = $this->getCountQuery()->fetchFirst();
+    	$select = $this->getCountQuery();
+
+    	if ($this->countQueryAdjustableFunction !== null) {
+    		$select = call_user_func($this->countQueryAdjustableFunction, $select);
+	    }
+
+        $result = $select->fetchFirst();
 
         if ($result === null) {
             return 0;
@@ -180,10 +206,13 @@ class ResultSet extends Select
         return (int)$result['total'];
     }
 
-    /**
-     * @return Query
-     * @throws Exception
-     */
+	/**
+	 * @return Query
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Db\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function getQuery(): Query
     {
         if ($this->searchTerm !== null) {
@@ -227,13 +256,15 @@ class ResultSet extends Select
         return parent::getQuery();
     }
 
-    /**
-     * Fetch all records as array of objects
-     *
-     * @param string|null $class the name of class on which you want the instance of - class has to be able to accept array in constructor
-     *
-     * @return array
-     */
+	/**
+	 * Fetch all records as array of objects
+	 *
+	 * @param string|null $class the name of class on which you want the instance of - class has to be able to accept array in constructor
+	 *
+	 * @return array
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
     public function fetchAllObj(string $class = null): array
     {
         if ($class == null && $this->modelClass !== null) {
@@ -243,14 +274,16 @@ class ResultSet extends Select
         }
     }
 
-    /**
-     * Fetch only first record as object
-     *
-     * @param string $class
-     *
-     * @return null|object
-     */
-    public function fetchFirstObj(string $class = null): ?object
+	/**
+	 * Fetch only first record as object
+	 *
+	 * @param string $class
+	 *
+	 * @return null|object
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
+    public function fetchFirstObj(string $class = null)
     {
         if ($class == null && $this->modelClass !== null) {
             return parent::fetchFirstObj($this->modelClass);
