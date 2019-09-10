@@ -5,6 +5,14 @@ namespace Koldy\Db;
 use Koldy\Db\Exception as DbException;
 use Koldy\Db\Query\Bindings;
 
+/**
+ * Class Where handles SQL "where" statements using object oriented approach, so instead of manipulating with string,
+ * methods are called. All values given here are automatically passed to PDOStatement as binding, so there's no chance
+ * of SQL injection.
+ *
+ * @package Koldy\Db
+ * @link https://koldy.net/framework/docs/2.0/database/where.md
+ */
 class Where
 {
 
@@ -359,7 +367,7 @@ class Where
      * @throws Exception
      * @return string
      */
-    protected function getWhereSql(array $whereArray = null, $cnt = 0): string
+    public function getWhereSql(array $whereArray = null, $cnt = 0): string
     {
     	if ($this->bindings === null) {
     		$this->bindings = new Bindings();
