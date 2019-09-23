@@ -74,14 +74,14 @@ class Db implements SessionHandlerInterface
         return KoldyDb::getAdapter($this->getAdapterConnection());
     }
 
-    /**
-     * @param string $save_path
-     * @param string $sessionid
-     *
-     * @return bool
-     * @throws Exception
-     */
-    public function open($save_path, $sessionid)
+	/**
+	 * @param string $save_path
+	 * @param string $session_name
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+    public function open($save_path, $session_name): bool
     {
         if (!array_key_exists('connection', $this->config)) {
             throw new Exception('Connection parameter is not defined in session\'s DB adapter options');
@@ -97,7 +97,7 @@ class Db implements SessionHandlerInterface
     /**
      * @return bool
      */
-    public function close()
+    public function close(): bool
     {
         return true;
     }
@@ -198,7 +198,6 @@ class Db implements SessionHandlerInterface
 
             try {
                 $adapter->insert($this->getTableName(), $data)->exec();
-                return true;
 
             } catch (DbException $e) {
                 Log::emergency($e);
@@ -216,7 +215,6 @@ class Db implements SessionHandlerInterface
 
             try {
                 $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
-                return true;
 
             } catch (DbException $e) {
                 Log::emergency($e);
@@ -229,6 +227,8 @@ class Db implements SessionHandlerInterface
 
             }
         }
+
+	    return true;
     }
 
 	/**
@@ -238,7 +238,7 @@ class Db implements SessionHandlerInterface
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function destroy($sessionid)
+    public function destroy($sessionid): bool
     {
         if ($this->disableLog) {
             Log::temporaryDisable('sql');
@@ -277,17 +277,23 @@ class Db implements SessionHandlerInterface
 
         try {
             $this->getAdapter()->delete($this->getTableName())->where('time', '<', $timestamp)->exec();
-            return true;
+
+	        if ($this->disableLog) {
+		        Log::restoreTemporaryDisablement();
+	        }
 
         } catch (DbException $e) {
             Log::emergency($e);
+
+	        if ($this->disableLog) {
+		        Log::restoreTemporaryDisablement();
+	        }
+
             return false;
 
-        } finally {
-            if ($this->disableLog) {
-                Log::restoreTemporaryDisablement();
-            }
         }
+
+	    return true;
     }
 
 }
