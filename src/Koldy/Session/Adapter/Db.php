@@ -178,64 +178,76 @@ class Db implements SessionHandlerInterface
 	 */
     public function write($sessionid, $sessiondata)
     {
-        $adapter = $this->getAdapter();
+	    $adapter = $this->getAdapter();
 
-        $data = [
-          'time' => time(),
-          'data' => $sessiondata
-        ];
+	    $data = [
+		    'time' => time(),
+		    'data' => $sessiondata
+	    ];
 
-        if ($adapter instanceof PostgreSQL) {
-            $data['data'] = bin2hex($data['data']);
-        }
+	    if ($adapter instanceof PostgreSQL) {
+		    $data['data'] = bin2hex($data['data']);
+	    }
 
-        $sess = $this->getDbData($sessionid);
+	    if ($this->disableLog) {
+		    Log::temporaryDisable('sql');
+	    }
 
-        if ($this->disableLog) {
-            Log::temporaryDisable('sql');
-        }
 
-        if ($sess === null) {
-            // the record doesn't exists in database, lets insert it
-            $data['id'] = $sessionid;
+	    // when we're writing session data to database, we'll assume that there's much more update statements than inserts,
+	    // so we'll try to update first, then we'll insert if no record has changed
 
-            try {
-                $adapter->insert($this->getTableName(), $data)->exec();
+	    // 1. UPDATE
+	    $shouldInsert = false;
 
-	            if ($this->disableLog) {
-		            Log::restoreTemporaryDisablement();
-	            }
-            } catch (DbException $e) {
-                Log::emergency($e);
+	    try {
+		    /** @var \Koldy\Db\Query\Statement $koldyStmt */
+		    $koldyStmt = $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
+		    $pdoStmt = $koldyStmt->getLastQuery()->getStatement();
+		    $shouldInsert = $pdoStmt->rowCount() === 0;
+	    } catch (DbException $e) {
+		    // something went wrong with database
+		    Log::emergency($e);
 
-	            if ($this->disableLog) {
-		            Log::restoreTemporaryDisablement();
-	            }
+		    if ($this->disableLog) {
+			    Log::restoreTemporaryDisablement();
+		    }
 
-                return false;
+		    return false;
+	    }
 
-            }
+	    // 2. INSERT
+	    if ($shouldInsert) {
+		    // update statement didn't update any record, so let's insert new record in session table
 
-        } else {
-            // the record data already exists in db
+		    try {
+			    $data['id'] = $sessionid;
+			    $adapter->insert($this->getTableName(), $data)->exec();
+		    } catch (DbException $e) {
+			    // for some reason, PHP internally can call session_write_close twice and both times, update statement would return 0 and insert
+			    // would be called two times - first insert will work, but the 2nd one will fail because of duplicate session key in database
+			    // therefore, we'll try to update this one more time before throwing an exception
 
-            try {
-                $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
+			    try {
+				    /** @var \Koldy\Db\Query\Statement $koldyStmt */
+				    $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
+			    } catch (DbException $e2) {
+				    // something went wrong with database
+				    Log::emergency($e2);
 
-	            if ($this->disableLog) {
-		            Log::restoreTemporaryDisablement();
-	            }
-            } catch (DbException $e) {
-                Log::emergency($e);
+				    if ($this->disableLog) {
+					    Log::restoreTemporaryDisablement();
+				    }
 
-	            if ($this->disableLog) {
-		            Log::restoreTemporaryDisablement();
-	            }
+				    return false;
+			    }
 
-                return false;
+		    }
+	    }
 
-            }
-        }
+	    if ($this->disableLog) {
+		    Log::restoreTemporaryDisablement();
+	    }
 
 	    return true;
     }
