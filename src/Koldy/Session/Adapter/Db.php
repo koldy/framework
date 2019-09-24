@@ -128,13 +128,16 @@ class Db implements SessionHandlerInterface
               ->where('id', $sessionid)
               ->fetchFirstObj();
 
+	        if ($this->disableLog) {
+		        Log::restoreTemporaryDisablement();
+	        }
         } catch (DbException $e) {
+	        if ($this->disableLog) {
+		        Log::restoreTemporaryDisablement();
+	        }
+
             throw $e;
 
-        } finally {
-            if ($this->disableLog) {
-                Log::restoreTemporaryDisablement();
-            }
         }
 
         return $r;
@@ -199,14 +202,17 @@ class Db implements SessionHandlerInterface
             try {
                 $adapter->insert($this->getTableName(), $data)->exec();
 
+	            if ($this->disableLog) {
+		            Log::restoreTemporaryDisablement();
+	            }
             } catch (DbException $e) {
                 Log::emergency($e);
-                return false;
 
-            } finally {
-                if ($this->disableLog) {
-                    Log::restoreTemporaryDisablement();
-                }
+	            if ($this->disableLog) {
+		            Log::restoreTemporaryDisablement();
+	            }
+
+                return false;
 
             }
 
@@ -216,14 +222,17 @@ class Db implements SessionHandlerInterface
             try {
                 $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
 
+	            if ($this->disableLog) {
+		            Log::restoreTemporaryDisablement();
+	            }
             } catch (DbException $e) {
                 Log::emergency($e);
-                return false;
 
-            } finally {
-                if ($this->disableLog) {
-                    Log::restoreTemporaryDisablement();
-                }
+	            if ($this->disableLog) {
+		            Log::restoreTemporaryDisablement();
+	            }
+
+                return false;
 
             }
         }
@@ -246,18 +255,23 @@ class Db implements SessionHandlerInterface
 
         try {
             $this->getAdapter()->delete($this->getTableName())->where('id', $sessionid)->exec();
-            return true;
+
+	        if ($this->disableLog) {
+		        Log::restoreTemporaryDisablement();
+	        }
 
         } catch (DbException $e) {
             Log::emergency($e);
+
+	        if ($this->disableLog) {
+		        Log::restoreTemporaryDisablement();
+	        }
+
             return false;
 
-        } finally {
-            if ($this->disableLog) {
-                Log::restoreTemporaryDisablement();
-            }
-
         }
+
+	    return true;
     }
 
 	/**
