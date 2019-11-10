@@ -12,9 +12,6 @@ use Koldy\Validator\{
 class Validator
 {
 
-	protected const DATA_SOURCE_REQUEST = 'request';
-	protected const DATA_SOURCE_PARAMETER = 'parameter';
-
     /**
      * Validation rules
      *
@@ -28,13 +25,6 @@ class Validator
      * @var array
      */
     protected $data;
-
-	/**
-	 * What is the data source that is being validated? Request or manual?
-	 *
-	 * @var string
-	 */
-    protected $dataSource = null;
 
     /**
      * @var array
@@ -76,7 +66,6 @@ class Validator
     {
         if ($data === null) {
             $this->data = Request::getAllParameters();
-            $this->dataSource = static::DATA_SOURCE_REQUEST;
             $this->csrfEnabled = Csrf::isEnabled();
 
             $csrfParameter = Csrf::getParameterName();
@@ -84,7 +73,6 @@ class Validator
                 $rules[$csrfParameter] = 'required|csrf';
             }
         } else {
-	        $this->dataSource = static::DATA_SOURCE_PARAMETER;
             $this->data = $data;
         }
 
@@ -297,33 +285,6 @@ class Validator
         if ($this->validated !== null || $reValidate) {
             return $this->validated;
         }
-
-        // first, validate CSRF header if set
-	    $csrfHeaderName = Csrf::getHeaderName();
-	    if ($this->csrfEnabled && $this->dataSource === static::DATA_SOURCE_REQUEST && $csrfHeaderName !== null) {
-	    	if (!Csrf::hasTokenStored()) {
-	    		Log::debug('Can not validate CSRF when CSRF token wasn\'t generated on server before this check');
-	    		throw new CsrfException('CSRF token not set');
-		    }
-
-	    	if (!array_key_exists($csrfHeaderName, $_SERVER)) {
-	    		Log::debug("Header {$csrfHeaderName} doesn't exist in list of \$_SERVER headers and therefore there's nothing to validate");
-	    		throw new CsrfException('CSRF header not present');
-		    }
-
-	    	$csrfHeaderValue = $_SERVER[$csrfHeaderName] ?? null;
-
-	    	if ($csrfHeaderValue === null) {
-			    Log::debug("Header {$csrfHeaderName} exists, but its value is NULL");
-			    throw new CsrfException('CSRF value not present');
-		    }
-
-		    $csrfHeaderValue = (string)$csrfHeaderValue;
-	    	if (!Csrf::isTokenValid($csrfHeaderValue)) {
-			    Log::debug('CSRF check failed - given token doesn\'t match the stored token');
-			    throw new CsrfException('CSRF check failed');
-		    }
-	    }
 
         if ($this->only) {
             $requiredParameters = array_keys($this->rules);

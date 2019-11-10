@@ -18,7 +18,6 @@ class Csrf
     private const ENABLED = 'enabled';
 
     private const PARAMETER_NAME = 'parameter_name';
-    private const HEADER_NAME = 'header_name';
     private const COOKIE_NAME = 'cookie_name';
     private const SESSION_KEY_NAME = 'session_key_name';
 
@@ -52,8 +51,7 @@ class Csrf
                   //self::ENABLED => false,
                   self::PARAMETER_NAME => null,
                   self::COOKIE_NAME => 'csrf_token',
-                  self::SESSION_KEY_NAME => 'csrf_token',
-	              self::HEADER_NAME => null
+                  self::SESSION_KEY_NAME => 'csrf_token'
                 ]);
             } else {
                 static::$config = $config;
@@ -101,19 +99,6 @@ class Csrf
     {
         static::init();
         return static::$config[self::COOKIE_NAME] ?? null;
-    }
-
-    /**
-     * Get the cookie key under which token is stored on client's computer
-     *
-     * @return string|null
-     * @throws ConfigException
-     * @throws \Koldy\Exception
-     */
-    public static function getHeaderName(): ?string
-    {
-        static::init();
-        return static::$config[self::HEADER_NAME] ?? null;
     }
 
     /**
@@ -179,7 +164,7 @@ class Csrf
     public static function isEnabled(): bool
     {
         static::init();
-        return static::getParameterName() !== null || static::getHeaderName() !== null;
+        return static::getParameterName() !== null;
     }
 
     /**
@@ -290,6 +275,8 @@ class Csrf
      * @throws ConfigException
      * @throws Exception
      * @throws \Koldy\Exception
+     *
+     * @deprecated Create your own CSRF token distribution system instead of relying on this method
      */
     public static function getHtmlInputHidden(): string
     {
@@ -310,6 +297,8 @@ class Csrf
      * @throws ConfigException
      * @throws Exception
      * @throws \Koldy\Exception
+     *
+     * @deprecated Create your own CSRF token distribution system instead of relying on this method
      */
     public static function getMetaTags(): string
     {
