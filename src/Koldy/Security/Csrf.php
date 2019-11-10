@@ -18,6 +18,7 @@ class Csrf
     private const ENABLED = 'enabled';
 
     private const PARAMETER_NAME = 'parameter_name';
+    private const HEADER_NAME = 'header_name';
     private const COOKIE_NAME = 'cookie_name';
     private const SESSION_KEY_NAME = 'session_key_name';
 
@@ -49,9 +50,10 @@ class Csrf
                 $config = Application::getConfig('application');
                 static::$config = $config->getArrayItem('security', 'csrf', [
                   //self::ENABLED => false,
-                  self::PARAMETER_NAME => 'csrf',
+                  self::PARAMETER_NAME => null,
                   self::COOKIE_NAME => 'csrf_token',
-                  self::SESSION_KEY_NAME => 'csrf_token'
+                  self::SESSION_KEY_NAME => 'csrf_token',
+	              self::HEADER_NAME => null
                 ]);
             } else {
                 static::$config = $config;
@@ -98,7 +100,20 @@ class Csrf
     public static function getCookieName(): ?string
     {
         static::init();
-        return static::$config[self::COOKIE_NAME];
+        return static::$config[self::COOKIE_NAME] ?? null;
+    }
+
+    /**
+     * Get the cookie key under which token is stored on client's computer
+     *
+     * @return string|null
+     * @throws ConfigException
+     * @throws \Koldy\Exception
+     */
+    public static function getHeaderName(): ?string
+    {
+        static::init();
+        return static::$config[self::HEADER_NAME] ?? null;
     }
 
     /**
@@ -164,12 +179,7 @@ class Csrf
     public static function isEnabled(): bool
     {
         static::init();
-
-        if (array_key_exists(self::ENABLED, static::$config)) {
-            return static::$config[self::ENABLED] ?? false;
-        }
-
-        return static::getParameterName() !== null;
+        return static::getParameterName() !== null || static::getHeaderName() !== null;
     }
 
     /**
