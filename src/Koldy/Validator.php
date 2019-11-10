@@ -306,7 +306,7 @@ class Validator
 	    		throw new CsrfException('CSRF token not set');
 		    }
 
-	    	if (array_key_exists($csrfHeaderName, $_SERVER)) {
+	    	if (!array_key_exists($csrfHeaderName, $_SERVER)) {
 	    		Log::debug("Header {$csrfHeaderName} doesn't exist in list of \$_SERVER headers and therefore there's nothing to validate");
 	    		throw new CsrfException('CSRF header not present');
 		    }
