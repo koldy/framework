@@ -3,8 +3,12 @@
 namespace Koldy;
 
 /**
- * Class Autoloader - Provides ability to manually register Koldy framework autoload with non-default settings. Otherwise,
- * if you're looking for internal autoloader that is automatically being used, then look for Koldy\Application::autoload()
+ * Class Autoloader - Provides ability to manually register Koldy framework autoload with non-default settings.
+ *
+ * To manually register Koldy framework, include manually this class and then call:
+ * Koldy\Autoloader::register();
+ *
+ * Otherwise, if you're looking for internal autoloader that is automatically being used, then look for Koldy\Application::autoload()
  * @package Koldy
  */
 class Autoloader

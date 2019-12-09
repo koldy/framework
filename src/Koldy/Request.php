@@ -4,6 +4,7 @@ namespace Koldy;
 
 use Koldy\Application\Exception as ApplicationException;
 use Koldy\Request\Exception as RequestException;
+use Koldy\Request\UploadedFile;
 use Koldy\Response\Exception\BadRequestException;
 use stdClass;
 
@@ -46,6 +47,13 @@ class Request
      * @var array
      */
     private static $hosts = [];
+
+	/**
+	 * The once-initialized array of UploadedFile instances; will be empty if there's no files uploaded
+	 *
+	 * @var UploadedFile[]|null
+	 */
+	protected static $uploadedFiles = null;
 
     /**
      * Get the real IP address of remote user. If you're looking for server's IP, please refer to Server::ip()
@@ -778,5 +786,103 @@ class Request
 
         return count($params) == $targetCount;
     }
+
+	/**
+	 * @param array $uploadedFiles
+	 * @param string $property
+	 * @param array $data
+	 */
+	private static function digFile(array &$uploadedFiles, string $property, array $data): void
+	{
+		foreach ($data as $key => $value) {
+			if (is_array($value)) {
+				if (!isset($uploadedFiles[$key])) {
+					$uploadedFiles[$key] = [];
+				}
+				static::digFile($uploadedFiles[$key], $property, $value);
+			} else {
+				if (!isset($uploadedFiles[$key])) {
+					$uploadedFiles[$key] = [];
+				}
+
+				$uploadedFiles[$key][$property] = $value;
+			}
+		}
+	}
+
+	/**
+	 * @param $uploadedFiles
+	 *
+	 * @throws Security\Exception
+	 */
+	private static function initUploadedFile(&$uploadedFiles): void
+	{
+		// check segments of given parameter
+		$name = $uploadedFiles['name'] ?? null;
+		$type = $uploadedFiles['type'] ?? null;
+		$tmpName = $uploadedFiles['tmp_name'] ?? null;
+		$error = $uploadedFiles['error'] ?? null;
+		$size = $uploadedFiles['size'] ?? null;
+
+		if (is_string($name) && is_string($type) && is_string($tmpName) && is_int($error) && is_int($size)) {
+			// yeah! finally...
+			$uploadedFiles = new UploadedFile($name, $type, $size, $tmpName, $error);
+		} else {
+			// dig further...
+			foreach ($uploadedFiles as $key => $value) {
+				static::initUploadedFile($uploadedFiles[$key]);
+			}
+		}
+	}
+
+	/**
+	 * Get the array of all uploaded files by returning array of UploadedFile instances
+	 *
+	 * @return UploadedFile[]
+	 * @throws Exception
+	 */
+	public static function getAllFiles(): array
+	{
+		if (static::$uploadedFiles !== null) {
+			return static::$uploadedFiles;
+		}
+
+		$uploadedFiles = [];
+
+		if (isset($_FILES)) {
+			// parse all
+			foreach ($_FILES as $field => $file) {
+				// first possible case: simple single-file information; it has to have array of 5 elements
+
+				// it probably is simple single-file information
+				$name = $file['name'] ?? null;
+				$type = $file['type'] ?? null;
+				$tmpName = $file['tmp_name'] ?? null;
+				$error = $file['error'] ?? null;
+				$size = $file['size'] ?? null;
+
+				if (is_string($name) && is_string($type) && is_string($tmpName) && is_int($error) && is_int($size)) {
+					// if string, then it's easy
+					$uploadedFiles[$field] = new UploadedFile($name, $type, $size, $tmpName, $error);
+				} else if (is_array($name) && is_array($type) && is_array($tmpName) && is_array($error) && is_array($size)) {
+					// ... otherwise, it has nested array(s) for X levels deep
+
+					$uploadedFiles[$field] = [];
+
+					static::digFile($uploadedFiles[$field],'name', $file['name']);
+					static::digFile($uploadedFiles[$field],'type', $file['type']);
+					static::digFile($uploadedFiles[$field],'tmp_name', $file['tmp_name']);
+					static::digFile($uploadedFiles[$field],'error', $file['error']);
+					static::digFile($uploadedFiles[$field],'size', $file['size']);
+
+					// and now, final cycle.. go through processed array and init instances of UploadedFile
+					static::initUploadedFile($uploadedFiles[$field]);
+				}
+			}
+		}
+
+		static::$uploadedFiles = $uploadedFiles;
+		return static::$uploadedFiles;
+	}
 
 }
