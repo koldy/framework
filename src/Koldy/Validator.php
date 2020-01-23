@@ -228,7 +228,11 @@ class Validator
                         $data[$field] = (bool)$data[$field];
                     }
                 } else if (in_array('integer', $rules)) {
-                    $data[$field] = (int)$data[$field];
+	                $data[$field] = (int)$data[$field];
+                } else if (in_array('decimal', $rules)) {
+                	if ($data[$field] !== '') {
+		                $data[$field] = (float)$data[$field];
+	                }
                 }
             }
         }
@@ -1519,7 +1523,7 @@ class Validator
     }
 
     /**
-     * Opposite of "same", passes if value is different then value in other field
+     * Opposite of "same", passes if value is different than value in other field
      *
      * @param mixed $value
      * @param string $parameter

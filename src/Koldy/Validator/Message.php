@@ -59,7 +59,7 @@ class Message
       self::PRESENT => 'Parameter {param} is not present', // {param}, {value}
       self::REQUIRED => 'This field is required', // {param}, {value}
       self::MIN_VALUE => 'Has to be at least {min}', // {param}, {value}, {min}
-      self::MAX_VALUE => 'Has to be less then {max}', // {param}, {value}, {max}
+      self::MAX_VALUE => 'Has to be less than {max}', // {param}, {value}, {max}
       self::MIN_LENGTH => 'Has to be at least {min} characters long', // {param}, {value}, {min}
       self::MAX_LENGTH => 'Has to be less than {max} characters long', // {param}, {value}, {max}
       self::NUMERIC => 'Has to be numeric', // {param}, {value}
@@ -71,10 +71,10 @@ class Message
       self::EMAIL => 'This is not valid e-mail address', // {param}, {value}
       self::SLUG => 'This is not valid URL slug', // {param}, {value}
       self::IS => 'This field doesn\'t have required value', // {param}, {value}
-      self::DECIMAL => 'This value can\'t have more then {decimals} decimals', // {param}, {value}, {decimals}
+      self::DECIMAL => 'This value can\'t have more than {decimals} decimals', // {param}, {value}, {decimals}
       self::HEX => 'This value should be hexadecimal number', // {param}, {value}
       self::SAME => 'This has to be the same as {otherField}', // {param}, {value}, {otherField}, {otherValue}
-      self::DIFFERENT => 'This value has to be different then {otherField}', // {param}, {value}, {otherField}, {otherValue}
+      self::DIFFERENT => 'This value has to be different than {otherField}', // {param}, {value}, {otherField}, {otherValue}
       self::DATE => 'This value is not valid date', // {param}, {value}
       self::IS_NOT_ARRAY => '{param} is not array', // {param}
       self::ARRAY_WRONG_COUNT => '{param} should have {requiredCount} elements, not {currentCount}', // {param}, {requiredCount}, {currentCount}
