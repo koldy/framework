@@ -461,7 +461,7 @@ class Request
      * @throws Exception
      * @link http://koldy.net/docs/input#get
      */
-    public static function getGetParameter(string $name, string $default = null, array $allowed = null): string
+    public static function getGetParameter(string $name, string $default = null, array $allowed = null): ?string
     {
         return self::get('GET', $name, $default, $allowed);
     }
@@ -500,7 +500,7 @@ class Request
      * @throws Exception
      * @link http://koldy.net/docs/input#post
      */
-    public static function getPostParameter(string $name, string $default = null, array $allowed = null): string
+    public static function getPostParameter(string $name, string $default = null, array $allowed = null): ?string
     {
         return self::get('POST', $name, $default, $allowed);
     }
@@ -544,7 +544,7 @@ class Request
      * @throws Exception
      * @link http://koldy.net/docs/input#put
      */
-    public static function getPutParameter(string $name, string $default = null, array $allowed = null): string
+    public static function getPutParameter(string $name, string $default = null, array $allowed = null): ?string
     {
         return self::get('PUT', $name, $default, $allowed);
     }
@@ -587,7 +587,7 @@ class Request
      * @throws Exception
      * @link http://koldy.net/docs/input#delete
      */
-    public static function getDeleteParameter(string $name, $default = null, array $allowed = null): string
+    public static function getDeleteParameter(string $name, $default = null, array $allowed = null): ?string
     {
         return self::get('DELETE', $name, $default, $allowed);
     }
