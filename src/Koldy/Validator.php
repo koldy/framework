@@ -229,9 +229,13 @@ class Validator
                     }
                 } else if (in_array('integer', $rules)) {
 	                $data[$field] = (int)$data[$field];
-                } else if (in_array('decimal', $rules)) {
-                	if ($data[$field] !== '') {
-		                $data[$field] = (float)$data[$field];
+                } else {
+	                // search for decimal:X rule if any
+
+	                foreach ($rules as $rr) {
+		                if (substr($rr, 0, 8) === 'decimal:' && $data[$field] !== '') {
+			                $data[$field] = (float)$data[$field];
+		                }
 	                }
                 }
             }
