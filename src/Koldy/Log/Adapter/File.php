@@ -64,6 +64,11 @@ class File extends AbstractLogAdapter
      */
     private $mode = null;
 
+	/**
+	 * @var int|null
+	 */
+	private $fileMode = null;
+
     /**
      * Construct the handler to log to files. The config array will be check
      * because all configs are strict
@@ -88,7 +93,7 @@ class File extends AbstractLogAdapter
                 throw new ConfigException('Invalid get_message_fn type; expected \Closure object, got: ' . $got);
             }
         }
-        
+
         if (isset($config['file_name_fn'])) {
             if ($config['file_name_fn'] instanceof \Closure) {
                 $this->fileNameFn = $config['file_name_fn'];
@@ -115,6 +120,10 @@ class File extends AbstractLogAdapter
         if (isset($config['mode'])) {
             $this->mode = $config['mode'];
         }
+
+	    if (isset($config['file_mode'])) {
+		    $this->fileMode = $config['file_mode'];
+	    }
 
         parent::__construct($config);
 
@@ -182,13 +191,27 @@ class File extends AbstractLogAdapter
                 }
 
                 $this->fpFile = $fpFile;
+	            $dir = dirname($path);
+
+	            // if file_mode is set, then check the existance of file and change the chmod on file creation
+	            if ($this->fileMode !== null && !is_file($path) && is_dir($dir)) {
+		            // directory exists, but file doesn't
+		            touch($path);
+		            chmod($path, $this->fileMode);
+		            clearstatcache(); // delete the cache so the next pass of is_file caches the correct result
+	            }
 
                 if (!($this->fp = @fopen($path, 'a'))) {
                     // file failed to open, maybe directory doesn't exists?
-                    $dir = dirname($path);
                     if (!is_dir($dir)) {
                         Directory::mkdir($dir, $this->mode);
                     }
+
+	                if ($this->fileMode !== null && !is_file($path)) {
+		                touch($path);
+		                chmod($path, $this->fileMode);
+		                clearstatcache(); // delete the cache so the next pass of is_file caches the correct result
+	                }
 
                     if (!($this->fp = @fopen($path, 'a'))) {
                         // now the directory should exists, so try to open file again
