@@ -348,25 +348,19 @@ class Select extends Where
      * @param string $field
      * @param string $direction
      *
-     * @throws Exception
      * @return Select
      */
     public function orderBy(string $field, string $direction = null): Select
     {
         if ($direction === null) {
             $direction = 'ASC';
-        } else {
-            $direction = strtoupper($direction);
-        }
-
-        if ($direction !== 'ASC' && $direction !== 'DESC') {
-            throw new Exception("Can not use invalid direction order ({$direction}) in ORDER BY statement");
         }
 
         $this->orderBy[] = [
           'field' => $field,
           'direction' => $direction
         ];
+
         return $this;
     }
 
