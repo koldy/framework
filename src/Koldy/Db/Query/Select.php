@@ -295,40 +295,52 @@ class Select extends Where
     /**
      * Add HAVING to your SELECT query
      *
-     * @param string $field
-     * @param string $operator
+     * @param string|Expr $field
+     * @param string|null $operator
      * @param mixed $value
      *
      * @return Select
      */
-    public function having(string $field, string $operator = null, $value = null): Select
+    public function having($field, string $operator = null, $value = null): Select
     {
+    	if (!is_string($field) && !($field instanceof Expr)) {
+    		$other = is_object($field) ? get_class($field) : gettype($field);
+    		throw new \InvalidArgumentException("First parameter should be string or instance of \Koldy\Db\Expr, got {$other} instead");
+	    }
+
         $this->having[] = [
           'link' => 'AND',
           'field' => $field,
           'operator' => $operator,
           'value' => $value
         ];
+
         return $this;
     }
 
     /**
      * Add HAVING with OR operator
      *
-     * @param string $field
-     * @param string $operator
+     * @param string|Expr $field
+     * @param string|null $operator
      * @param mixed $value
      *
      * @return Select
      */
-    public function orHaving(string $field, string $operator = null, $value = null): Select
+    public function orHaving($field, string $operator = null, $value = null): Select
     {
+	    if (!is_string($field) && !($field instanceof Expr)) {
+		    $other = is_object($field) ? get_class($field) : gettype($field);
+		    throw new \InvalidArgumentException("First parameter should be string or instance of \Koldy\Db\Expr, got {$other} instead");
+	    }
+
         $this->having[] = [
           'link' => 'OR',
           'field' => $field,
           'operator' => $operator,
           'value' => $value
         ];
+
         return $this;
     }
 

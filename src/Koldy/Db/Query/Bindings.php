@@ -67,19 +67,27 @@ class Bindings
 	 */
 	public static function make(string $parameter): string
 	{
+		$parameter = str_replace('=', '_', $parameter);
 		$parameter = str_replace('.', '_', $parameter);
 		$parameter = str_replace(',', '_', $parameter);
 		$parameter = str_replace(' ', '_', $parameter);
 		$parameter = str_replace('-', '_', $parameter);
-		$parameter = str_replace('(', '', $parameter);
-		$parameter = str_replace(')', '', $parameter);
+		$parameter = str_replace('(', '_', $parameter);
+		$parameter = str_replace(')', '_', $parameter);
 		$parameter = str_replace('*', '', $parameter);
 		$parameter = str_replace('>', '_', $parameter);
 		$parameter = str_replace('<', '_', $parameter);
 		$parameter = str_replace('\'', '', $parameter);
+		$parameter = str_replace('/', '', $parameter);
 		$parameter = str_replace('"', '', $parameter);
-		$parameter = str_replace('__', '_', $parameter);
 		$parameter = str_replace(':', '_', $parameter);
+		$parameter = str_replace('__', '_', $parameter); // first pass
+		$parameter = str_replace('__', '_', $parameter); // double
+		$parameter = str_replace('__', '_', $parameter); // triple
+
+		if (strlen($parameter) > 25) {
+			$parameter = substr($parameter, 0, 25);
+		}
 
 		return strtolower($parameter) . static::getNextIndex();
 	}
