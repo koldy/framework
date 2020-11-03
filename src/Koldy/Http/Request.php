@@ -4,6 +4,7 @@ namespace Koldy\Http;
 
 use Koldy\Http\Exception as HttpException;
 use Koldy\Json;
+use Koldy\Util;
 
 /**
  * Make HTTP request to any given URL.
@@ -362,7 +363,9 @@ class Request
                     $options[CURLOPT_POSTFIELDS] = count($this->getParams()) > 0 ? http_build_query($this->getParams()) : '';
                 }
 
-                if ($this->hasHeader('Content-Type') && $this->getHeader('Content-Type') == 'application/json') {
+                if ($this->hasHeader('Content-Type') &&
+	                ($this->getHeader('Content-Type') == 'application/json' || Util::startsWith($this->getHeader('Content-Type'), 'application/json;'))
+                ) {
                     $options[CURLOPT_POSTFIELDS] = Json::encode($this->getParams());
                 }
                 break;
