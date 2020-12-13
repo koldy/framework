@@ -514,11 +514,11 @@ class Select extends Where
                 $query = substr($query, 0, -5);
             } else {
                 if ($join['operator'] === null) {
-                    throw new Exception('Operator can\'t be null');
+                    throw new Exception("JOIN operator can't be null; see: left-table={$join['first']} operator=NULL right-table=" . ($join['second'] === null ? 'NULL' : $join['second']));
                 }
 
                 if ($join['second'] === null) {
-                    throw new Exception('Second parameter can\'t be null');
+                    throw new Exception("Second parameter in JOIN statement can't be null; see: left-table={$join['first']} operator={$join['operator']} right-table=NULL");
                 }
 
                 $query .= "{$join['first']} {$join['operator']} {$join['second']}";
