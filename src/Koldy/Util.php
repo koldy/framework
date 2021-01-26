@@ -364,7 +364,7 @@ class Util
 
         $s = preg_replace('~[^\\pL\d]+~u', '-', $s);
         $s = trim($s, '-');
-        $s = iconv('utf-8', 'us-ascii//TRANSLIT', $s);
+        $s = iconv('utf-8', 'us-ascii//IGNORE//TRANSLIT', $s);
         $s = strtolower($s);
         $s = preg_replace('~[^-\w]+~', '', $s);
 
