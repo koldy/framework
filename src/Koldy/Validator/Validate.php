@@ -49,7 +49,7 @@ class Validate
      */
     public static function isSlug(string $slug): bool
     {
-        return (bool)preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $slug);
+        return (bool)preg_match('/^[a-z0-9\-]+(-[a-z0-9]+)*$/', $slug);
     }
 
 }
