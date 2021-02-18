@@ -647,7 +647,11 @@ class Application
     public static function getDomain(): string
     {
         if (static::$domain == null) {
-            throw new ApplicationException('Can not get domain when domain is not set; check site_url in application config');
+        	if (PHP_SAPI == 'cli') {
+		        throw new ApplicationException('Can not get domain when domain is not set; script is running in CLI mode so make sure that the script is called correctly with correct config');
+	        } else {
+		        throw new ApplicationException("Can not get domain when domain is not set; check site_url in application config if it defines current host name: {$_SERVER['HTTP_HOST']}");
+	        }
         }
 
         return static::$domain;
