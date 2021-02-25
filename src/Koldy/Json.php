@@ -10,18 +10,28 @@ use Koldy\Json\Exception;
 class Json
 {
 
-    /**
-     * JSON helper to quickly encode some data
-     *
-     * @param mixed $data
-     *
-     * @return mixed in JSON format
-     * @throws Exception
-     * @link https://koldy.net/framework/docs/2.0/json.md
-     */
-    public static function encode($data): string
+	/**
+	 * JSON helper to quickly encode some data
+	 *
+	 * @param mixed $data
+	 * @param int|null $flags
+	 * @param int|null $depth
+	 *
+	 * @return mixed in JSON format
+	 * @throws Exception
+	 * @link https://koldy.net/framework/docs/2.0/json.md
+	 */
+    public static function encode($data, int $flags = null, int $depth = null): string
     {
-        $json = json_encode($data);
+    	if ($flags === null) {
+    		$flags = 0;
+	    }
+
+    	if ($depth === null) {
+    		$depth = 512;
+	    }
+
+        $json = json_encode($data, $flags, $depth);
 
         if ($json === false) {
             $errNo = json_last_error();
@@ -37,14 +47,24 @@ class Json
      * $returnObject to get the stdClass.
      *
      * @param string $stringData
+     * @param int|null $flags
+     * @param int|null $depth
      *
      * @return array
      * @throws Exception
      * @link https://koldy.net/framework/docs/2.0/json.md
      */
-    public static function decode(string $stringData): array
+    public static function decode(string $stringData, int $flags = null, int $depth = null): array
     {
-        $decoded = json_decode($stringData, true);
+	    if ($flags === null) {
+		    $flags = 0;
+	    }
+
+	    if ($depth === null) {
+		    $depth = 512;
+	    }
+
+        $decoded = json_decode($stringData, true, $depth, $flags);
 
         if ($decoded === null) {
             $errNo = json_last_error();
@@ -55,19 +75,29 @@ class Json
         return $decoded;
     }
 
-    /**
-     * JSON helper to quickly decode JSON string into array or stdClass. Returns array by default. Pass TRUE to
-     * $returnObject to get the stdClass.
-     *
-     * @param string $stringData
-     *
-     * @return \stdClass
-     * @throws Exception
-     * @link https://koldy.net/framework/docs/2.0/json.md
-     */
-    public static function decodeToObj(string $stringData): \stdClass
+	/**
+	 * JSON helper to quickly decode JSON string into array or stdClass. Returns array by default. Pass TRUE to
+	 * $returnObject to get the stdClass.
+	 *
+	 * @param string $stringData
+	 * @param int|null $flags
+	 * @param int|null $depth
+	 *
+	 * @return \stdClass
+	 * @throws Exception
+	 * @link https://koldy.net/framework/docs/2.0/json.md
+	 */
+    public static function decodeToObj(string $stringData, int $flags = null, int $depth = null): \stdClass
     {
-        $decoded = json_decode($stringData, false);
+	    if ($flags === null) {
+		    $flags = 0;
+	    }
+
+	    if ($depth === null) {
+		    $depth = 512;
+	    }
+
+        $decoded = json_decode($stringData, false, $depth, $flags);
 
         if ($decoded === null) {
             $errNo = json_last_error();
