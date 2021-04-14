@@ -22,16 +22,16 @@ class Convert
     /**
      * Get file's measure
      *
-     * @param int $size
+     * @param float $size
      * @param int $count
      * @param int $round
      *
      * @return string
      */
-    private static function getMeasure(int $size, int $count = 0, int $round = 0): string
+    private static function getMeasure(float $size, int $count = 0, int $round = 0): string
     {
         if ($size >= 1024) {
-            return self::getMeasure((int)round($size / 1024), ++$count, $round);
+	        return self::getMeasure(round($size / 1024, $round), ++$count, $round);
         } else {
             return round($size, $round) . ' ' . self::$measure[$count];
         }
@@ -50,7 +50,7 @@ class Convert
      */
     public static function bytesToString(int $bytes, int $round = 0): string
     {
-        return self::getMeasure($bytes, 0, $round);
+        return self::getMeasure((float)$bytes, 0, $round);
     }
 
     /**
