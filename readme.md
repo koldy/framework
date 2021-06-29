@@ -1,5 +1,13 @@
 # Koldy PHP Framework
 
+Current version is `2.1.0`.
+
+To install the framework in your project, run:
+
+```shell
+composer require koldy/framework
+```
+
 [![Total Downloads](https://poser.pugx.org/koldy/framework/downloads)](https://packagist.org/packages/koldy/framework) [![License](https://poser.pugx.org/koldy/framework/license)](https://packagist.org/packages/koldy/framework)
 
 This framework is built for every PHP developer who wants to simplify and speed up its web development using standards.
