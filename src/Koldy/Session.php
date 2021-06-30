@@ -45,7 +45,21 @@ class Session
         if (!static::$initialized) {
             $config = Application::getConfig('session');
 
-            session_set_cookie_params($config->get('cookie_life'), $config->get('cookie_path'), $config->get('cookie_domain'), $config->get('cookie_secure', false), $config->get('http_only', false));
+            $samesite = $config->get('cookie_samesite');
+
+	        $options = [
+		        'lifetime' => $config->get('cookie_life') ?? 0,
+		        'path' => $config->get('cookie_path') ?? '/',
+		        'domain' => $config->get('cookie_domain') ?? '',
+		        'secure' => $config->get('cookie_secure') ?? false,
+		        'httponly' => $config->get('http_only') ?? false
+	        ];
+
+	        if ($samesite !== null) {
+		        $options['samesite'] = $samesite;
+	        }
+
+            session_set_cookie_params($options);
 
             session_name($config->get('session_name', 'koldy'));
 
@@ -244,7 +258,7 @@ class Session
      *
      * @link http://koldy.net/docs/session#start
      *
-     * @param string $sessionId
+     * @param string|null $sessionId
      * @throws Exception
      */
     public static function start(string $sessionId = null): void

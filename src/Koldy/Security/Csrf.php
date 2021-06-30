@@ -36,7 +36,7 @@ class Csrf
     /**
      * Initialize CSRF config
      *
-     * @param array $config
+     * @param array|null $config
      * @param bool $reInit
      *
      * @throws ConfigException
@@ -138,7 +138,16 @@ class Csrf
 
         $cookieName = static::getCookieName();
         if (is_string($cookieName) && strlen($cookieName) > 0) {
-            $cookie = Cookie::rawSet($cookieName, $token, 0, '/', $config->get('domain', ''), $config->get('cookie_secure', false), false);
+            $cookie = Cookie::rawSet(
+            	$cookieName,
+	            $token,
+	            0,
+	            '/',
+	            $config->get('domain', ''),
+	            $config->get('cookie_secure', false),
+	            false,
+	            $config->get('cookie_samesite')
+            );
         } else {
             $cookie = null;
         }

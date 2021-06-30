@@ -50,11 +50,12 @@ class Cookie
      *
      * @param string $name the cookie name
      * @param string|number $value the cookie value
-     * @param int $expire [optional] when will cookie expire?
-     * @param string $path [optional] path of the cookie
-     * @param string $domain [optional]
-     * @param boolean $secure [optional]
-     * @param boolean $httpOnly [optional]
+     * @param int|null $expire [optional] when will cookie expire?
+     * @param string|null $path [optional] path of the cookie
+     * @param string|null $domain [optional]
+     * @param boolean|null $secure [optional]
+     * @param boolean|null $httpOnly [optional]
+     * @param string|null $samesite [optional]
      *
      * @return string
      * @throws Config\Exception
@@ -63,10 +64,23 @@ class Cookie
      * @link http://koldy.net/docs/cookies#set
      * @example Cookie::set('last_visited', date('r'));
      */
-    public static function set(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null): string
+    public static function set(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null, ?string $samesite = null): string
     {
         $encryptedValue = Crypt::encrypt($value);
-        setcookie($name, $encryptedValue, $expire ?? 0, $path ?? '/', $domain ?? '', $secure ?? false, $httpOnly ?? false);
+
+        $options = [
+	        'expires' => $expire ?? 0,
+	        'path' => $path ?? '/',
+	        'domain' => $domain ?? '',
+	        'secure' => $secure ?? false,
+	        'httponly' => $httpOnly ?? false
+        ];
+
+        if ($samesite !== null) {
+        	$options['samesite'] = $samesite;
+        }
+
+        setcookie($name, $encryptedValue, $options);
         return $encryptedValue;
     }
 
@@ -75,19 +89,32 @@ class Cookie
      *
      * @param string $name the cookie name
      * @param string|number $value the cookie value
-     * @param int $expire [optional] when will cookie expire?
-     * @param string $path [optional] path of the cookie
-     * @param string $domain [optional]
-     * @param boolean $secure [optional]
-     * @param boolean $httpOnly [optional]
+     * @param int|null $expire [optional] when will cookie expire?
+     * @param string|null $path [optional] path of the cookie
+     * @param string|null $domain [optional]
+     * @param boolean|null $secure [optional]
+     * @param boolean|null $httpOnly [optional]
+     * @param string|null $samesite [optional]
      *
      * @link http://koldy.net/docs/cookies#set
      * @example Cookie::set('last_visited', date('r'));
      * @return string
      */
-    public static function rawSet(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null): string
+    public static function rawSet(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null, ?string $samesite = null): string
     {
-        setcookie($name, $value, $expire ?? 0, $path ?? '/', $domain ?? '', $secure ?? false, $httpOnly ?? false);
+	    $options = [
+		    'expires' => $expire ?? 0,
+		    'path' => $path ?? '/',
+		    'domain' => $domain ?? '',
+		    'secure' => $secure ?? false,
+		    'httponly' => $httpOnly ?? false
+	    ];
+
+	    if ($samesite !== null) {
+		    $options['samesite'] = $samesite;
+	    }
+
+        setcookie($name, $value, $options);
         return $value;
     }
 
@@ -113,12 +140,25 @@ class Cookie
      * @param null|string $domain
      * @param bool|null $secure
      * @param bool|null $httpOnly
+     * @param string|null $samesite
      *
      * @link http://koldy.net/docs/cookies#delete
      */
-    public static function delete(string $name, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null): void
+    public static function delete(string $name, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null, ?string $samesite = null): void
     {
-        setcookie($name, '', time() - 3600 * 24, $path ?? '/', $domain ?? '', $secure ?? false, $httpOnly ?? false);
+	    $options = [
+		    'expires' => $expire ?? 0,
+		    'path' => $path ?? '/',
+		    'domain' => $domain ?? '',
+		    'secure' => $secure ?? false,
+		    'httponly' => $httpOnly ?? false
+	    ];
+
+	    if ($samesite !== null) {
+		    $options['samesite'] = $samesite;
+	    }
+
+        setcookie($name, '', time() - 3600 * 24, $options);
     }
 
 }
