@@ -63,6 +63,10 @@ class Mail extends CommonMailAdapter
 			$this->setHeader('Bcc', implode(', ', $bcc));
 		}
 
+		if ($this->replyTo !== null) {
+			$this->setHeader('Reply-To', $this->replyTo);
+		}
+
 		$body = $this->body;
 
 		$attachmentsCount = count($this->attachedFiles);

@@ -56,9 +56,8 @@ class File extends CommonMailAdapter
             $content[] = 'Bcc: ' . implode(', ', $bcc);
         }
 
-        if ($this->hasHeader('Reply-To')) {
-            $content[] = 'Reply-To: ' . $this->getHeader('Reply-To');
-            $this->removeHeader('Reply-To');
+        if ($this->replyTo !== null) {
+            $content[] = 'Reply-To: ' . $this->replyTo;
         }
 
         $content[] = 'Subject: ' . $this->subject;
