@@ -276,7 +276,7 @@ class Query
     /**
      * Fetch all results from this query and get array of stdClass instances or your custom class instances
      *
-     * @param string $class
+     * @param string|null $class
      *
      * @return array
      * @throws QueryException
@@ -304,7 +304,7 @@ class Query
     /**
      * Fetch all results from this query and get array of stdClass instances or your custom class instances
      *
-     * @param string $class
+     * @param string|null $class
      *
      * @return Generator
      * @throws QueryException
@@ -394,7 +394,7 @@ class Query
                 case 'integer':
                 case 'float':
                 case 'double':
-                    $query = str_replace(":{$parameter}", $value, $query);
+                    $query = str_replace(":{$parameter}", (string)$value, $query);
                     break;
 
                 case 'NULL':
@@ -411,11 +411,9 @@ class Query
                 case 'resource':
                 case 'unknown type':
 	                throw new QueryException("Unsupported type ({$type}) was passed as parameter ({$parameter}) to SQL statement");
-                    break;
 
                 default:
 	                throw new \Koldy\Exception('Unknown data type (' . $type . ') was passed to SQL statement');
-                    break;
             }
         }
 

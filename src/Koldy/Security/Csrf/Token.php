@@ -8,7 +8,7 @@ use Koldy\Security\Exception as SecurityException;
 /**
  * Class for holding down information about CSRF token
  */
-class Token implements \Serializable
+class Token
 {
 
     /**
@@ -25,7 +25,7 @@ class Token implements \Serializable
      * Token constructor.
      *
      * @param string $token
-     * @param string $cookieToken
+     * @param string|null $cookieToken
      */
     public function __construct(string $token, string $cookieToken = null)
     {
@@ -64,6 +64,17 @@ class Token implements \Serializable
         ]);
     }
 
+	/**
+	 * Serialize handler for newer PHP versions
+	 */
+	public function __serialize()
+	{
+		return [
+			'token' => $this->getToken(),
+			'cookie_token' => $this->getCookieToken()
+		];
+	}
+
     /**
      * Constructs the object
      * @link http://php.net/manual/en/serializable.unserialize.php
@@ -90,6 +101,25 @@ class Token implements \Serializable
         $this->token = $data['token'];
         $this->cookieToken = $data['cookie_token'];
     }
+
+	/**
+	 * Unserialize handler for newer PHP versions
+	 *
+	 * @param array $data
+	 *
+	 * @throws SecurityException
+	 */
+	public function __unserialize(array $data): void
+	{
+		foreach (['token', 'cookie_token'] as $key) {
+			if (!array_key_exists($key, $data)) {
+				throw new SecurityException("Unserialized CSRF token doesn't contain required \"{$key}\" key");
+			}
+		}
+
+		$this->token = $data['token'];
+		$this->cookieToken = $data['cookie_token'];
+	}
 
     public function __toString()
     {
