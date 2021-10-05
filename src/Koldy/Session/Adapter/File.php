@@ -46,7 +46,7 @@ class File implements SessionHandlerInterface
      *
      * @return bool
      */
-    public function open($save_path, $sessionid)
+    public function open($save_path, $sessionid): bool
     {
         // we'll ignore $save_path because we have our own path from config
 
@@ -66,7 +66,7 @@ class File implements SessionHandlerInterface
     /**
      * @return bool
      */
-    public function close()
+    public function close(): bool
     {
         return true;
     }
@@ -76,7 +76,7 @@ class File implements SessionHandlerInterface
      *
      * @return string
      */
-    public function read($sessionid)
+    public function read(string $sessionid): string
     {
         return (string)@file_get_contents("{$this->savePath}{$sessionid}.txt");
     }
@@ -90,7 +90,7 @@ class File implements SessionHandlerInterface
 	 * @throws \Koldy\Exception
 	 * @throws \Koldy\Filesystem\Exception
 	 */
-    public function write($sessionid, $sessiondata)
+    public function write($sessionid, $sessiondata): bool
     {
         $wasWritten = !(file_put_contents("{$this->savePath}{$sessionid}.txt", $sessiondata) === false);
 
@@ -111,7 +111,7 @@ class File implements SessionHandlerInterface
      *
      * @return bool
      */
-    public function destroy($sessionid)
+    public function destroy($sessionid): bool
     {
         $file = "{$this->savePath}{$sessionid}.txt";
         if (file_exists($file)) {
@@ -124,17 +124,19 @@ class File implements SessionHandlerInterface
     /**
      * @param int $maxlifetime
      *
-     * @return bool
+     * @return int
      */
-    public function gc($maxlifetime)
+    public function gc(int $maxlifetime): int
     {
+		$counter = 0;
+
         foreach (glob("{$this->savePath}*") as $file) {
-            if (filemtime($file) + $maxlifetime < time() && file_exists($file)) {
-                unlink($file);
+            if (filemtime($file) + $maxlifetime < time() && file_exists($file) && unlink($file)) {
+				$counter++;
             }
         }
 
-        return true;
+        return $counter;
     }
 
 }
