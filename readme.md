@@ -1,6 +1,6 @@
 # Koldy PHP Framework
 
-Current version is `2.2.2`.
+Current version is `2.2.3`.
 
 To install the framework in your project, run:
 
