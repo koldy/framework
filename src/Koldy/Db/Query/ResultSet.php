@@ -25,6 +25,13 @@ class ResultSet extends Select
     protected $countQuery = null;
 
 	/**
+	 * Precalculated count
+	 *
+	 * @var null|int
+	 */
+	protected $count = null;
+
+	/**
 	 * @var null|Closure
 	 */
     protected $countQueryAdjustableFunction = null;
@@ -191,6 +198,10 @@ class ResultSet extends Select
 	 */
     public function count(): int
     {
+		if ($this->count !== null) {
+			return $this->count;
+		}
+
     	$select = $this->getCountQuery();
 
     	if ($this->countQueryAdjustableFunction !== null) {
@@ -203,8 +214,17 @@ class ResultSet extends Select
             return 0;
         }
 
-        return (int)$result['total'];
+        $this->count = (int)$result['total'];
+		return $this->count;
     }
+
+	/**
+	 * @param int|null $count
+	 */
+	public function setCount(?int $count): void
+	{
+		$this->count = $count;
+	}
 
 	/**
 	 * @return Query
