@@ -18,21 +18,21 @@ class FileDownload extends AbstractResponse
      *
      * @var File
      */
-    protected $file = null;
+    protected File $file;
 
     /**
      * Download as name (file name that user will get)
      *
-     * @var string
+     * @var string|null
      */
-    protected $asName = null;
+    protected string | null $asName = null;
 
     /**
      * The content type of download
      *
-     * @var string
+     * @var string|null
      */
-    protected $contentType = null;
+    protected string | null $contentType = null;
 
     /**
      * FileDownload constructor.
@@ -70,16 +70,15 @@ class FileDownload extends AbstractResponse
         return $this;
     }
 
-    /**
-     * Return file download
-     *
-     * @param string $path
-     * @param string $asName [optional]
-     * @param string $contentType [optional]
-     *
-     * @throws Exception
-     * @return FileDownload
-     */
+	/**
+	 * Return file download
+	 *
+	 * @param string $path
+	 * @param string|null $asName [optional]
+	 * @param string|null $contentType [optional]
+	 *
+	 * @return FileDownload
+	 */
     public static function create(string $path, string $asName = null, string $contentType = null): FileDownload
     {
         $self = new static(new File($path));
@@ -95,9 +94,11 @@ class FileDownload extends AbstractResponse
         return $self;
     }
 
-    /**
-     * @throws Exception
-     */
+	/**
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Http\Exception
+	 */
     public function flush(): void
     {
         // it is file download!

@@ -16,71 +16,71 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
      *
      * @var array
      */
-    protected $to = [];
+    protected array $to = [];
 
     /**
      * The array of CC recipients
      *
      * @var array
      */
-    protected $cc = [];
+    protected array $cc = [];
 
     /**
      * The array of BCC recipients
      *
      * @var array
      */
-    protected $bcc = [];
+    protected array $bcc = [];
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $fromEmail = null;
+    protected string | null $fromEmail = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $fromName = null;
+    protected string | null $fromName = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $replyTo = null;
+    protected string | null $replyTo = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $subject = null;
+    protected string | null $subject = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $body = null;
+    protected string | null $body = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $alternativeText = null;
+    protected string | null $alternativeText = null;
 
     /**
      * @var bool
      */
-    protected $isHTML = false;
+    protected bool $isHTML = false;
 
     /**
      * @var array
      */
-    protected $attachedFiles = [];
+    protected array $attachedFiles = [];
 
-    /**
-     * Set email's "from"
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     */
-    public function from(string $email, string $name = null)
+	/**
+	 * Set email's "from"
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 */
+    public function from(string $email, string $name = null): CommonMailAdapter
     {
         $this->fromEmail = $email;
         $this->fromName = $name;
@@ -88,29 +88,29 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
         return $this;
     }
 
-    /**
-     * Set email's "Reply To" option
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     */
-    public function replyTo(string $email, string $name = null)
+	/**
+	 * Set email's "Reply To" option
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 */
+    public function replyTo(string $email, string $name = null): CommonMailAdapter
     {
         $this->replyTo = $this->getAddressValue($email, $name);
         return $this;
     }
 
-    /**
-     * Set email's "to"
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     */
-    public function to(string $email, string $name = null)
+	/**
+	 * Set email's "to"
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 */
+    public function to(string $email, string $name = null): CommonMailAdapter
     {
         $this->to[] = [
           'email' => $email,
@@ -120,15 +120,15 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
         return $this;
     }
 
-    /**
-     * Set email's "cc"
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     */
-    public function cc(string $email, string $name = null)
+	/**
+	 * Set email's "cc"
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 */
+    public function cc(string $email, string $name = null): CommonMailAdapter
     {
         $this->cc[] = [
           'email' => $email,
@@ -138,15 +138,15 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
         return $this;
     }
 
-    /**
-     * Set email's "bcc"
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     */
-    public function bcc(string $email, string $name = null)
+	/**
+	 * Set email's "bcc"
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 */
+    public function bcc(string $email, string $name = null): CommonMailAdapter
     {
         $this->bcc[] = [
           'email' => $email,
@@ -163,38 +163,38 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
      *
      * @return $this
      */
-    public function subject(string $subject)
+    public function subject(string $subject): CommonMailAdapter
     {
         $this->subject = $subject;
         return $this;
     }
 
-    /**
-     * Sets the e-mail's body in HTML format. If you want to send plain text only, please use plain() method.
-     *
-     * @param string $body
-     * @param boolean $isHTML
-     * @param string $alternativeText
-     *
-     * @return $this
-     */
-    public function body(string $body, bool $isHTML = false, string $alternativeText = null)
+	/**
+	 * Sets the e-mail's body in HTML format. If you want to send plain text only, please use plain() method.
+	 *
+	 * @param string $body
+	 * @param boolean $isHTML
+	 * @param string|null $alternativeText
+	 *
+	 * @return $this
+	 */
+    public function body(string $body, bool $isHTML = false, string $alternativeText = null): CommonMailAdapter
     {
-        $this->body = is_object($body) && method_exists($body, '__toString') ? $body->__toString() : $body;
+        $this->body = $body;
         $this->isHTML = $isHTML;
         $this->alternativeText = $alternativeText;
         return $this;
     }
 
-    /**
-     * Attach file to e-mail
-     *
-     * @param string $fullFilePath
-     * @param string $attachedAsName [optional]
-     *
-     * @return $this
-     */
-    public function attachFile(string $fullFilePath, string $attachedAsName = null)
+	/**
+	 * Attach file to e-mail
+	 *
+	 * @param string $fullFilePath
+	 * @param string|null $attachedAsName [optional]
+	 *
+	 * @return $this
+	 */
+    public function attachFile(string $fullFilePath, string $attachedAsName = null): CommonMailAdapter
     {
     	if (strlen($fullFilePath) == 0) {
     		throw new InvalidArgumentException('Attached file path can not be empty string');
@@ -206,7 +206,7 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 
 	    $fileName = basename($fullFilePath);
 
-    	if (strpos($fileName, '.') === false) {
+    	if (!str_contains($fileName, '.')) {
     		throw new InvalidArgumentException("Unable to attach file from path={$fullFilePath} because file extension can't be detected");
 	    }
 

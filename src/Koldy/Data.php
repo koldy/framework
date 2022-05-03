@@ -12,7 +12,7 @@ trait Data
     /**
      * @var array
      */
-    private $data = [];
+    private array $data = [];
 
     /**
      * Get all data
@@ -28,26 +28,20 @@ trait Data
      * Set data - it'll override all existing data. If you want to "append" data, use addData() method.
      *
      * @param array $data
-     *
-     * @return $this
      */
-    final public function setData(array $data)
+    final public function setData(array $data): void
     {
         $this->data = $data;
-        return $this;
     }
 
     /**
      * Add/append data to already existing data by using array_merge().
      *
      * @param array $data
-     *
-     * @return $this
      */
-    final public function addData(array $data)
+    final public function addData(array $data): void
     {
         $this->data = array_merge($this->data, $data);
-        return $this;
     }
 
     /**
@@ -56,13 +50,11 @@ trait Data
      * @param string $key
      * @param mixed $value
      *
-     * @return $this
      * @link http://koldy.net/docs/json#usage
      */
-    final public function set(string $key, $value)
+    final public function set(string $key, mixed $value): void
     {
         $this->data[$key] = $value;
-        return $this;
     }
 
     /**
@@ -83,23 +75,19 @@ trait Data
      *
      * @param string $key
      *
-     * @return $this
      * @link http://koldy.net/docs/json#usage
      */
-    final public function delete(string $key)
+    final public function delete(string $key): void
     {
         unset($this->data[$key]);
-        return $this;
     }
 
     /**
      * Remove all data that was stored in this instance
-     * @return $this
      */
-    final public function deleteAll()
+    final public function deleteAll(): void
     {
         $this->data = [];
-        return $this;
     }
 
     /**
@@ -109,7 +97,7 @@ trait Data
      *
      * @return mixed or null if key doesn't exist
      */
-    final public function get(string $key)
+    final public function get(string $key): mixed
     {
         return $this->data[$key] ?? null;
     }
@@ -120,7 +108,7 @@ trait Data
      * @param string $key
      * @param mixed $value
      */
-    final public function __set($key, $value)
+    final public function __set(string $key, mixed $value)
     {
         $this->set($key, $value);
     }
@@ -132,7 +120,7 @@ trait Data
      *
      * @return mixed
      */
-    final public function __get($key)
+    final public function __get(string $key): mixed
     {
         return $this->get($key);
     }

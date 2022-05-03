@@ -24,17 +24,16 @@ abstract class AbstractRoute
     /**
      * The URI that is initialized. Do not rely on $_SERVER['REQUEST_URI'].
      *
-     * @var string
+     * @var string|null
      */
-    protected $uri = null;
+    protected string | null $uri = null;
 
     /**
-     * The route config defined in config/application.php. This property will be
-     * always an array and you should use it as array
+     * The route config defined in config/application.php
      *
      * @var array
      */
-    protected $config = null;
+    protected array $config;
 
     /**
      * Construct the object
@@ -53,7 +52,7 @@ abstract class AbstractRoute
      *
      * @param string $uri
      */
-    abstract public function prepareHttp(string $uri);
+    abstract public function prepareHttp(string $uri): void;
 
     /**
      * Get the module URL part
@@ -96,12 +95,11 @@ abstract class AbstractRoute
     /**
      * Get the variable from the URL
      *
-     * @param mixed $whatVar
-     * @param string $default [optional] if variable doesn't exists in request
+     * @param string|int $whatVar
      *
-     * @return mixed
+     * @return string|null
      */
-    abstract public function getVar($whatVar, $default = null);
+    abstract public function getVar(string | int $whatVar): ?string;
 
     /**
      * If route knows how to detect language, then override this method.
@@ -149,34 +147,36 @@ abstract class AbstractRoute
      */
     abstract public function siteHref(string $site, string $controller = null, string $action = null, array $params = null, string $lang = null): string;
 
-    /**
-     * Make URL
-     *
-     * @param string|null $append
-     *
-     * @return string
-     */
+	/**
+	 * Make URL
+	 *
+	 * @param string|null $append
+	 *
+	 * @return string
+	 * @throws \Koldy\Exception
+	 */
     public static function makeUrl(string $append = null): string
     {
         if ($append == null) {
             return 'http' . (Application::isSSL() ? 's' : '') . '://' . Application::getDomain();
         } else {
-            if (substr($append, 0, 1) != '/') {
+            if (!str_starts_with($append, '/')) {
                 $append = '/' . $append;
             }
             return 'http' . (Application::isSSL() ? 's' : '') . '://' . Application::getDomain() . $append;
         }
     }
 
-    /**
-     * Generate link to the resource file on the same domain
-     *
-     * @param string $path
-     * @param string $assetSite [optional]
-     *
-     * @return string
-     * @throws \InvalidArgumentException
-     */
+	/**
+	 * Generate link to the resource file on the same domain
+	 *
+	 * @param string $path
+	 * @param string|null $assetSite [optional]
+	 *
+	 * @return string
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function asset(string $path, string $assetSite = null): string
     {
         if (strlen($path) == 0) {
@@ -187,7 +187,7 @@ abstract class AbstractRoute
         // returned without any kind of building or parsing
 
         $pos = strpos($path, '//');
-        if (($pos !== false && $pos < 10) || substr($path, 0, 2) == '//') {
+        if (($pos !== false && $pos < 10) || str_starts_with($path, '//')) {
             return $path;
         }
 
@@ -220,11 +220,11 @@ abstract class AbstractRoute
         if ($url == null) {
             return static::makeUrl($path);
         } else {
-            if (substr($url, -1) != '/') {
+            if (!str_ends_with($url, '/')) {
                 $url .= '/';
             }
 
-            if (substr($path, 0, 1) == '/') {
+            if (str_starts_with($path, '/')) {
                 $path = substr($path, 1);
             }
 
@@ -238,7 +238,7 @@ abstract class AbstractRoute
      *
      * @return mixed
      */
-    abstract public function exec();
+    abstract public function exec(): mixed;
 
     /**
      * If your app throws any kind of exception, it will end up here, so, handle it!
@@ -246,12 +246,5 @@ abstract class AbstractRoute
      * @param Throwable $e
      */
     abstract public function handleException(Throwable $e): void;
-
-    /**
-     * Will be needed in one of the future versions
-     */
-    public function build(): void
-    {
-    }
 
 }

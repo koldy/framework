@@ -6,7 +6,7 @@ namespace Koldy\Db\ModelTraits;
  * Trait for models that has the "id" column which is integer. Suitable for primary keys in DB tables.
  * @package Koldy\Db\ModelTraits
  *
- * @property int id
+ * @property int|null id
  */
 trait Id
 {

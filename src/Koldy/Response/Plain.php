@@ -17,7 +17,7 @@ class Plain extends AbstractResponse
      *
      * @var string
      */
-    private $content = null;
+    private string $content;
 
     public function __construct(string $content = '')
     {

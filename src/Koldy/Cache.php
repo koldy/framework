@@ -48,7 +48,7 @@ class Cache
         }
 
         $config = static::getConfig();
-        $configArray = $config->get($key, []);
+        $configArray = $config->get($key) ?? [];
 
         if (($configArray['enabled'] ?? false) === false) {
             static::$adapters[$key] = new Cache\Adapter\DevNull([]);

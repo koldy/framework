@@ -27,12 +27,12 @@ class Db implements SessionHandlerInterface
      *
      * @var array
      */
-    protected $config = [];
+    protected array $config;
 
     /**
      * Flag if log should be disabled for session related database queries
      */
-    protected $disableLog = true;
+    protected bool $disableLog = true;
 
     /**
      * Construct the Db Session storage handler
@@ -44,7 +44,7 @@ class Db implements SessionHandlerInterface
         $this->config = $config;
 
         if (array_key_exists('log', $config)) {
-            $this->disableLog = (bool)$config['log'] === true ? false : true;
+            $this->disableLog = !((bool)$config['log'] === true);
         }
     }
 
@@ -75,13 +75,13 @@ class Db implements SessionHandlerInterface
     }
 
 	/**
-	 * @param string $save_path
-	 * @param string $session_name
+	 * @param string $path
+	 * @param string $name
 	 *
 	 * @return bool
 	 * @throws Exception
 	 */
-    public function open($save_path, $session_name): bool
+    public function open(string $path, string $name): bool
     {
         if (!array_key_exists('connection', $this->config)) {
             throw new Exception('Connection parameter is not defined in session\'s DB adapter options');
@@ -105,14 +105,14 @@ class Db implements SessionHandlerInterface
 	/**
 	 * Get the session data from database
 	 *
-	 * @param string $sessionid
+	 * @param string $id
 	 *
 	 * @return null|stdClass if data doesn't exist in database
 	 * @throws DbException
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    private function getDbData($sessionid): ?stdClass
+    private function getDbData(string $id): ?stdClass
     {
         $r = null;
 
@@ -125,7 +125,7 @@ class Db implements SessionHandlerInterface
               ->select($this->getTableName())
               ->field('time')
               ->field('data')
-              ->where('id', $sessionid)
+              ->where('id', $id)
               ->fetchFirstObj();
 
 	        if ($this->disableLog) {
@@ -144,16 +144,16 @@ class Db implements SessionHandlerInterface
     }
 
 	/**
-	 * @param string $sessionid
+	 * @param string $id
 	 *
 	 * @return string
 	 * @throws DbException
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function read(string $sessionid): string
+    public function read(string $id): string
     {
-        $sess = $this->getDbData($sessionid);
+        $sess = $this->getDbData($id);
 
         if ($sess === null) {
             return '';
@@ -167,8 +167,8 @@ class Db implements SessionHandlerInterface
     }
 
 	/**
-	 * @param string $sessionid
-	 * @param string $sessiondata
+	 * @param string $id
+	 * @param string $data
 	 *
 	 * @return bool
 	 * @throws DbException
@@ -176,13 +176,13 @@ class Db implements SessionHandlerInterface
 	 * @throws \Koldy\Exception
 	 * @throws \Koldy\Json\Exception
 	 */
-    public function write($sessionid, $sessiondata): bool
+    public function write(string $id, string $data): bool
     {
 	    $adapter = $this->getAdapter();
 
 	    $data = [
 		    'time' => time(),
-		    'data' => $sessiondata
+		    'data' => $data
 	    ];
 
 	    if ($adapter instanceof PostgreSQL) {
@@ -202,7 +202,7 @@ class Db implements SessionHandlerInterface
 
 	    try {
 		    /** @var \Koldy\Db\Query\Statement $koldyStmt */
-		    $koldyStmt = $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
+		    $koldyStmt = $adapter->update($this->getTableName(), $data)->where('id', $id)->exec();
 		    $pdoStmt = $koldyStmt->getLastQuery()->getStatement();
 		    $shouldInsert = $pdoStmt->rowCount() === 0;
 	    } catch (DbException $e) {
@@ -221,16 +221,16 @@ class Db implements SessionHandlerInterface
 		    // update statement didn't update any record, so let's insert new record in session table
 
 		    try {
-			    $data['id'] = $sessionid;
+			    $data['id'] = $id;
 			    $adapter->insert($this->getTableName(), $data)->exec();
-		    } catch (DbException $e) {
+		    } catch (DbException $firstIsIgnored) {
 			    // for some reason, PHP internally can call session_write_close twice and both times, update statement would return 0 and insert
 			    // would be called two times - first insert will work, but the 2nd one will fail because of duplicate session key in database
 			    // therefore, we'll try to update this one more time before throwing an exception
 
 			    try {
 				    /** @var \Koldy\Db\Query\Statement $koldyStmt */
-				    $adapter->update($this->getTableName(), $data)->where('id', $sessionid)->exec();
+				    $adapter->update($this->getTableName(), $data)->where('id', $id)->exec();
 			    } catch (DbException $e2) {
 				    // something went wrong with database
 				    Log::emergency($e2);
@@ -253,20 +253,20 @@ class Db implements SessionHandlerInterface
     }
 
 	/**
-	 * @param string $sessionid
+	 * @param string $id
 	 *
 	 * @return bool
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function destroy($sessionid): bool
+    public function destroy(string $id): bool
     {
         if ($this->disableLog) {
             Log::temporaryDisable('sql');
         }
 
         try {
-            $this->getAdapter()->delete($this->getTableName())->where('id', $sessionid)->exec();
+            $this->getAdapter()->delete($this->getTableName())->where('id', $id)->exec();
 
 	        if ($this->disableLog) {
 		        Log::restoreTemporaryDisablement();
@@ -287,15 +287,15 @@ class Db implements SessionHandlerInterface
     }
 
 	/**
-	 * @param int $maxlifetime
+	 * @param int $max_lifetime
 	 *
 	 * @return int
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function gc(int $maxlifetime): int
+    public function gc(int $max_lifetime): int
     {
-        $timestamp = time() - $maxlifetime;
+        $timestamp = time() - $max_lifetime;
 
         if ($this->disableLog) {
             Log::temporaryDisable('sql');

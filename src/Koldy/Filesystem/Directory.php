@@ -152,7 +152,7 @@ class Directory
     {
         if (!is_dir($path)) {
             if ($chmod === null) {
-                $chmod = Application::getConfig('application')->getArrayItem('filesystem', 'default_chmod', 0644);
+                $chmod = Application::getConfig('application')->getArrayItem('filesystem', 'default_chmod') ?? 0644;
             }
 
             if (!mkdir($path, $chmod, true)) {

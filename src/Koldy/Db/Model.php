@@ -10,7 +10,7 @@ use Koldy\Db\Query\{
   Select, Insert, Update, Delete, ResultSet
 };
 use Koldy\Json;
-use Serializable;
+use Stringable;
 
 /**
  * Model is abstract class that needs to be extended with your defined class.
@@ -19,23 +19,23 @@ use Serializable;
  *
  * @link http://koldy.net/docs/database/models
  */
-abstract class Model implements Serializable
+abstract class Model implements Stringable
 {
 
     /**
-     * The DB adapter key from config on which the queries will be executed
+     * The DB adapter key from config on which the queries will be executed. Null means default adapter (or the first from configs/database.php)
      *
-     * @var string
+     * @var string|null
      */
-    protected static $adapter = null;
+    protected static string | null $adapter = null;
 
     /**
      * If you don't define the table name, the framework will assume the table
-     * name by the called class name. Class \Db\User\Roles that extends this will try to use db_user_roles table in DB
+     * name by the called class name. Class \Db\User\Roles that extends Model class will try to use db_user_roles table in DB
      *
-     * @var string
+     * @var string|null
      */
-    protected static $table = null;
+    protected static string | null $table = null;
 
     /**
      * While working with tables in database, framework will always assume that
@@ -45,20 +45,20 @@ abstract class Model implements Serializable
      *
      * @var string|array
      */
-    protected static $primaryKey = 'id';
+    protected static string | array $primaryKey = 'id';
 
     /**
      * Assume that this table has auto increment field and that field is primary field.
      * @var bool
      */
-    protected static $autoIncrement = true;
+    protected static bool $autoIncrement = true;
 
     /**
      * The data holder in this object
      *
-     * @var array
+     * @var array|null
      */
-    private $data = null;
+    private array | null $data = null;
 
     /**
      * This is the array that holds information loaded from database. When
@@ -67,14 +67,14 @@ abstract class Model implements Serializable
      * is no change, update() method will return 0 without triggering query on
      * database.
      *
-     * @var array
+     * @var array|null
      */
-    private $originalData = null;
+    private array | null $originalData = null;
 
     /**
      * Construct the instance with or without starting data
      *
-     * @param array $data
+     * @param array|null $data
      */
     public function __construct(array $data = null)
     {
@@ -101,12 +101,12 @@ abstract class Model implements Serializable
     }
 
     /**
-     * @param $property
+     * @param string $property
      *
      * @return mixed|null
      * @throws Exception
      */
-    final public function __get(string $property)
+    final public function __get(string $property): mixed
     {
         if ($this->data === null) {
             $class = get_class($this);
@@ -117,10 +117,10 @@ abstract class Model implements Serializable
     }
 
     /**
-     * @param $property
-     * @param $value
+     * @param string $property
+     * @param mixed $value
      */
-    final public function __set(string $property, $value)
+    final public function __set(string $property, mixed $value): void
     {
         if ($this->data === null) {
             $this->data = [];
@@ -156,7 +156,7 @@ abstract class Model implements Serializable
     {
         if ($this->data === null) {
             $class = get_class($this);
-            throw new Exception("Can not use getData() on {$class} because data wasn't set");
+            throw new Exception("Can not use getData() on {$class} because data wasn't set or loaded");
         }
 
         return $this->data;
@@ -200,9 +200,9 @@ abstract class Model implements Serializable
     /**
      * Manually set the adapter
      *
-     * @param string $adapter
+     * @param string|null $adapter
      */
-    public static function setAdapterConnection(string $adapter)
+    public static function setAdapterConnection(?string $adapter): void
     {
         static::$adapter = $adapter;
     }
@@ -322,7 +322,6 @@ abstract class Model implements Serializable
     public function reload(): Model
     {
         $pk = static::$primaryKey;
-        $condition = null;
 
         if (is_array($pk)) {
 
@@ -378,7 +377,7 @@ abstract class Model implements Serializable
 	 *
 	 * @param null|string $keyName
 	 *
-	 * @return int|string
+	 * @return string
 	 * @throws Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
@@ -388,7 +387,7 @@ abstract class Model implements Serializable
 	 *      echo User::getLastInsertId();
 	 *    }
 	 */
-    public static function getLastInsertId(string $keyName = null)
+    public static function getLastInsertId(string $keyName = null): string
     {
         if (static::$autoIncrement) {
             if (is_string(static::$autoIncrement)) {
@@ -409,7 +408,7 @@ abstract class Model implements Serializable
      * query will be executed without the WHERE statement).
      *
      * @param  array $data
-     * @param  mixed $where OPTIONAL if you pass single value, framework will
+     * @param  int|float|string|array|Where|null $where OPTIONAL if you pass single value, framework will
      * assume that you passed primary key value. If you pass assoc array,
      * then the framework will use those to create the WHERE statement.
      *
@@ -423,9 +422,8 @@ abstract class Model implements Serializable
      *
      *    User::update(array('first_name' => 'new name'), array('disabled' => 0)) will execute:
      *    UPDATE user SET first_name = 'new name' WHERE disabled = 0
-     *
      */
-    public static function update(array $data, $where = null): int
+    public static function update(array $data, int | float | string | array | Where | null $where = null): int
     {
         $update = new Update(static::getTableName(), $data, static::getAdapterConnection());
 
@@ -448,13 +446,15 @@ abstract class Model implements Serializable
     /**
      * Save this initialized object into database.
      *
-     * @return integer how many rows is affected, -1 if nothing was updated
+     * @return int|null how many rows is affected, null if database wasn't contacted (for cases when FW detects
+     * there's no changes, so there's no point on making a query)
+     *
      * @throws Exception
      * @throws Json\Exception
      * @throws Query\Exception
      * @throws \Koldy\Exception
      */
-    public function save(): int
+    public function save(): ?int
     {
         $data = $this->getData();
         $originalData = (array)$this->originalData;
@@ -549,7 +549,7 @@ abstract class Model implements Serializable
      * You can use this only if your primary key is just one field.
      *
      * @param string $field
-     * @param mixed $where the primary key value of the record
+     * @param int|float|string|array|Where $where the primary key value of the record
      * @param int $howMuch default 1
      *
      * @return int number of affected rows
@@ -557,7 +557,7 @@ abstract class Model implements Serializable
      * @throws Query\Exception
      * @throws \Koldy\Exception
      */
-    public static function increment(string $field, $where, int $howMuch = 1): int
+    public static function increment(string $field, int | float | string | array | Where $where, int $howMuch = 1): int
     {
         $update = new Update(static::getTableName(), null, static::getAdapterConnection());
         $update->increment($field, $howMuch);
@@ -583,7 +583,7 @@ abstract class Model implements Serializable
      * used in WHERE statement. If you pass primitive value, method will treat
      * that as passed value for primary key field.
      *
-     * @param mixed $where
+     * @param int|float|string|array|Where $where
      *
      * @return integer How many records is deleted
      * @throws Query\Exception
@@ -594,7 +594,7 @@ abstract class Model implements Serializable
      *
      * @link http://koldy.net/docs/database/models#delete
      */
-    public static function delete($where): int
+    public static function delete(int | float | string | array | Where $where): int
     {
         $delete = new Delete(static::getTableName(), static::getAdapterConnection());
 
@@ -648,12 +648,12 @@ abstract class Model implements Serializable
 	 * If you pass only one parameter, framework will assume that you want to
 	 * fetch the record from database according to primary key defined in
 	 * model. Otherwise, you can fetch the record by any other field you have.
-	 * If your criteria returns more then one records, only first record will
+	 * If your criteria returns more than one records, only first record will
 	 * be taken.
 	 *
-	 * @param  mixed $field primaryKey value, single field or assoc array of arguments for query
-	 * @param  mixed $value
-	 * @param array $fields
+	 * @param  int|float|string|array|Where $field primaryKey value, single field or assoc array of arguments for query
+	 * @param  int|float|string|null $value
+	 * @param array|null $fields
 	 *
 	 * @return Model|null null will be returned if record is not found
 	 * @throws Exception
@@ -661,7 +661,7 @@ abstract class Model implements Serializable
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/models#fetchOne
 	 */
-    public static function fetchOne($field, $value = null, array $fields = null): ?Model
+    public static function fetchOne(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): ?Model
     {
         $select = static::select();
 
@@ -701,12 +701,12 @@ abstract class Model implements Serializable
 	 * If you pass only one parameter, framework will assume that you want to
 	 * fetch the record from database according to primary key defined in
 	 * model. Otherwise, you can fetch the record by any other field you have.
-	 * If your criteria returns more then one records, only first record will
+	 * If your criteria returns more than one records, only first record will
 	 * be taken.
 	 *
-	 * @param  mixed $field primaryKey value, single field or assoc array of arguments for query
-	 * @param  mixed $value
-	 * @param array $fields
+	 * @param  int|float|string|array|Where $field primaryKey value, single field or assoc array of arguments for query
+	 * @param  int|float|string|null $value
+	 * @param array|null $fields
 	 *
 	 * @return Model
 	 * @throws Exception
@@ -715,7 +715,7 @@ abstract class Model implements Serializable
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/models#fetchOne
 	 */
-    public static function fetchOneOrFail($field, $value = null, array $fields = null): Model
+    public static function fetchOneOrFail(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): Model
     {
         $record = static::fetchOne($field, $value, $fields);
 
@@ -729,8 +729,8 @@ abstract class Model implements Serializable
 	/**
 	 * Fetch the array of initialized records from database
 	 *
-	 * @param mixed $where the WHERE condition
-	 * @param array $fields array of fields to select; by default, all fields will be fetched
+	 * @param int|float|string|array|Where $where the WHERE condition
+	 * @param array|null $fields array of fields to select; by default, all fields will be fetched
 	 * @param string|null $orderField
 	 * @param string|null $orderDirection
 	 * @param int|null $limit
@@ -744,12 +744,12 @@ abstract class Model implements Serializable
 	 * @link http://koldy.net/docs/database/models#fetch
 	 */
     public static function fetch(
-      $where,
-      array $fields = null,
-      string $orderField = null,
-      string $orderDirection = null,
-      int $limit = null,
-      int $start = null
+		int | float | string | array | Where $where,
+		array $fields = null,
+		string $orderField = null,
+		string $orderDirection = null,
+		int $limit = null,
+		int $start = null
     ): array {
         $select = static::select();
 
@@ -788,8 +788,8 @@ abstract class Model implements Serializable
 	 * results
 	 *
 	 * @param string $key The name of the column which will be taken from results to be used as key in array
-	 * @param mixed $where the WHERE condition
-	 * @param array $fields array of fields to select; by default, all fields will be fetched
+	 * @param int|float|string|array|Where $where the WHERE condition
+	 * @param array|null $fields array of fields to select; by default, all fields will be fetched
 	 * @param string|null $orderField
 	 * @param string|null $orderDirection
 	 * @param int|null $limit
@@ -803,7 +803,7 @@ abstract class Model implements Serializable
 	 */
     public static function fetchWithKey(
         string $key,
-        $where,
+	    int | float | string | array | Where $where,
         array $fields = null,
         string $orderField = null,
         string $orderDirection = null,
@@ -822,8 +822,8 @@ abstract class Model implements Serializable
 	/**
 	 * Fetch all records from database
 	 *
-	 * @param string $orderField
-	 * @param string $orderDirection
+	 * @param string|null $orderField
+	 * @param string|null $orderDirection
 	 *
 	 * @return Model[]
 	 * @throws Query\Exception
@@ -851,7 +851,7 @@ abstract class Model implements Serializable
 	 *
 	 * @param string $keyField
 	 * @param string $valueField
-	 * @param mixed $where
+	 * @param int|float|string|array|Where|null $where
 	 * @param string|null $orderField
 	 * @param string|null $orderDirection
 	 * @param int|null $limit
@@ -864,13 +864,13 @@ abstract class Model implements Serializable
 	 * @link http://koldy.net/docs/database/models#fetchKeyValue
 	 */
     public static function fetchKeyValue(
-      string $keyField,
-      string $valueField,
-      $where = null,
-      $orderField = null,
-      $orderDirection = null,
-      int $limit = null,
-      int $start = null
+		string $keyField,
+		string $valueField,
+		int | float | string | array | Where | null $where = null,
+		string $orderField = null,
+		string $orderDirection = null,
+		int $limit = null,
+		int $start = null
     ): array {
         $select = static::select()->field($keyField, 'key_field')->field($valueField, 'value_field');
 
@@ -906,25 +906,26 @@ abstract class Model implements Serializable
 	 * Fetch numeric array of values from one column in database
 	 *
 	 * @param string $field
-	 * @param mixed $where
-	 * @param string $orderField
-	 * @param string $orderDirection
-	 * @param integer $limit
-	 * @param integer $start
+	 * @param int|float|string|array|Where|null $where
+	 * @param string|null $orderField
+	 * @param string|null $orderDirection
+	 * @param int|null $limit
+	 * @param int|null $start
 	 *
 	 * @return array or empty array if not found
 	 * @throws Query\Exception
+	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 * @example User::fetchArrayOf('id', Where::init()->where('id', '>', 50), 'id', 'asc') would return array(51,52,53,54,55,...)
 	 * @link http://koldy.net/docs/database/models#fetchArrayOf
 	 */
     public static function fetchArrayOf(
-      string $field,
-      $where = null,
-      string $orderField = null,
-      string $orderDirection = null,
-      int $limit = null,
-      int $start = null
+		string $field,
+		int | float | string | array | Where | null $where = null,
+		string $orderField = null,
+		string $orderDirection = null,
+		int $limit = null,
+		int $start = null
     ): array {
         $select = static::select()->field($field, 'key_field');
 
@@ -960,7 +961,7 @@ abstract class Model implements Serializable
 	 * Fetch only one record and return value from given column
 	 *
 	 * @param string $field
-	 * @param mixed|null $where
+	 * @param int|float|string|array|Where|null $where
 	 * @param string|null $orderField
 	 * @param string|null $orderDirection
 	 *
@@ -968,7 +969,7 @@ abstract class Model implements Serializable
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function fetchOneValue(string $field, $where = null, $orderField = null, $orderDirection = null)
+    public static function fetchOneValue(string $field, int | float | string | array | Where | null $where = null, string $orderField = null, string $orderDirection = null): mixed
     {
         $select = static::select()->field($field, 'key_field')->limit(0, 1);
 
@@ -1000,7 +1001,7 @@ abstract class Model implements Serializable
 	 * Fetch only one record and return value from given column
 	 *
 	 * @param string $field
-	 * @param mixed|null $where
+	 * @param int|float|string|array|Where|null $where
 	 * @param string|null $orderField
 	 * @param string|null $orderDirection
 	 *
@@ -1009,7 +1010,7 @@ abstract class Model implements Serializable
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function fetchOneValueOrFail(string $field, $where = null, $orderField = null, $orderDirection = null)
+    public static function fetchOneValueOrFail(string $field, int | float | string | array | Where | null $where = null, string $orderField = null, string $orderDirection = null): mixed
     {
         $value = static::fetchOneValue($field, $where, $orderField, $orderDirection);
 
@@ -1026,9 +1027,9 @@ abstract class Model implements Serializable
 	 * before you try to insert your data.
 	 *
 	 * @param  string $field
-	 * @param  mixed $value
-	 * @param  mixed $exceptionValue OPTIONAL
-	 * @param  string $exceptionField OPTIONAL
+	 * @param  int|float|string $value
+	 * @param  int|float|string|null $exceptionValue OPTIONAL
+	 * @param  string|null $exceptionField OPTIONAL
 	 *
 	 * @return bool
 	 * @throws Query\Exception
@@ -1047,8 +1048,8 @@ abstract class Model implements Serializable
 	 */
     public static function isUnique(
       string $field,
-      $value,
-      $exceptionValue = null,
+      int | float | string $value,
+      int | float | string $exceptionValue = null,
       string $exceptionField = null
     ): bool {
         $select = static::select();
@@ -1074,14 +1075,14 @@ abstract class Model implements Serializable
 	/**
 	 * Count the records in table according to the parameters
 	 *
-	 * @param mixed $where
+	 * @param int|float|string|array|Where|null $where
 	 *
 	 * @return int
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/models#count
 	 */
-    public static function count($where = null): int
+    public static function count(int | float | string | array | Where | null $where = null): int
     {
         $select = static::select();
 
@@ -1139,7 +1140,7 @@ abstract class Model implements Serializable
 	/**
 	 * Get the initialized Select object with populated FROM and connection adapter set
 	 *
-	 * @param string $tableAlias
+	 * @param string|null $tableAlias
 	 *
 	 * @return Select
 	 * @throws \Koldy\Config\Exception
@@ -1152,15 +1153,17 @@ abstract class Model implements Serializable
         return $select;
     }
 
-    /**
-     * Get the initialized Insert instance with populated table name and connection adapter set
-     *
-     * @param array|null $rawValues
-     *
-     * @return Insert
-     * @throws Exception
-     * @throws Json\Exception
-     */
+	/**
+	 * Get the initialized Insert instance with populated table name and connection adapter set
+	 *
+	 * @param array|null $rawValues
+	 *
+	 * @return Insert
+	 * @throws Json\Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Db\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function insert(array $rawValues = null): Insert
     {
         return new Insert(static::getTableName(), $rawValues, static::getAdapterConnection());
@@ -1171,7 +1174,7 @@ abstract class Model implements Serializable
      * @throws Exception
      * @throws Json\Exception
      */
-    public function __toString()
+    public function __toString(): string
     {
         $class = get_class($this);
         $stringify = Json::encode($this->getData());
@@ -1181,31 +1184,30 @@ abstract class Model implements Serializable
     /**
      * String representation of object
      * @link http://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
+     * @return array
      * @since 5.1.0
      */
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize([
+        return [
           'data' => $this->data,
           'originalData' => $this->originalData
-        ]);
+        ];
     }
 
     /**
      * Constructs the object
      * @link http://php.net/manual/en/serializable.unserialize.php
      *
-     * @param string $serialized <p>
+     * @param array $data <p>
      * The string representation of the object.
      * </p>
      *
      * @return void
      * @since 5.1.0
      */
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $data = unserialize($serialized);
         $this->data = $data['data'];
         $this->setOriginalData($data['originalData']);
     }

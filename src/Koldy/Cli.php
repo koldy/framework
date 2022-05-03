@@ -15,16 +15,16 @@ class Cli
     /**
      * The global $argv variable
      *
-     * @var array
+     * @var array|null
      */
-    protected static $argv = null;
+    protected static array | null $argv = null;
 
     /**
      * Parsed parameters from script arguments
      *
-     * @var array
+     * @var array|null
      */
-    protected static $parameters = null;
+    protected static array | null $parameters = null;
 
     /**
      * Get the $argv global variable in CLI env
@@ -67,14 +67,14 @@ class Cli
             for ($i = 0; $i < $sizeof; $i++) {
                 $p = $argv[$i];
 
-                if (substr($p, 0, 2) == '--') {
+                if (str_starts_with($p, '--')) {
                     $tmp = explode('=', $p);
                     static::$parameters[substr($tmp[0], 2)] = $tmp[1] ?? null;
 
-                } else if (substr($p, 0, 1) == '-' && isset($argv[$i + 1]) && substr($argv[$i + 1], 0, 1) != '-') {
+                } else if (str_starts_with($p, '-') && isset($argv[$i + 1]) && !str_starts_with($argv[$i + 1], '-')) {
                     static::$parameters[substr($p, 1)] = $argv[$i + 1] ?? null;
 
-                } else if (substr($p, 0, 1) == '-' && preg_match('/^[a-zA-Z]$/', substr($p, 1, 1))) {
+                } else if (str_starts_with($p, '-') && preg_match('/^[a-zA-Z]$/', substr($p, 1, 1))) {
                     static::$parameters[substr($p, 1, 1)] = null;
 
                 }
@@ -99,33 +99,33 @@ class Cli
         return array_key_exists($parameter, static::$parameters);
     }
 
-    /**
-     * Get the parameter's value
-     *
-     * @param string $name
-     *
-     * @return string or null if parameter doesn't exist
-     * @throws CliException
-     * @example if called index.php -x --title-name="the title" --version=5,
-     * then you can use getParameterValue('title-name') would return "the title" and getParameterValue('version') would return "5"
-     */
+	/**
+	 * Get the parameter's value
+	 *
+	 * @param string $name
+	 *
+	 * @return string|null or null if parameter doesn't exist
+	 * @throws CliException
+	 * @example if called index.php -x --title-name="the title" --version=5,
+	 * then you can use getParameterValue('title-name') would return "the title" and getParameterValue('version') would return "5"
+	 */
     public static function getParameter(string $name): ?string
     {
         static::parseArgvIntoParameters();
         return static::$parameters[$name] ?? null;
     }
 
-    /**
-     * Get the parameter from any position
-     *
-     * @param int $index starting from zero
-     *
-     * @return string or null if parameter doesn't exists on that place
-     *
-     * @throws CliException
-     * @example if called "index.php 123 -p 2 --version=1.0.1 -h localhost"
-     * and you call getParameterOnPosition(4), you'll get "--version=1.0.1"
-     */
+	/**
+	 * Get the parameter from any position
+	 *
+	 * @param int $index starting from zero
+	 *
+	 * @return string|null or null if parameter doesn't exists on that place
+	 *
+	 * @throws CliException
+	 * @example if called "index.php 123 -p 2 --version=1.0.1 -h localhost"
+	 * and you call getParameterOnPosition(4), you'll get "--version=1.0.1"
+	 */
     public static function getParameterOnPosition(int $index): ?string
     {
         static::parseArgvIntoParameters();

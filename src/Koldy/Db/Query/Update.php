@@ -202,7 +202,7 @@ class Update extends Where
     }
 
     /**
-     * Get how many rows was deleted
+     * Get how many rows was updated
      *
      * @return int
      * @throws Exception

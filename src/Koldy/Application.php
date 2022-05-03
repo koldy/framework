@@ -570,7 +570,7 @@ class Application
 		    throw new ConfigException('The main "application" config is NOT passed to the web app so framework can\'t load other configs because it doesn\'t know where they are');
 	    }
 
-	    $configFiles = $applicationConfig->get('config', []);
+	    $configFiles = $applicationConfig->get('config') ?? [];
 
         $config = new Config($name, $isPointerConfig);
 
@@ -909,7 +909,7 @@ class Application
     public static function getEncoding(): string
     {
 	    if (static::hasConfig('application')) {
-		    return static::getConfig('application')->get('encoding', 'UTF-8');
+		    return static::getConfig('application')->get('encoding') ?? 'UTF-8';
 	    } else {
 		    return 'UTF-8';
 	    }
@@ -941,7 +941,7 @@ class Application
 
         $config = static::getConfig('application');
 
-        date_default_timezone_set($config->get('timezone', 'UTC'));
+        date_default_timezone_set($config->get('timezone') ?? 'UTC');
 
         $includePaths = [];
         $basePath = static::getApplicationPath();
@@ -1022,7 +1022,7 @@ class Application
         });
 
         // check the log for any enabled adapter
-        $logConfigs = static::getConfig('application')->get('log', []);
+        $logConfigs = static::getConfig('application')->get('log') ?? [];
         $logConfigsCount = count($logConfigs);
         $logEnabled = false;
 

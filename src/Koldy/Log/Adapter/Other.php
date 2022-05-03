@@ -19,7 +19,7 @@ class Other extends AbstractLogAdapter
      *
      * @var array
      */
-    protected $messages = [];
+    protected array $messages = [];
 
     /**
      * Construct the HTTP log adapter
@@ -54,7 +54,7 @@ class Other extends AbstractLogAdapter
     {
         $this->messages[] = $message;
 
-        if (sizeof($this->messages) > $this->config['max_messages']) {
+        if (count($this->messages) > $this->config['max_messages']) {
             array_shift($this->messages);
         }
     }

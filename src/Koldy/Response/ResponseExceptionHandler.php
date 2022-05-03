@@ -22,19 +22,22 @@ class ResponseExceptionHandler
 {
 
     /**
-     * @var \Exception
+     * @var \Throwable
      */
-    protected $e;
+    protected Throwable $e;
 
     public function __construct(Throwable $e)
     {
         $this->e = $e;
     }
 
-    /**
-     * @param Throwable $e
-     * @throws Json\Exception
-     */
+	/**
+	 * @param Throwable $e
+	 *
+	 * @throws Json\Exception
+	 * @throws ValidatorException
+	 * @throws \Koldy\Validator\ConfigException
+	 */
     protected function handleExceptionInAjax(Throwable $e): void
     {
         $data = [
@@ -60,7 +63,7 @@ class ResponseExceptionHandler
         } else {
             try {
                 Log::emergency($e);
-            } catch (Log\Exception $e) {
+            } catch (Log\Exception $ignored) {
                 // we can't handle this
             }
             http_response_code(503);
@@ -70,10 +73,12 @@ class ResponseExceptionHandler
         print Json::encode($data);
     }
 
-    /**
-     * @param Throwable $e
-     * @throws Exception
-     */
+	/**
+	 * @param Throwable $e
+	 *
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
     protected function handleExceptionInNormalRequest(Throwable $e): void
     {
         if (View::exists('error')) {
@@ -130,11 +135,14 @@ class ResponseExceptionHandler
         }
     }
 
-    /**
-     * Execute exception handler
-     * @throws Exception
-     * @throws Json\Exception
-     */
+	/**
+	 * Execute exception handler
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws ValidatorException
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Validator\ConfigException
+	 */
     public function exec(): void
     {
         if (Application::route()->isAjax()) {

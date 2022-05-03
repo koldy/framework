@@ -16,9 +16,12 @@ use Koldy\Mail\Exception;
 class File extends CommonMailAdapter
 {
 
-    /**
-     * @throws Exception
-     */
+	/**
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Filesystem\Exception
+	 */
     public function send(): void
     {
         $content = [];
@@ -83,7 +86,7 @@ class File extends CommonMailAdapter
         } else {
             $location = $this->config['location'];
 
-            if (substr($location, 0, 8) == 'storage:') {
+            if (str_starts_with($location, 'storage:')) {
                 $file = Application::getStoragePath(substr($location, 8) . DS . "{$time}.txt");
             } else {
                 $file = $location . DS . "{$time}.txt";

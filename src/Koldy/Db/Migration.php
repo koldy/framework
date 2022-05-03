@@ -12,7 +12,7 @@ abstract class Migration
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Db\Exception
      */
-    abstract public function up();
+    abstract public function up(): void;
 
     /**
      * Will be executed when rolling back "down"
@@ -21,6 +21,6 @@ abstract class Migration
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Db\Exception
      */
-    abstract public function down();
+    abstract public function down(): void;
 
 }

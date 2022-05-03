@@ -15,29 +15,29 @@ class Config
 {
 
     /**
-     * @var array
+     * @var array|null
      */
-    private $data = null;
+    private array | null $data = null;
 
     /**
      * @var string|null
      */
-    private $path = null;
+    private string | null $path = null;
 
     /**
      * @var string
      */
-    private $name;
+    private string $name;
 
     /**
-     * @var int
+     * @var int|null
      */
-    private $loadedAt = null;
+    private int | null $loadedAt = null;
 
     /**
      * @var bool
      */
-    private $isPointerConfig;
+    private bool $isPointerConfig;
 
     /**
      * Config constructor. It is usually used by framework, but you can use it by yourself if you need to
@@ -86,12 +86,13 @@ class Config
         $this->path = $path;
 
         if (is_file($path)) {
-            $this->data = require $path;
+            $data = require $path;
 
-            if (!is_array($this->data)) {
-                throw new ConfigException("Config loaded from path={$path} is not an array");
+            if (!is_array($data)) {
+                throw new ConfigException("Config loaded from path={$path} is not an array; please return an array from a loaded PHP file");
             }
 
+			$this->data = $data;
             $this->loadedAt = time();
         } else {
             throw new ConfigException('Unable to load config from path=' . $path);
@@ -166,7 +167,7 @@ class Config
 	 * @return bool
 	 * @throws ConfigException
 	 */
-    public function isOlderThen(int $numberOfSeconds): bool
+    public function isOlderThan(int $numberOfSeconds): bool
     {
         if ($this->loadedAt == null) {
             throw new ConfigException('Can not know how old is config when config is not set nor loaded yet; Please load config first for config name=' . $this->name);
@@ -175,14 +176,26 @@ class Config
         return time() - $numberOfSeconds > $this->loadedAt;
     }
 
+	/**
+	 * @param int $numberOfSeconds
+	 *
+	 * @return bool
+	 * @throws ConfigException
+	 * @deprecated Typo in name, use isOlderThan() instead
+	 */
+	public function isOlderThen(int $numberOfSeconds): bool
+	{
+		return $this->isOlderThan($numberOfSeconds);
+	}
+
     /**
      * Sets the value to the key in this configuration instance. If configuration was loaded from filesystem, note
-     * that this won't affect file system.
+     * that this won't affect file system. It'll just override the config's value in the runtime
      *
      * @param string $key
-     * @param $value
+     * @param mixed $value
      */
-    final public function set(string $key, $value): void
+    final public function set(string $key, mixed $value): void
     {
         if ($this->data === null) {
             $this->data = [];
@@ -209,23 +222,21 @@ class Config
     }
 
 	/**
-	 * Gets the value on requested key. First argument is key's name, second argument is default value you want
-	 * to get if key is not set.
+	 * Gets the value for requested key in the confi
 	 *
 	 * @param string $key
-	 * @param mixed $defaultValue
 	 *
 	 * @return mixed
 	 * @throws ConfigException
 	 */
-    public function get(string $key, $defaultValue = null)
+    public function get(string $key): mixed
     {
         if (!is_array($this->data)) {
             throw new ConfigException('Unable to get config data when config wasn\'t loaded for config name=' . $this->name);
         }
 
         if (!array_key_exists($key, $this->data)) {
-            return $defaultValue;
+            return null;
         }
 
         if (!$this->isPointerConfig()) {
@@ -272,22 +283,21 @@ class Config
      *
      * @param string $key
      * @param string $subKey
-     * @param mixed|null $defaultValue
      *
      * @return mixed
      * @throws ConfigException
      * @throws Exception
      */
-    public function getArrayItem(string $key, string $subKey, $defaultValue = null)
+    public function getArrayItem(string $key, string $subKey): mixed
     {
-        $expectedArray = $this->get($key, []);
+        $expectedArray = $this->get($key) ?? [];
 
         if (!is_array($expectedArray)) {
             $type = gettype($expectedArray);
             throw new ConfigException("Trying to fetch array from config={$this->name()} under key={$key}, but got '{$type}' instead");
         }
 
-        return array_key_exists($subKey, $expectedArray) ? $expectedArray[$subKey] : $defaultValue;
+        return array_key_exists($subKey, $expectedArray) ? $expectedArray[$subKey] : null;
     }
 
     /**

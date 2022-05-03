@@ -2,6 +2,7 @@
 
 namespace Koldy\Log\Adapter;
 
+use Closure;
 use Koldy\Log\Exception;
 use Koldy\Log;
 use Koldy\Log\Message;
@@ -19,21 +20,23 @@ class Out extends AbstractLogAdapter
     /**
      * Get message function handler
      *
-     * @var \Closure
+     * @var Closure|null
      */
-    protected $getMessageFunction = null;
+    protected Closure|null $getMessageFunction = null;
 
     private const FN_CONFIG_KEY = 'get_message_fn';
 
-    /**
-     * Construct the handler to log to files. The config array will be check
-     * because all configs are strict
-     *
-     * @param array $config
-     *
-     * @throws Exception
-     * @throws \Koldy\Config\Exception
-     */
+	/**
+	 * Construct the handler to log to files. The config array will be check
+	 * because all configs are strict
+	 *
+	 * @param array $config
+	 *
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Convert\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function __construct(array $config)
     {
         if (!isset($config['log']) || !is_array($config['log'])) {
@@ -58,7 +61,6 @@ class Out extends AbstractLogAdapter
         parent::__construct($config);
 
         if (isset($config['dump'])) {
-            $config['dump'] = [];
             $self = $this;
 
             register_shutdown_function(function () use ($self) {
@@ -67,11 +69,13 @@ class Out extends AbstractLogAdapter
         }
     }
 
-    /**
-     * Actually print message out
-     *
-     * @param Message $message
-     */
+	/**
+	 * Actually print message out
+	 *
+	 * @param Message $message
+	 *
+	 * @throws \Koldy\Exception
+	 */
     public function logMessage(Message $message): void
     {
         if (in_array($message->getLevel(), $this->config['log'])) {

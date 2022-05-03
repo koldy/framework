@@ -3,7 +3,7 @@
 namespace Koldy;
 
 /**
- * Class that handles some common stuff.
+ * This class contains some common functions that are helpful in many projects.
  */
 class Util
 {
@@ -17,7 +17,7 @@ class Util
      * @return string
      * @throws Exception
      */
-    public static function randomString(int $length): string
+	public static function randomString(int $length): string
     {
         $random = '';
         $passes = 0;
@@ -46,7 +46,7 @@ class Util
      *
      * @return string
      */
-    public static function str2hex(string $x): string
+	public static function str2hex(string $x): string
     {
         $string = '';
 
@@ -63,7 +63,7 @@ class Util
      * @param string $string
      * @return string
      */
-    public static function cleanString(string $string): string
+	public static function cleanString(string $string): string
     {
         if ($string === '') {
             return '';
@@ -79,7 +79,7 @@ class Util
      *
      * @return string
      */
-    public static function apos(string $string): string
+	public static function apos(string $string): string
     {
         return str_replace("'", '&apos;', $string);
     }
@@ -92,7 +92,7 @@ class Util
      * @return string
      * @example " -> & quot ;
      */
-    public static function quotes(string $string): string
+	public static function quotes(string $string): string
     {
         return str_replace('"', '&quot;', $string);
     }
@@ -105,11 +105,10 @@ class Util
      * @return string
      * @example "<" and ">" -> "&lt;" and "&gt;"
      */
-    public static function tags(string $string): string
+	public static function tags(string $string): string
     {
         $string = str_replace('<', '&lt;', $string);
-        $string = str_replace('>', '&gt;', $string);
-        return $string;
+        return str_replace('>', '&gt;', $string);
     }
 
     /**
@@ -124,7 +123,7 @@ class Util
      * @return string
      * @throws Exception
      */
-    public static function truncate(string $string, int $length = 80, string $etc = '...', bool $breakWords = false, bool $middle = false): string
+	public static function truncate(string $string, int $length = 80, string $etc = '...', bool $breakWords = false, bool $middle = false): string
     {
         if ($length == 0) {
             return '';
@@ -159,22 +158,22 @@ class Util
      * @return string
      * @example text "Lorem ipsum\n\ndolor sit amet\nperiod." will become "<p>Lorem ipsum</p><p>dolor sit amet<br/>period.</p>"
      */
-    public static function p(string $string): string
+	public static function p(string $string): string
     {
         $string = str_replace("\n\n", '</p><p>', $string);
         $string = str_replace("\n", '<br/>', $string);
         return "<p>{$string}</p>";
     }
 
-    /**
-     * Detect URLs in text and replace them with HTML A tag
-     *
-     * @param string $text
-     * @param string $target optional, default _blank
-     *
-     * @return string
-     */
-    public static function a(string $text, string $target = null): string
+	/**
+	 * Detect URLs in text and replace them with HTML A tag
+	 *
+	 * @param string $text
+	 * @param string|null $target optional, default _blank
+	 *
+	 * @return string
+	 */
+	public static function a(string $text, string $target = null): string
     {
         return preg_replace('@((https?://)?([-\w]+\.[-\w\.]+)+\w(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)*)@',
           "<a href=\"\$1\"" . ($target != null ? " target=\"{$target}\"" : '') . ">$1</a>", $text);
@@ -187,7 +186,7 @@ class Util
      *
      * @return string
      */
-    public static function attributeValue(string $text): string
+	public static function attributeValue(string $text): string
     {
         return static::quotes(static::apos(static::tags($text)));
     }
@@ -202,7 +201,7 @@ class Util
      * @return bool
      * @throws Exception
      */
-    public static function startsWith(string $yourString, string $startsWith, string $encoding = null): bool
+	public static function startsWith(string $yourString, string $startsWith, string $encoding = null): bool
     {
         return mb_substr($yourString, 0, mb_strlen($startsWith, $encoding ?? Application::getEncoding()), $encoding ?? Application::getEncoding()) === $startsWith;
     }
@@ -217,7 +216,7 @@ class Util
      * @return bool
      * @throws Exception
      */
-    public static function endsWith(string $yourString, string $endsWith, string $encoding = null): bool
+	public static function endsWith(string $yourString, string $endsWith, string $encoding = null): bool
     {
         return mb_substr($yourString, 0 - mb_strlen($endsWith, $encoding ?? Application::getEncoding()), null, $encoding ?? Application::getEncoding()) === $endsWith;
     }
@@ -231,7 +230,7 @@ class Util
      * @example "Your new - title" will become "your-new-title"
      * @example "Vozač napravio 1500€ štete" will become "vozac-napravio-1500eur-stete"
      */
-    public static function slug(string $string): string
+	public static function slug(string $string): string
     {
         if ($string == '') {
             return '';
@@ -378,9 +377,9 @@ class Util
      * @param array|null $noStrip
      * @param bool|null $lowerCaseFirstLetter
      *
-     * @return mixed|string
+     * @return string
      */
-    public static function camelCase(string $string, array $noStrip = null, bool $lowerCaseFirstLetter = null)
+    public static function camelCase(string $string, array $noStrip = null, bool $lowerCaseFirstLetter = null): string
     {
         // non-alpha and non-numeric characters become spaces
         $string = preg_replace('/[^a-z0-9' . implode('', $noStrip ?? []) . ']+/i', ' ', $string);
@@ -402,7 +401,7 @@ class Util
      *
      * @return bool
      */
-    public static function isAssociativeArray(array $array): bool
+	public static function isAssociativeArray(array $array): bool
     {
         return array_values($array) !== $array;
     }
@@ -414,7 +413,7 @@ class Util
      *
      * @return bool
      */
-    public static function isBinary($str): bool
+	public static function isBinary($str): bool
     {
         return is_string($str) && preg_match('~[^\x20-\x7E\t\r\n]~', $str) > 0;
     }
@@ -428,7 +427,7 @@ class Util
      *
      * @link https://stackoverflow.com/questions/2637945/getting-relative-path-from-absolute-path-in-php
      */
-    public static function getRelativePath(string $from, string $to): string
+	public static function getRelativePath(string $from, string $to): string
     {
         // some compatibility fixes for Windows paths
         $from = is_dir($from) ? rtrim($from, '\/') . '/' : $from;

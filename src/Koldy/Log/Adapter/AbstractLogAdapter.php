@@ -21,12 +21,12 @@ abstract class AbstractLogAdapter
      *
      * @var array
      */
-    protected $config = null;
+    protected array $config;
 
     /**
      * @var array
      */
-    private $enabledLevels = [];
+    private array $enabledLevels = [];
 
     /**
      * Constructor
@@ -56,9 +56,9 @@ abstract class AbstractLogAdapter
      *
      * @return bool
      */
-    public function isLevelEnabled(string $level)
+    public function isLevelEnabled(string $level): bool
     {
-        return isset($this->enabledLevels[$level]);
+        return $this->enabledLevels[$level] === true;
     }
 
     /**

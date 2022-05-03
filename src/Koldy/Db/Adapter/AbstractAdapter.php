@@ -284,7 +284,7 @@ abstract class AbstractAdapter
      *
      * @return Query\Delete
      */
-    public function delete(string $table = null)
+    public function delete(string $table = null): Query\Delete
     {
         return new Query\Delete($table, $this->getConfigKey());
     }
@@ -294,13 +294,18 @@ abstract class AbstractAdapter
 	 *
 	 * @return string
 	 * @throws Exception
+	 * @throws QueryException
 	 */
-	public function getLastInsertId(string $keyName = null)
+	public function getLastInsertId(string $keyName = null): string
 	{
 		try {
 			$id = $this->getPDO()->lastInsertId($keyName);
 		} catch (PDOException $e) {
-			throw new Exception('Unable to get last insert ID' . ($keyName !== null ? " named \"{$keyName}\"" : ''));
+			throw new Exception('Unable to get last insert ID' . ($keyName !== null ? " named \"{$keyName}\"" : ''), 0, $e);
+		}
+
+		if ($id === false) {
+			throw new QueryException('PDO lastInsertId() returned FALSE which should never happen. Please check your database health.');
 		}
 
 		return $id;

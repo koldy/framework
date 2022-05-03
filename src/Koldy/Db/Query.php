@@ -11,39 +11,22 @@ use Koldy\Log;
 use PDO;
 use PDOException;
 use PDOStatement;
+use Stringable;
 
-class Query
+class Query implements Stringable
 {
 
-    /**
-     * @var string
-     */
-    protected $adapter = null;
+    protected string | null $adapter;
 
-    /**
-     * @var null|object|string
-     */
-    protected $query = null;
+    protected string | object | null $query = null;
 
-    /**
-     * @var Bindings|null
-     */
-    protected $bindings = null;
+    protected Bindings $bindings;
 
-    /**
-     * @var mixed
-     */
-    protected $result = null;
+    protected mixed $result = null;
 
-    /**
-     * @var bool
-     */
-    private $queryExecuted = false;
+    private bool $queryExecuted = false;
 
-    /**
-     * @var int
-     */
-    private static $keyIndex = 0;
+    private static int $keyIndex = 0;
 
     /**
      * Query constructor.
@@ -52,7 +35,7 @@ class Query
      * @param Bindings|array|null $bindings
      * @param string|null $adapter
      */
-    public function __construct($query = null, $bindings = null, string $adapter = null)
+    public function __construct(string | object | null $query = null, Bindings | array | null $bindings = null, string $adapter = null)
     {
         $this->query = $query;
         $this->adapter = $adapter;
@@ -80,7 +63,7 @@ class Query
      *
      * @return Query
      */
-    public function setQuery(string $query, $bindings = null): Query
+    public function setQuery(string $query, Bindings | array | null $bindings = null): Query
     {
         $this->query = $query;
 
@@ -176,7 +159,7 @@ class Query
      *
      * @return Query
      */
-    public function setBindings($bindings): Query
+    public function setBindings(Bindings | array $bindings): Query
     {
 	    if (is_array($bindings)) {
 		    $this->bindings = new Bindings();
@@ -409,6 +392,7 @@ class Query
                 case 'object':
                 case 'array':
                 case 'resource':
+                case 'resource (closed)':
                 case 'unknown type':
 	                throw new QueryException("Unsupported type ({$type}) was passed as parameter ({$parameter}) to SQL statement");
 
@@ -430,7 +414,7 @@ class Query
      * @return string
      * @throws \Koldy\Exception
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             return $this->debug(true);

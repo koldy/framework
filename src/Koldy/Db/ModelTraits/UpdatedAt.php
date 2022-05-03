@@ -10,7 +10,7 @@ use Koldy\Exception;
  * Trait UpdatedAt
  * @package Koldy\Db\ModelTraits
  *
- * @property string updated_at
+ * @property string|null updated_at
  */
 trait UpdatedAt
 {
@@ -20,18 +20,14 @@ trait UpdatedAt
      */
     public function hasUpdatedAt(): bool
     {
-	    return $this->updated_at !== null && is_string($this->updated_at) && strlen($this->updated_at) > 0;
+	    return is_string($this->updated_at) && strlen($this->updated_at) > 0;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getUpdatedAt(): ?string
     {
-        if (!$this->hasUpdatedAt()) {
-            return null;
-        }
-
         return $this->updated_at;
     }
 
@@ -51,13 +47,13 @@ trait UpdatedAt
             $timezone = 'UTC';
         }
 
-        return new DateTime($this->getUpdatedAt(), new DateTimeZone($timezone));
+        return new DateTime($this->getUpdatedAt(), new DateTimeZone($timezone ?? 'UTC'));
     }
 
 	/**
 	 * Get the timestamp of the created_at value
 	 *
-	 * @return int
+	 * @return int|null
 	 * @throws Exception
 	 */
     public function getUpdatedAtTimestamp(): ?int
@@ -75,24 +71,17 @@ trait UpdatedAt
         return $timestamp;
     }
 
-    /**
-     * Sets the updated at value
-     *
-     * @param string $updatedAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value, or leave undefined
-     */
-    public function setUpdatedAt(?string $updatedAt): void
+	/**
+	 * Sets the updated at value
+	 *
+	 * @param DateTime|string|null $updatedAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value, or leave undefined
+	 */
+    public function setUpdatedAt(DateTime | string | null $updatedAt): void
     {
-        $this->updated_at = $updatedAt;
+		if ($updatedAt instanceof DateTime) {
+			$this->updated_at = $updatedAt->format('Y-m-d H:i:s');
+		} else {
+			$this->updated_at = $updatedAt;
+		}
     }
-
-    /**
-     * Set the updated at date time by passing instance of updatedAt
-     *
-     * @param DateTime $updatedAt
-     */
-    public function setUpdatedAtDateTime(?DateTime $updatedAt): void
-    {
-        $this->updated_at = $updatedAt === null ? null : $updatedAt->format('Y-m-d H:i:s');
-    }
-
 }

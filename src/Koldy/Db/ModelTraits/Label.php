@@ -5,7 +5,8 @@ namespace Koldy\Db\ModelTraits;
 /**
  * Trait Label - very common in database tables, usually used for naming records.
  * @package Koldy\Db\ModelTraits
- * @property string label
+ *
+ * @property string|null label
  */
 trait Label
 {
@@ -15,7 +16,7 @@ trait Label
 	 */
 	public function hasLabel(): bool
 	{
-		return $this->label !== null && is_string($this->label) && strlen($this->label) > 0;
+		return is_string($this->label) && strlen($this->label) > 0;
 	}
 
 	/**

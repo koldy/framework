@@ -4,6 +4,8 @@
  * Class Pagination
  *
  * It is recommended to extend this class and setup your own values in protected properties.
+ *
+ * @deprecated Don't rely on this class any more
  */
 class Pagination
 {

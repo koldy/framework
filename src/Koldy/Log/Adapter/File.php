@@ -2,6 +2,7 @@
 
 namespace Koldy\Log\Adapter;
 
+use Closure;
 use Koldy\Application;
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Log\Exception;
@@ -24,59 +25,54 @@ class File extends AbstractLogAdapter
      *
      * @var resource
      */
-    private $fp = null;
+    private mixed $fp = null;
 
     /**
      * The last file pointer file name for log
      *
-     * @var string
+     * @var string|null
      */
-    private $fpFile = null;
+    private string | null $fpFile = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    private $generatedFileName = null;
-
-    /**
-     * Flag if file pointer was already closed
-     *
-     * @var boolean
-     */
-    private $closed = false;
+    private string | null $generatedFileName = null;
 
     /**
      * Get message function handler
      *
-     * @var \Closure|null
+     * @var Closure|null
      */
-    private $getMessageFunction = null;
+    private Closure|null $getMessageFunction = null;
 
     /**
      * Function for getting the file name
      *
-     * @var \Closure|null
+     * @var Closure|null
      */
-    private $fileNameFn = null;
+    private Closure|null $fileNameFn = null;
 
     /**
-     * @var int
+     * @var int|null
      */
-    private $mode = null;
+    private int | null $mode = null;
 
 	/**
 	 * @var int|null
 	 */
-	private $fileMode = null;
+	private int | null $fileMode = null;
 
-    /**
-     * Construct the handler to log to files. The config array will be check
-     * because all configs are strict
-     *
-     * @param array $config
-     *
-     * @throws ConfigException
-     */
+	/**
+	 * Construct the handler to log to files. The config array will be check
+	 * because all configs are strict
+	 *
+	 * @param array $config
+	 *
+	 * @throws ConfigException
+	 * @throws \Koldy\Convert\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function __construct(array $config)
     {
         if (isset($config['get_message_fn'])) {
@@ -137,7 +133,6 @@ class File extends AbstractLogAdapter
 
                 $self->fp = null;
                 $self->fpFile = null;
-                $self->closed = true;
             }
         });
     }
@@ -220,7 +215,7 @@ class File extends AbstractLogAdapter
                 }
             }
 
-            if (!$this->fp || $this->fp === null) {
+            if ($this->fp === false || $this->fp === null) {
                 if ($this->config['path'] === null) {
                     $path = Application::getStoragePath('log' . DS . $fpFile);
                 } else {

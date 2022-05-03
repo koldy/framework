@@ -18,52 +18,52 @@ abstract class AbstractResponse
      *
      * @var Closure[]
      */
-    protected $workBeforeResponse = [];
+    protected array $workBeforeResponse = [];
 
 	/**
 	 * Array of names of "before" functions to execute
 	 *
 	 * @var string[]
 	 */
-    protected $workBeforeIndex = [];
+    protected array $workBeforeIndex = [];
 
     /**
      * Array of names of "before" functions to execute
      *
      * @var Closure[]
      */
-    protected $workAfterResponse = [];
+    protected array $workAfterResponse = [];
 
 	/**
 	 * Ability to define name of the executing function
 	 *
 	 * @var string[]
 	 */
-    protected $workAfterIndex = [];
+    protected array $workAfterIndex = [];
 
     /**
      * The array of headers that will be printed before outputting anything
      *
      * @var array
      */
-    protected $headers = [];
+    protected array $headers = [];
 
     /**
      * The HTTP status code
      *
      * @var int
      */
-    protected $statusCode = 200;
+    protected int $statusCode = 200;
 
     /**
      * Set response header
      *
      * @param string $name
-     * @param string|int|float $value [optional]
+     * @param string|int|float|null $value [optional]
      *
      * @return AbstractResponse
      */
-    public function setHeader(string $name, $value = null): AbstractResponse
+    public function setHeader(string $name, string | int | float $value = null): AbstractResponse
     {
         $this->headers[] = [
           'one-line' => ($value === null),
@@ -81,7 +81,7 @@ abstract class AbstractResponse
      *
      * @return boolean
      */
-    public function hasHeader($name): bool
+    public function hasHeader(string $name): bool
     {
         foreach ($this->headers as $header) {
             if (!$header['one-line'] && $header['name'] == $name) {
@@ -263,11 +263,17 @@ abstract class AbstractResponse
 	 */
     protected function runBeforeFlush(): void
     {
-        foreach ($this->workBeforeResponse as $fn) {
+        foreach ($this->workBeforeResponse as $index => $fn) {
 	        try {
 		        call_user_func($fn, $this);
 	        } catch (\Exception | \Throwable $e) {
-		        throw new Exception("Failed to execute function before flush: {$e->getMessage()}", $e->getCode(), $e);
+		        $name = $this->workBeforeIndex[$index] ?? null;
+
+		        if ($name === null) {
+			        throw new Exception("Failed to execute function before flush: {$e->getMessage()}", $e->getCode(), $e);
+		        } else {
+			        throw new Exception("Failed to execute function \"{$name}\" before flush: {$e->getMessage()}", $e->getCode(), $e);
+		        }
 	        }
         }
     }
@@ -298,11 +304,17 @@ abstract class AbstractResponse
             fastcgi_finish_request();
         }
 
-        foreach ($this->workAfterResponse as $fn) {
+        foreach ($this->workAfterResponse as $index => $fn) {
 	        try {
 		        call_user_func($fn, $this);
 	        } catch (\Exception | \Throwable $e) {
-		        throw new Exception("Failed to execute function after flush: {$e->getMessage()}", $e->getCode(), $e);
+				$name = $this->workAfterIndex[$index] ?? null;
+
+				if ($name === null) {
+					throw new Exception("Failed to execute function after flush: {$e->getMessage()}", $e->getCode(), $e);
+				} else {
+					throw new Exception("Failed to execute function \"{$name}\" after flush: {$e->getMessage()}", $e->getCode(), $e);
+				}
 	        }
         }
     }

@@ -99,7 +99,7 @@ class Log
             static::resetWho();
 
             static::$adapters = [];
-            $configs = Application::getConfig('application')->get('log', []);
+            $configs = Application::getConfig('application')->get('log') ?? [];
 
             $count = 0;
             foreach ($configs as $index => $config) {

@@ -15,13 +15,13 @@ abstract class AbstractMailAdapter
      *
      * @var array
      */
-    protected $config;
+    protected array $config;
 
     /**
      * Registered headers
      * @var array
      */
-    private $headers = [];
+    private array $headers = [];
 
     /**
      * Construct the object with configuration array from config/mail.php, from 'options' key
@@ -33,60 +33,60 @@ abstract class AbstractMailAdapter
         $this->config = $config;
     }
 
-    /**
-     * Set From
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     * @link http://koldy.net/docs/mail#example
-     */
-    abstract public function from(string $email, string $name = null);
+	/**
+	 * Set From
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return AbstractMailAdapter
+	 * @link http://koldy.net/docs/mail#example
+	 */
+    abstract public function from(string $email, string $name = null): AbstractMailAdapter;
 
-    /**
-     * Set "Reply-To"
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     * @link http://koldy.net/docs/mail#example
-     */
-    abstract public function replyTo(string $email, string $name = null);
+	/**
+	 * Set "Reply-To"
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 * @link http://koldy.net/docs/mail#example
+	 */
+    abstract public function replyTo(string $email, string $name = null): AbstractMailAdapter;
 
-    /**
-     * Send mail to this e-mail
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     * @link http://koldy.net/docs/mail#example
-     */
-    abstract public function to(string $email, string $name = null);
+	/**
+	 * Send mail to this e-mail
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 * @link http://koldy.net/docs/mail#example
+	 */
+    abstract public function to(string $email, string $name = null): AbstractMailAdapter;
 
-    /**
-     * Send mail carbon copy
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     * @link http://koldy.net/docs/mail#example
-     */
-    abstract public function cc(string $email, string $name = null);
+	/**
+	 * Send mail carbon copy
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 * @link http://koldy.net/docs/mail#example
+	 */
+    abstract public function cc(string $email, string $name = null): AbstractMailAdapter;
 
-    /**
-     * Send mail blind carbon copy
-     *
-     * @param string $email
-     * @param string $name [optional]
-     *
-     * @return $this
-     * @link http://koldy.net/docs/mail#example
-     */
-    abstract public function bcc(string $email, string $name = null);
+	/**
+	 * Send mail blind carbon copy
+	 *
+	 * @param string $email
+	 * @param string|null $name [optional]
+	 *
+	 * @return $this
+	 * @link http://koldy.net/docs/mail#example
+	 */
+    abstract public function bcc(string $email, string $name = null): AbstractMailAdapter;
 
     /**
      * Set the e-mail subject
@@ -96,30 +96,30 @@ abstract class AbstractMailAdapter
      * @return $this
      * @link http://koldy.net/docs/mail#example
      */
-    abstract public function subject(string $subject);
+    abstract public function subject(string $subject): AbstractMailAdapter;
 
-    /**
-     * Set e-mail body
-     *
-     * @param string $body
-     * @param boolean $isHTML
-     * @param string $alternativeText The plain text
-     *
-     * @return $this
-     * @link http://koldy.net/docs/mail#example
-     */
-    abstract public function body(string $body, bool $isHTML = false, string $alternativeText = null);
+	/**
+	 * Set e-mail body
+	 *
+	 * @param string $body
+	 * @param boolean $isHTML
+	 * @param string|null $alternativeText The plain text
+	 *
+	 * @return $this
+	 * @link http://koldy.net/docs/mail#example
+	 */
+    abstract public function body(string $body, bool $isHTML = false, string $alternativeText = null): AbstractMailAdapter;
 
-    /**
-     * Attach file into this e-mail
-     *
-     * @param string $fullFilePath
-     * @param string $attachedAsName
-     *
-     * @return $this
-     * @link http://koldy.net/docs/mail#header-and-files
-     */
-    abstract public function attachFile(string $fullFilePath, string $attachedAsName = null);
+	/**
+	 * Attach file into this e-mail
+	 *
+	 * @param string $fullFilePath
+	 * @param string|null $attachedAsName
+	 *
+	 * @return $this
+	 * @link http://koldy.net/docs/mail#header-and-files
+	 */
+    abstract public function attachFile(string $fullFilePath, string $attachedAsName = null): AbstractMailAdapter;
 
     /**
      * Actually sends an e-mail
@@ -138,7 +138,7 @@ abstract class AbstractMailAdapter
      * @return $this
      * @link http://koldy.net/docs/mail#header-and-files
      */
-    public function setHeader(string $name, string $value)
+    public function setHeader(string $name, string $value): AbstractMailAdapter
     {
         $this->headers[$name] = $value;
         return $this;
@@ -163,7 +163,7 @@ abstract class AbstractMailAdapter
      *
      * @return $this
      */
-    public function removeHeader(string $name)
+    public function removeHeader(string $name): AbstractMailAdapter
     {
         if (array_key_exists($name, $this->headers)) {
             unset($this->headers[$name]);
@@ -216,9 +216,9 @@ abstract class AbstractMailAdapter
      *
      * @return string
      */
-    protected function getAddressValue(string $email, string $name = null)
+    protected function getAddressValue(string $email, string $name = null): string
     {
-        if ($name === null || $name == '') {
+        if ($name === null || $name === '') {
             return $email;
         } else {
             return "{$name} <{$email}>";

@@ -47,12 +47,11 @@ class Csrf
         if (static::$config === null || $reInit) {
             if ($config === null) {
                 $config = Application::getConfig('application');
-                static::$config = $config->getArrayItem('security', 'csrf', [
-                  //self::ENABLED => false,
-                  self::PARAMETER_NAME => null,
-                  self::COOKIE_NAME => 'csrf_token',
-                  self::SESSION_KEY_NAME => 'csrf_token'
-                ]);
+                static::$config = $config->getArrayItem('security', 'csrf') ?? [
+	                self::PARAMETER_NAME => null,
+	                self::COOKIE_NAME => 'csrf_token',
+	                self::SESSION_KEY_NAME => 'csrf_token'
+                ];
             } else {
                 static::$config = $config;
             }
@@ -143,8 +142,8 @@ class Csrf
 	            $token,
 	            0,
 	            '/',
-	            $config->get('domain', ''),
-	            $config->get('cookie_secure', false),
+	            $config->get('domain') ?? '',
+	            $config->get('cookie_secure') ?? false,
 	            false,
 	            $config->get('cookie_samesite')
             );
