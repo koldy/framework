@@ -2,6 +2,7 @@
 
 namespace Koldy\Http;
 
+use CURLFile;
 use Koldy\Http\Exception as HttpException;
 use Koldy\Json;
 use Koldy\Util;
@@ -361,7 +362,20 @@ class Request
                 }
 
                 if (!$this->hasOption(CURLOPT_POSTFIELDS)) {
-                    $options[CURLOPT_POSTFIELDS] = count($this->getParams()) > 0 ? http_build_query($this->getParams()) : '';
+	                // check if there are files in the request
+	                $hasFileInParams = false;
+
+	                foreach ($this->getParams() as $key => $value) {
+		                if ($value instanceof CURLFile) {
+			                $hasFileInParams = true;
+		                }
+	                }
+
+	                if ($hasFileInParams) {
+		                $options[CURLOPT_POSTFIELDS] = $this->getParams();
+	                } else {
+		                $options[CURLOPT_POSTFIELDS] = count($this->getParams()) > 0 ? http_build_query($this->getParams()) : '';
+	                }
                 }
 
                 if ($this->hasHeader('Content-Type') &&

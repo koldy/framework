@@ -6,6 +6,7 @@ use Koldy\Log;
 use PDO;
 use Koldy\Db\Adapter\Exception as AdapterException;
 use Koldy\Config\Exception as ConfigException;
+use PDOException;
 
 class PostgreSQL extends AbstractAdapter
 {
@@ -34,7 +35,7 @@ class PostgreSQL extends AbstractAdapter
     {
         try {
             $this->tryConnect();
-        } catch (\PDOException $firstException) {
+        } catch (PDOException $firstException) {
             $this->pdo = null;
 
             // todo: implement backup connections
@@ -87,11 +88,7 @@ class PostgreSQL extends AbstractAdapter
     public function close(): void
     {
         if ($this->pdo instanceof PDO) {
-
-            if ($this->stmt !== null) {
-                $this->stmt->closeCursor();
-            }
-
+	        $this->stmt?->closeCursor();
             $this->stmt = null;
             $this->pdo = null;
 

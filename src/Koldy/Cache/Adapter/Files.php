@@ -2,10 +2,12 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Closure;
 use Koldy\Application;
 use Koldy\Filesystem\Directory;
 use Koldy\Cache\Exception as CacheException;
 use Koldy\Log;
+use stdClass;
 
 /**
  * This cache adapter will store all of your data into files somewhere on the server's filesystem. Every stored key represents one file on filesystem.
@@ -20,21 +22,21 @@ class Files extends AbstractCacheAdapter
      *
      * @var string
      */
-    protected $path = null;
+    protected string $path;
 
     /**
      * The array of loaded and/or data that will be stored
      *
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * Flag if folder was already checked if exists
      *
      * @var bool
      */
-    protected $checkedFolder = false;
+    protected bool $checkedFolder = false;
 
     /**
      * Construct the object by array of config properties. Config keys are set
@@ -49,13 +51,13 @@ class Files extends AbstractCacheAdapter
     {
         // because if cache is not enabled, then lets not do anything else
 
-        if (!isset($config['path']) || $config['path'] === null) {
+        if (!isset($config['path'])) {
             $this->path = Application::getStoragePath('cache/');
         } else {
             $this->path = $config['path'];
         }
 
-        if (substr($this->path, -1) != '/') {
+        if (!str_ends_with($this->path, '/')) {
             $this->path .= '/';
         }
 
@@ -79,16 +81,16 @@ class Files extends AbstractCacheAdapter
      *
      * @param string $key
      *
-     * @return \stdClass or false if cache doesn't exists
+     * @return stdClass or false if cache doesn't exists
      * @throws CacheException
      */
-    protected function load(string $key): \stdClass
+    protected function load(string $key): stdClass
     {
         $this->checkKey($key);
         $path = $this->getPath($key);
 
         if (is_file($path)) {
-            $object = new \stdClass;
+            $object = new stdClass;
             $object->path = $path;
 
             $file = file_get_contents($path);
@@ -127,7 +129,7 @@ class Files extends AbstractCacheAdapter
      *
      * @return mixed|null
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         $this->checkKey($key);
 
@@ -150,7 +152,7 @@ class Files extends AbstractCacheAdapter
     {
         $result = [];
 
-        foreach (array_values($keys) as $key) {
+        foreach ($keys as $key) {
             $result[$key] = $this->get($key);
         }
 
@@ -159,13 +161,13 @@ class Files extends AbstractCacheAdapter
 
 	/**
 	 * @param array $keys
-	 * @param \Closure $functionOnMissingKeys
+	 * @param Closure $functionOnMissingKeys
 	 * @param int|null $seconds
 	 *
 	 * @return array
 	 * @throws CacheException
 	 */
-    public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
     {
         $found = [];
         $missing = [];
@@ -196,15 +198,16 @@ class Files extends AbstractCacheAdapter
         return $return;
     }
 
-    /**
-     * @param string $key
-     * @param mixed $value
-     * @param int $seconds [optional]
-     * @throws \Koldy\Config\Exception
-     * @throws \Koldy\Exception
-     * @throws \Koldy\Filesystem\Exception
-     */
-    public function set(string $key, $value, int $seconds = null): void
+	/**
+	 * @param string $key
+	 * @param mixed $value
+	 * @param int|null $seconds [optional]
+	 *
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Filesystem\Exception
+	 */
+    public function set(string $key, mixed $value, int $seconds = null): void
     {
         $this->checkKey($key);
 
@@ -215,7 +218,7 @@ class Files extends AbstractCacheAdapter
         if (isset($this->data[$key])) {
             $object = $this->data[$key];
         } else {
-            $object = new \stdClass;
+            $object = new stdClass;
             $object->path = $this->getPath($key);
         }
 
@@ -249,17 +252,17 @@ class Files extends AbstractCacheAdapter
         file_put_contents($object->path, sprintf("%s;%d;%s\n%s", gmdate('r', $object->created), $object->seconds, $object->type, $data));
     }
 
-    /**
-     * Set multiple values to default cache engine and overwrite if keys already exists
-     *
-     * @param array $keyValuePairs
-     * @param int $seconds
-     *
-     * @throws \Koldy\Config\Exception
-     * @throws \Koldy\Exception
-     * @throws \Koldy\Filesystem\Exception
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Set multiple values to default cache engine and overwrite if keys already exists
+	 *
+	 * @param array $keyValuePairs
+	 * @param int|null $seconds
+	 *
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @throws \Koldy\Filesystem\Exception
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
         foreach ($keyValuePairs as $key => $value) {
@@ -331,7 +334,7 @@ class Files extends AbstractCacheAdapter
      */
     public function deleteMulti(array $keys): void
     {
-        foreach (array_values($keys) as $key) {
+        foreach ($keys as $key) {
             $this->delete($key);
         }
     }
@@ -347,13 +350,13 @@ class Files extends AbstractCacheAdapter
     }
 
     /**
-     * @param int $olderThenSeconds
+     * @param int|null $olderThanSeconds
      * @throws \Koldy\Filesystem\Exception
      */
-    public function deleteOld(int $olderThenSeconds = null): void
+    public function deleteOld(int $olderThanSeconds = null): void
     {
-        if ($olderThenSeconds === null) {
-            $olderThenSeconds = $this->defaultDuration;
+        if ($olderThanSeconds === null) {
+	        $olderThanSeconds = $this->defaultDuration;
         }
 
         clearstatcache();
@@ -367,7 +370,7 @@ class Files extends AbstractCacheAdapter
             if ($timeCreated !== false) {
                 // successfully red the file modification time
 
-                if (time() - $olderThenSeconds > $timeCreated) {
+                if (time() - $olderThanSeconds > $timeCreated) {
                     // it is old enough to be removed
 
                     if (!@unlink($fullPath)) {

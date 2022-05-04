@@ -18,13 +18,13 @@ class Bindings
 	 *
 	 * @var int
 	 */
-	protected static $index = 0;
+	protected static int $index = 0;
 
 	/**
 	 * The actual data for bindings
 	 * @var Bind[]
 	 */
-	protected $bindings = [];
+	protected array $bindings = [];
 
 	/**
 	 * Get next unique index for binding to SQL statements
@@ -45,14 +45,7 @@ class Bindings
 		return static::$index++;
 	}
 
-	/**
-	 * @param string $parameter
-	 * @param $value
-	 * @param int|null $typeConstant
-	 *
-	 * @return string
-	 */
-	public function set(string $parameter, $value, int $typeConstant = null): string
+	public function set(string $parameter, int | float | bool | string | null $value, int $typeConstant = null): string
 	{
 		$this->bindings[$parameter] = new Bind($parameter, $value, $typeConstant);
 		return $parameter;

@@ -2,6 +2,7 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Closure;
 use Koldy\Db as DbAdapter;
 use Koldy\Db\Adapter\AbstractAdapter;
 use Koldy\Db\Query\{
@@ -61,7 +62,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         $key = $this->getKeyName($key);
 
@@ -87,7 +88,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Exception
      * @throws \Koldy\Json\Exception
      */
-    public function set(string $key, $value, int $seconds = null): void
+    public function set(string $key, mixed $value, int $seconds = null): void
     {
         $key = $this->getKeyName($key);
 
@@ -155,27 +156,32 @@ class Db extends AbstractCacheAdapter
     }
 
     /**
-     * @param int $olderThenSeconds
+     * @param int|null $olderThanSeconds
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      */
-    public function deleteOld(int $olderThenSeconds = null): void
+    public function deleteOld(int $olderThanSeconds = null): void
     {
+		if ($olderThanSeconds === null) {
+			$olderThanSeconds = $this->defaultDuration ?? 3600;
+		}
+
         $delete = new Delete($this->getTableName(), $this->getAdapterConnection());
-        $delete->where('expires_at', '<=', time())->exec();
+        $delete->where('expires_at', '<=', time() - $olderThanSeconds)->exec();
     }
 
-    /**
-     * Get the array of values from cache by given keys
-     *
-     * @param array $keys
-     *
-     * @return array|mixed value or null if key doesn't exists or cache is disabled
-     * @throws CacheException
-     * @throws \Koldy\Db\Query\Exception
-     * @throws \Koldy\Exception
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Get the array of values from cache by given keys
+	 *
+	 * @param array $keys
+	 *
+	 * @return array value or null if key doesn't exists or cache is disabled
+	 * @throws CacheException
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Db\Query\Exception
+	 * @throws \Koldy\Exception
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function getMulti(array $keys): array
     {
         if (count($keys) == 0) {
@@ -251,7 +257,7 @@ class Db extends AbstractCacheAdapter
 
     /**
      * @param array $keys
-     * @param \Closure $functionOnMissingKeys
+     * @param Closure $functionOnMissingKeys
      * @param int|null $seconds
      *
      * @return array
@@ -259,7 +265,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      */
-    public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
     {
         $found = $this->getMulti($keys);
         $missing = [];

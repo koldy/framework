@@ -18,21 +18,21 @@ class Delete extends Where
 
     /**
      * The table name on which DELETE will be performed
-     * @var string
+     * @var string|null
      */
-    protected $table = null;
+    protected string | null $table = null;
 
     /**
      * @var string|null
      */
-    protected $adapter = null;
+    protected string | null $adapter = null;
 
-    /**
-     * @param string $table
-     * @param string|null $adapter
-     *
-     * @link http://koldy.net/docs/database/query-builder#delete
-     */
+	/**
+	 * @param string|null $table
+	 * @param string|null $adapter
+	 *
+	 * @link http://koldy.net/docs/database/query-builder#delete
+	 */
     public function __construct(string $table = null, string $adapter = null)
     {
         $this->table = $table;

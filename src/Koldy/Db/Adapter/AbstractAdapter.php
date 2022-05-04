@@ -12,37 +12,22 @@ use PDOStatement;
 abstract class AbstractAdapter
 {
 
-    /**
-     * @var array
-     */
-    protected $config;
+    protected array $config;
 
-    /**
-     * @var string|null
-     */
-    private $configKey = null;
+    protected string | null $configKey;
 
-    /**
-     * @var \PDO
-     */
-    protected $pdo = null;
+    protected Pdo | null $pdo = null;
 
-    /**
-     * @var PDOStatement
-     */
-    protected $stmt = null;
+    protected PDOStatement | null $stmt = null;
 
-    /**
-     * @var Query|null
-     */
-    private $lastQuery = null;
+    protected Query | null $lastQuery = null;
 
 	/**
 	 * Number of "active" database transactions; allows "nesting" multiple db transactions
 	 *
 	 * @var int
 	 */
-	private $transactions = 0;
+	private int $transactions = 0;
 
     /**
      * AbstractAdapter constructor.

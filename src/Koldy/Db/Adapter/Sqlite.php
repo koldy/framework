@@ -70,7 +70,7 @@ class Sqlite extends AbstractAdapter
 
         if (isset($config['path'])) {
             $path = $config['path'];
-            if (substr($path, 0, 8) == 'storage:') {
+            if (str_starts_with($path, 'storage:')) {
                 $path = Application::getStoragePath(substr($path, 8));
             }
         } else {

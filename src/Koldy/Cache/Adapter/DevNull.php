@@ -2,6 +2,7 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Closure;
 use Koldy\Cache\Exception as CacheException;
 
 /**
@@ -19,7 +20,7 @@ class DevNull extends AbstractCacheAdapter
      *
      * @return mixed|null
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         $this->checkKey($key);
         return null;
@@ -35,19 +36,19 @@ class DevNull extends AbstractCacheAdapter
      */
     public function getMulti(array $keys): array
     {
-        foreach (array_values($keys) as $key) {
+        foreach ($keys as $key) {
             $this->checkKey($key);
         }
 
         return [];
     }
 
-    /**
-     * @param string $key
-     * @param mixed $value
-     * @param int $seconds
-     */
-    public function set(string $key, $value, int $seconds = null): void
+	/**
+	 * @param string $key
+	 * @param mixed $value
+	 * @param int|null $seconds
+	 */
+    public function set(string $key, mixed $value, int $seconds = null): void
     {
         $this->checkKey($key);
     }
@@ -95,7 +96,7 @@ class DevNull extends AbstractCacheAdapter
      */
     public function deleteMulti(array $keys): void
     {
-        foreach (array_values($keys) as $key) {
+        foreach ($keys as $key) {
             $this->checkKey($key);
         }
     }
@@ -109,22 +110,22 @@ class DevNull extends AbstractCacheAdapter
     }
 
     /**
-     * @param int $olderThen
+     * @param int $olderThanSeconds
      */
-    public function deleteOld(int $olderThen = null): void
+    public function deleteOld(int $olderThanSeconds = null): void
     {
         // nothing to delete
     }
 
 	/**
 	 * @param string $key
-	 * @param \Closure $functionOnSet
-	 * @param int $seconds
+	 * @param Closure $functionOnSet
+	 * @param int|null $seconds
 	 *
 	 * @return mixed
 	 * @throws CacheException
 	 */
-    public function getOrSet(string $key, \Closure $functionOnSet, int $seconds = null)
+    public function getOrSet(string $key, Closure $functionOnSet, int $seconds = null): mixed
     {
         $this->checkKey($key);
 
@@ -137,20 +138,20 @@ class DevNull extends AbstractCacheAdapter
 
 	/**
 	 * @param array $keys
-	 * @param \Closure $functionOnMissingKeys
+	 * @param Closure $functionOnMissingKeys
 	 * @param int|null $seconds
 	 *
 	 * @return array
 	 * @throws CacheException
 	 */
-    public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
     {
-        foreach (array_values($keys) as $key) {
+        foreach ($keys as $key) {
             $this->checkKey($key);
         }
 
 	    try {
-		    $values = call_user_func($functionOnMissingKeys, $keys, $keys, $seconds); // calling function, red keys, missing keys, seconds
+		    $values = call_user_func($functionOnMissingKeys, [], $keys, $seconds); // calling function, read keys, missing keys, seconds
 	    } catch (\Exception | \Throwable $e) {
 		    throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
 	    }

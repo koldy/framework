@@ -13,20 +13,11 @@ use PDO;
 class Bind
 {
 
-	/**
-	 * @var string
-	 */
-	private $parameter;
+	private string $parameter;
 
-	/**
-	 * @var mixed
-	 */
-	private $value;
+	private int | float | bool | string | null $value;
 
-	/**
-	 * @var int
-	 */
-	private $type;
+	private int | float | bool | string | null $type;
 
 	/**
 	 * Bind constructor.
@@ -35,7 +26,7 @@ class Bind
 	 * @param mixed $value
 	 * @param int|null $typeConstant
 	 */
-	public function __construct(string $parameter, $value, int $typeConstant = null)
+	public function __construct(string $parameter, int | float | bool | string | null $value, int $typeConstant = null)
 	{
 		$this->parameter = $parameter;
 		$this->value = $value;
@@ -59,25 +50,16 @@ class Bind
 		}
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getParameter(): string
 	{
 		return $this->parameter;
 	}
 
-	/**
-	 * @return mixed
-	 */
-	public function getValue()
+	public function getValue(): int | float | bool | string | null
 	{
 		return $this->value;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getType(): int
 	{
 		return $this->type;

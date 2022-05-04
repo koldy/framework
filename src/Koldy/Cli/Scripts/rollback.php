@@ -11,7 +11,7 @@ if (Cli::hasParameterOnPosition(3)) {
         throw new CliException('If you\'re passing number of steps to rollback, then it has to be positive integer; e.g. use: ./koldy rollback 5');
     }
 
-    $stepsBack = (int) $stepsBack;
+    $stepsBack = (int)$stepsBack;
 
     if ($stepsBack < 1) {
         throw new CliException('If you\'re passing number of steps to rollback, then it has to be positive integer, at least 1; e.g. use: ./koldy rollback 5');

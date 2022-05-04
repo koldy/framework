@@ -19,49 +19,46 @@ use Koldy\Db\{
 class ResultSet extends Select
 {
 
-    /**
-     * @var Select
-     */
-    protected $countQuery = null;
+    protected Select | null $countQuery = null;
 
 	/**
 	 * Precalculated count
 	 *
 	 * @var null|int
 	 */
-	protected $count = null;
+	protected int | null $count = null;
 
 	/**
 	 * @var null|Closure
 	 */
-    protected $countQueryAdjustableFunction = null;
+    protected Closure | null $countQueryAdjustableFunction = null;
 
     /**
      * The search string
      *
-     * @var string
+     * @var string|null
      */
-    protected $searchTerm = null;
+    protected string | null $searchTerm = null;
 
     /**
      * The fields on which search will be performed - if not set, search
      * will be performed on all fields
      *
-     * @var array
+     * @var array|null
      */
-    protected $searchFields = null;
+    protected array | null $searchFields = null;
 
     /**
      * The model's class name
      *
      * @var string|null
      */
-    protected $modelClass = null;
+    protected string | null $modelClass = null;
 
     /**
      * @var bool
      */
-    protected $resetGroupBy = false;
+    protected bool $resetGroupBy = false;
 
     /**
      * @param string $modelClass
@@ -297,13 +294,13 @@ class ResultSet extends Select
 	/**
 	 * Fetch only first record as object
 	 *
-	 * @param string $class
+	 * @param string|null $class
 	 *
 	 * @return null|object
 	 * @throws Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function fetchFirstObj(string $class = null)
+    public function fetchFirstObj(string $class = null): ?object
     {
         if ($class == null && $this->modelClass !== null) {
             return parent::fetchFirstObj($this->modelClass);

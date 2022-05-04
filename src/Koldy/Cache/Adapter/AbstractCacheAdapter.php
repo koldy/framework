@@ -2,6 +2,7 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Closure;
 use Koldy\Cache\Exception as CacheException;
 
 /**
@@ -17,14 +18,14 @@ abstract class AbstractCacheAdapter
      *
      * @var array
      */
-    protected $config;
+    protected array $config;
 
     /**
      * Default duration of cache - if user doesn't pass it to set/add methods
      *
      * @var int
      */
-    protected $defaultDuration = 3600;
+    protected int $defaultDuration = 3600;
 
     /**
      * Construct the object by array of config properties. Config keys are set
@@ -57,7 +58,7 @@ abstract class AbstractCacheAdapter
      *
      * @throws \InvalidArgumentException
      */
-    protected function checkKey(string $key)
+    protected function checkKey(string $key): void
     {
         // the max length is 255-32-1 = 222
         if (strlen($key) == 0) {
@@ -77,7 +78,7 @@ abstract class AbstractCacheAdapter
      * @return mixed value or null if key doesn't exists or cache is disabled
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
-    abstract public function get(string $key);
+    abstract public function get(string $key): mixed;
 
     /**
      * Get the array of values from cache by given keys
@@ -98,7 +99,7 @@ abstract class AbstractCacheAdapter
      *
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
-    abstract public function set(string $key, $value, int $seconds = null): void;
+    abstract public function set(string $key, mixed $value, int $seconds = null): void;
 
     /**
      * Set multiple values to default cache engine and overwrite if keys already exists
@@ -112,12 +113,12 @@ abstract class AbstractCacheAdapter
 
     /**
      * @param array $keys
-     * @param \Closure $functionOnMissingKeys
+     * @param Closure $functionOnMissingKeys
      * @param int|null $seconds
      *
      * @return array
      */
-    abstract public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array;
+    abstract public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array;
 
     /**
      * Set the value under key and remember it forever! Okay, "forever" has its
@@ -126,7 +127,7 @@ abstract class AbstractCacheAdapter
      * @param string $key
      * @param mixed $value
      */
-    public function setForever(string $key, $value): void
+    public function setForever(string $key, mixed $value): void
     {
         $this->checkKey($key);
         $this->set($key, $value, time() + 3600 * 24 * 365 * 15);
@@ -168,9 +169,9 @@ abstract class AbstractCacheAdapter
     /**
      * Delete all cache items older then ...
      *
-     * @param int $olderThen [optional] if not set, then default duration is used
+     * @param int|null $olderThanSeconds [optional] if not set, then default duration is used
      */
-    abstract public function deleteOld(int $olderThen = null): void;
+    abstract public function deleteOld(int $olderThanSeconds = null): void;
 
 	/**
 	 * Get the value from cache if exists, otherwise, set the value returned
@@ -178,7 +179,7 @@ abstract class AbstractCacheAdapter
 	 * fetching data from database or etc.
 	 *
 	 * @param string $key
-	 * @param \Closure $functionOnSet
+	 * @param Closure $functionOnSet
 	 * @param int|null $seconds
 	 *
 	 * @return mixed
@@ -189,7 +190,7 @@ abstract class AbstractCacheAdapter
 	 *    return "the value";
 	 * });
 	 */
-    public function getOrSet(string $key, \Closure $functionOnSet, int $seconds = null)
+    public function getOrSet(string $key, Closure $functionOnSet, int $seconds = null): mixed
     {
         $this->checkKey($key);
 
