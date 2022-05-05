@@ -2,6 +2,7 @@
 
 namespace Koldy;
 
+use Closure;
 use Koldy\Cache\Adapter\AbstractCacheAdapter;
 use Koldy\Config\Exception as ConfigException;
 
@@ -18,7 +19,7 @@ class Cache
      *
      * @var AbstractCacheAdapter[]
      */
-    protected static $adapters = [];
+    protected static array $adapters = [];
 
     /**
      * Get cache config
@@ -83,7 +84,7 @@ class Cache
      * @throws Exception
      * @link http://koldy.net/docs/cache#get
      */
-    public static function get(string $key)
+    public static function get(string $key): mixed
     {
         return static::getAdapter()->get($key);
     }
@@ -93,7 +94,7 @@ class Cache
      *
      * @param array $keys
      *
-     * @return mixed[]
+     * @return array
      * @throws Exception
      * @link http://koldy.net/docs/cache#get-multi
      */
@@ -107,12 +108,12 @@ class Cache
      *
      * @param string $key
      * @param mixed $value
-     * @param int $seconds [optional]
+     * @param int|null $seconds [optional]
      *
      * @throws Exception
      * @link http://koldy.net/docs/cache#set
      */
-    public static function set(string $key, $value, int $seconds = null): void
+    public static function set(string $key, mixed $value, int $seconds = null): void
     {
         static::getAdapter()->set($key, $value, $seconds);
     }
@@ -121,7 +122,7 @@ class Cache
      * Set multiple values to default cache engine and overwrite if keys already exists
      *
      * @param array $keyValuePairs
-     * @param int $seconds [optional]
+     * @param int|null $seconds [optional]
      *
      * @throws Exception
      * @link http://koldy.net/docs/cache#set-multi
@@ -171,18 +172,19 @@ class Cache
         static::getAdapter()->deleteMulti($keys);
     }
 
-    /**
-     * Get or set the key's value
-     *
-     * @param string $key
-     * @param \Closure $functionOnSet
-     * @param int $seconds
-     *
-     * @return mixed
-     * @throws Exception
-     * @link http://koldy.net/docs/cache#get-or-set
-     */
-    public static function getOrSet(string $key, \Closure $functionOnSet, int $seconds = null)
+	/**
+	 * Get or set the key's value
+	 *
+	 * @param string $key
+	 * @param Closure $functionOnSet
+	 * @param int|null $seconds
+	 *
+	 * @return mixed
+	 * @throws Cache\Exception
+	 * @throws Exception
+	 * @link http://koldy.net/docs/cache#get-or-set
+	 */
+    public static function getOrSet(string $key, Closure $functionOnSet, int $seconds = null): mixed
     {
         return static::getAdapter()->getOrSet($key, $functionOnSet, $seconds);
     }
@@ -220,28 +222,28 @@ class Cache
     }
 
     /**
-     * Does given Adapter exists (this will also return true if Adapter is disabled)
+     * Does requested Adapter exists (this will also return true if Adapter is disabled)
      *
      * @param string $key
      *
      * @return boolean
      * @link http://koldy.net/docs/cache#engines
      */
-    public static function hasAdapter($key): bool
+    public static function hasAdapter(string $key): bool
     {
         return isset(static::$adapters[$key]);
     }
 
-    /**
-     * Is given cache Adapter enabled or not? If Adapter is instance of
-     * DevNull, it will also return false so be careful about that
-     *
-     * @param string $adapter
-     *
-     * @return boolean
-     * @throws Exception
-     */
-    public static function isEnabled($adapter = null): bool
+	/**
+	 * Is given cache Adapter enabled or not? If Adapter is instance of
+	 * DevNull, it will also return false so be careful about that
+	 *
+	 * @param string|null $adapter
+	 *
+	 * @return boolean
+	 * @throws Exception
+	 */
+    public static function isEnabled(string $adapter = null): bool
     {
         return !(static::getAdapter($adapter) instanceof Cache\Adapter\DevNull);
     }

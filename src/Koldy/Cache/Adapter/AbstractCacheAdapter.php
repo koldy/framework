@@ -3,7 +3,10 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
+use Exception;
+use InvalidArgumentException;
 use Koldy\Cache\Exception as CacheException;
+use Throwable;
 
 /**
  * Abstract class for making any kind of new cache adapter. If you want to create your own cache adapter, then extend this class.
@@ -56,17 +59,17 @@ abstract class AbstractCacheAdapter
      *
      * @param string $key
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     protected function checkKey(string $key): void
     {
         // the max length is 255-32-1 = 222
         if (strlen($key) == 0) {
-            throw new \InvalidArgumentException('Cache key name can\'t be empty string');
+            throw new InvalidArgumentException('Cache key name can\'t be empty string');
         }
 
         if (strlen($key) > 222) {
-            throw new \InvalidArgumentException('Cache key name mustn\'t be longer then 222 characters');
+            throw new InvalidArgumentException('Cache key name mustn\'t be longer then 222 characters');
         }
     }
 
@@ -196,16 +199,16 @@ abstract class AbstractCacheAdapter
 
         if (($value = $this->get($key)) !== null) {
             return $value;
-        } else {
-	        try {
-		        $value = call_user_func($functionOnSet);
-	        } catch (\Exception | \Throwable $e) {
-		        throw new CacheException("Unable to cache value with key={$key} because of exception thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
-	        }
-
-            $this->set($key, $value, $seconds);
-            return $value;
         }
+
+	    try {
+		    $value = call_user_func($functionOnSet);
+	    } catch (Exception | Throwable $e) {
+		    throw new CacheException("Unable to cache value with key={$key} because of exception thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
+	    }
+
+	    $this->set($key, $value, $seconds);
+	    return $value;
     }
 
     /**

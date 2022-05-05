@@ -3,12 +3,14 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
+use Exception;
 use Koldy\Db as DbAdapter;
 use Koldy\Db\Adapter\AbstractAdapter;
 use Koldy\Db\Query\{
   Select, Insert, Update, Delete
 };
 use Koldy\Cache\Exception as CacheException;
+use Throwable;
 
 /**
  * This cache adapter will store your cache data into database.
@@ -286,7 +288,7 @@ class Db extends AbstractCacheAdapter
         if (count($missing) > 0) {
         	try {
 		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
-	        } catch (\Exception | \Throwable $e) {
+	        } catch (Exception | Throwable $e) {
         		throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
 	        }
 

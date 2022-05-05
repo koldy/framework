@@ -3,11 +3,13 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
+use Exception;
 use Koldy\Application;
 use Koldy\Filesystem\Directory;
 use Koldy\Cache\Exception as CacheException;
 use Koldy\Log;
 use stdClass;
+use Throwable;
 
 /**
  * This cache adapter will store all of your data into files somewhere on the server's filesystem. Every stored key represents one file on filesystem.
@@ -145,7 +147,7 @@ class Files extends AbstractCacheAdapter
      *
      * @param array $keys
      *
-     * @return mixed[]
+     * @return array
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     public function getMulti(array $keys): array
@@ -188,7 +190,7 @@ class Files extends AbstractCacheAdapter
         if (count($missing) > 0) {
 	        try {
 		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
-	        } catch (\Exception | \Throwable $e) {
+	        } catch (Exception | Throwable $e) {
 		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
 	        }
 
@@ -283,7 +285,7 @@ class Files extends AbstractCacheAdapter
 
             try {
                 $object = $this->load($key);
-            } catch (CacheException $e) {
+            } catch (CacheException $ignored) {
                 return false;
             }
         } else {
