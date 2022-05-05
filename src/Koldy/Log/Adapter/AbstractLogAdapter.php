@@ -58,7 +58,7 @@ abstract class AbstractLogAdapter
      */
     public function isLevelEnabled(string $level): bool
     {
-        return $this->enabledLevels[$level] === true;
+        return array_key_exists($level, $this->enabledLevels) && $this->enabledLevels[$level] === true;
     }
 
     /**
