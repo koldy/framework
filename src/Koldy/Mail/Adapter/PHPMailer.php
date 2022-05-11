@@ -85,7 +85,7 @@ class PHPMailer extends AbstractMailAdapter
      *
      * @return $this
      */
-    public function from(string $email, string $name = null)
+    public function from(string $email, string $name = null): static
     {
         $this->mailer->setFrom($email, $name ?? '');
         return $this;
@@ -99,7 +99,7 @@ class PHPMailer extends AbstractMailAdapter
      *
      * @return $this
      */
-    public function replyTo(string $email, string $name = null)
+    public function replyTo(string $email, string $name = null): static
     {
         $this->mailer->addReplyTo($email, $name ?? '');
         return $this;
@@ -113,7 +113,7 @@ class PHPMailer extends AbstractMailAdapter
      *
      * @return $this
      */
-    public function to(string $email, string $name = null)
+    public function to(string $email, string $name = null): static
     {
         $this->mailer->addAddress($email, $name ?? '');
         return $this;
@@ -128,7 +128,7 @@ class PHPMailer extends AbstractMailAdapter
      * @return $this
      * @link http://koldy.net/docs/mail#example
      */
-    public function cc(string $email, string $name = null)
+    public function cc(string $email, string $name = null): static
     {
         $this->mailer->addCC($email, $name ?? '');
         return $this;
@@ -143,7 +143,7 @@ class PHPMailer extends AbstractMailAdapter
      * @return $this
      * @link http://koldy.net/docs/mail#example
      */
-    public function bcc(string $email, string $name = null)
+    public function bcc(string $email, string $name = null): static
     {
         $this->mailer->addBCC($email, $name ?? '');
         return $this;
@@ -156,7 +156,7 @@ class PHPMailer extends AbstractMailAdapter
      *
      * @return $this
      */
-    public function subject(string $subject)
+    public function subject(string $subject): static
     {
         $this->mailer->Subject = $subject;
         return $this;
@@ -169,7 +169,7 @@ class PHPMailer extends AbstractMailAdapter
      *
      * @return $this
      */
-    public function body(string $body, bool $isHTML = false, string $alternativeText = null)
+    public function body(string $body, bool $isHTML = false, string $alternativeText = null): static
     {
         $this->mailer->Body = $body;
 
@@ -190,7 +190,7 @@ class PHPMailer extends AbstractMailAdapter
      *
      * @return $this
      */
-    public function attachFile(string $fullFilePath, string $attachedAsName = null)
+    public function attachFile(string $fullFilePath, string $attachedAsName = null): static
     {
         $this->mailer->addAttachment($fullFilePath, $attachedAsName ?? '');
         return $this;

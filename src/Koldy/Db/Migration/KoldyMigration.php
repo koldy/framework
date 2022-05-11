@@ -23,10 +23,10 @@ use Koldy\Db\ModelTraits\Id;
 class KoldyMigration extends Model
 {
 
-    protected static $table = 'koldy_migration';
+    protected static string | null $table = 'koldy_migration';
 
     /**
-     * If you define koldy_migration database adapter, then migrations table will be stored there
+     * If you define koldy_migration database adapter, then migration table will be stored there
      *
      * @return null|string
      * @throws \Koldy\Exception
