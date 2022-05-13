@@ -26,7 +26,7 @@ class Request
     protected string $url;
 
     /**
-     * @var string[]
+     * @var array
      */
     protected array $params = [];
 
@@ -109,11 +109,11 @@ class Request
 	 * Set the request parameter
 	 *
 	 * @param string $name
-	 * @param string|int|float|bool $value
+	 * @param mixed $value
 	 *
 	 * @return Request
 	 */
-    public function setParam(string $name, string | int | float | bool $value): static
+    public function setParam(string $name, mixed $value): static
     {
         $this->params[$name] = $value;
         return $this;
@@ -156,9 +156,9 @@ class Request
     /**
      * @param string $key
      *
-     * @return string|null
+     * @return mixed
      */
-    public function getParam(string $key): ?string
+    public function getParam(string $key): mixed
     {
         return $this->params[$key] ?? null;
     }
