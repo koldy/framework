@@ -109,11 +109,11 @@ class Request
 	 * Set the request parameter
 	 *
 	 * @param string $name
-	 * @param string|int|float $value
+	 * @param string|int|float|bool $value
 	 *
 	 * @return Request
 	 */
-    public function setParam(string $name, string | int | float $value): static
+    public function setParam(string $name, string | int | float | bool $value): static
     {
         $this->params[$name] = $value;
         return $this;
