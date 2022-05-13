@@ -56,7 +56,7 @@ class Request
      *
      * @return Request
      */
-    public function setUrl(string $url): Request
+    public function setUrl(string $url): static
     {
         $this->url = $url;
         return $this;
@@ -91,7 +91,7 @@ class Request
      *
      * @return Request
      */
-    public function setMethod(string $method): Request
+    public function setMethod(string $method): static
     {
         $this->method = $method;
         return $this;
@@ -105,26 +105,16 @@ class Request
         return $this->method;
     }
 
-    /**
-     * Set the request parameter
-     *
-     * @param string $name
-     * @param string|object $value
-     *
-     * @return Request
-     * @throws Exception
-     */
-    public function setParam(string $name, string | object $value): Request
+	/**
+	 * Set the request parameter
+	 *
+	 * @param string $name
+	 * @param string|int|float $value
+	 *
+	 * @return Request
+	 */
+    public function setParam(string $name, string | int | float $value): static
     {
-        if (is_object($value)) {
-            if (property_exists($value, '__toString')) {
-                $value = $value->__toString();
-            } else {
-                $class = get_class($value);
-                throw new HttpException("Can not set param={$name} when instance of {$class} can't be converted to string");
-            }
-        }
-
         $this->params[$name] = $value;
         return $this;
     }
@@ -136,7 +126,7 @@ class Request
      *
      * @return Request
      */
-    public function setParams(array $params): Request
+    public function setParams(array $params): static
     {
         $this->params = $params;
         return $this;
@@ -173,15 +163,15 @@ class Request
         return $this->params[$key] ?? null;
     }
 
-    /**
-     * Set the request header
-     *
-     * @param string $name
-     * @param string $value
-     *
-     * @return Request
-     */
-    public function setHeader(string $name, string $value): Request
+	/**
+	 * Set the request header
+	 *
+	 * @param string $name
+	 * @param string|int|float $value
+	 *
+	 * @return Request
+	 */
+    public function setHeader(string $name, string | int | float $value): static
     {
         $this->headers[$name] = $value;
         return $this;
@@ -194,7 +184,7 @@ class Request
      *
      * @return Request
      */
-    public function setHeaders(array $headers): Request
+    public function setHeaders(array $headers): static
     {
         $this->headers = $headers;
         return $this;
@@ -236,7 +226,7 @@ class Request
      *
      * @return Request
      */
-    public function removeHeader(string $name): Request
+    public function removeHeader(string $name): static
     {
         if ($this->hasHeader($name)) {
             unset($this->headers[$name]);
@@ -252,7 +242,7 @@ class Request
      * @return Request
      * @link http://php.net/manual/en/function.curl-setopt.php
      */
-    public function setOptions(array $curlOptions): Request
+    public function setOptions(array $curlOptions): static
     {
         $this->options = $curlOptions;
         return $this;
@@ -267,7 +257,7 @@ class Request
      * @return Request
      * @link http://php.net/manual/en/function.curl-setopt.php
      */
-    public function setOption(int $name, mixed $value): Request
+    public function setOption(int $name, mixed $value): static
     {
         $this->options[$name] = $value;
         return $this;
@@ -310,7 +300,7 @@ class Request
      *
      * @return Request
      */
-    public function removeOption(int $option): Request
+    public function removeOption(int $option): static
     {
         if ($this->hasOption($option)) {
             unset($this->options[$option]);
