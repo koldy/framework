@@ -24,6 +24,8 @@ use Throwable;
 class DefaultRoute extends AbstractRoute
 {
 
+	protected array | null $uriParts = null;
+
     /**
      * The resolved module URL part
      *
@@ -124,20 +126,20 @@ class DefaultRoute extends AbstractRoute
 
         $ds = DS;
 
-        $uriParts = explode('/', $uri);
-        if (!isset($uriParts[1])) {
-            $uriParts[1] = '';
+        $this->uriParts = explode('/', $uri);
+        if (!isset($this->uriParts[1])) {
+            $this->uriParts[1] = '';
         }
 
         // There are two possible scenarios:
         // 1. The first part of URL leads to the module controller
         // 2. The first part of URL leads to the default controller
 
-        if ($uriParts[1] == '') {
+        if ($this->uriParts[1] == '') {
             $this->controllerUrl = 'index';
             $this->controllerClass = 'IndexController';
         } else {
-            $this->controllerUrl = strtolower($uriParts[1]);
+            $this->controllerUrl = strtolower($this->uriParts[1]);
             $this->controllerClass = str_replace(' ', '', ucwords(str_replace(['-', '.'], ' ', $this->controllerUrl))) . 'Controller';
         }
 
@@ -153,8 +155,8 @@ class DefaultRoute extends AbstractRoute
             $moduleUrl = $this->controllerUrl;
             $this->moduleUrl = $moduleUrl;
 
-            if (isset($uriParts[2]) && $uriParts[2] != '') {
-                $this->controllerUrl = strtolower($uriParts[2]);
+            if (isset($this->uriParts[2]) && $this->uriParts[2] != '') {
+                $this->controllerUrl = strtolower($this->uriParts[2]);
                 $this->controllerClass = str_replace(' ', '', ucwords(str_replace(['-', '.'], ' ', $this->controllerUrl))) . 'Controller';
             } else {
                 $this->controllerUrl = 'index';
@@ -178,17 +180,17 @@ class DefaultRoute extends AbstractRoute
             }
 
             if ($mainControllerExists) {
-                if (!isset($uriParts[3]) || $uriParts[3] == '') {
+                if (!isset($this->uriParts[3]) || $this->uriParts[3] == '') {
                     $this->actionUrl = 'index';
                     $this->actionMethod = 'index';
                 } else {
-                    $this->actionUrl = strtolower($uriParts[3]);
+                    $this->actionUrl = strtolower($this->uriParts[3]);
                     $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                     $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                     $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
                 }
-            } else if (isset($uriParts[2]) && $uriParts[2] != '') {
-                $this->actionUrl = strtolower($uriParts[2]);
+            } else if (isset($this->uriParts[2]) && $this->uriParts[2] != '') {
+                $this->actionUrl = strtolower($this->uriParts[2]);
                 $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                 $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                 $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
@@ -217,17 +219,17 @@ class DefaultRoute extends AbstractRoute
             }
 
             if ($mainControllerExists) {
-                if (!isset($uriParts[2]) || $uriParts[2] == '') {
+                if (!isset($this->uriParts[2]) || $this->uriParts[2] == '') {
                     $this->actionUrl = 'index';
                     $this->actionMethod = 'index';
                 } else {
-                    $this->actionUrl = strtolower($uriParts[2]);
+                    $this->actionUrl = strtolower($this->uriParts[2]);
                     $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                     $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                     $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
                 }
             } else {
-                $this->actionUrl = strtolower($uriParts[1]);
+                $this->actionUrl = strtolower($this->uriParts[1]);
                 $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                 $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                 $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
@@ -297,9 +299,9 @@ class DefaultRoute extends AbstractRoute
         if (is_numeric($whatVar)) {
             $whatVar = (int)$whatVar + 1;
 
-            if (isset($this->uri[$whatVar])) {
-                $value = trim($this->uri[$whatVar]);
-                return ($value != '') ? $value : null;
+            if (isset($this->uriParts[$whatVar])) {
+                $value = trim($this->uriParts[$whatVar]);
+                return ($value !== '') ? $value : null;
             } else {
                 return null;
             }
@@ -307,7 +309,7 @@ class DefaultRoute extends AbstractRoute
             // if variable is string, then treat it like GET parameter
             if (isset($_GET[$whatVar])) {
                 $value = trim($_GET[$whatVar]);
-                return ($value != '') ? $value : null;
+                return ($value !== '') ? $value : null;
             } else {
                 return null;
             }
