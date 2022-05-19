@@ -126,7 +126,7 @@ class DefaultRoute extends AbstractRoute
 
         $ds = DS;
 
-        $this->uriParts = explode('/', $uri);
+        $this->uriParts = explode('/', $this->uri);
         if (!isset($this->uriParts[1])) {
             $this->uriParts[1] = '';
         }
