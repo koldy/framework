@@ -51,7 +51,7 @@ abstract class Model implements Stringable
      * Assume that this table has auto increment field and that field is primary field.
      * @var bool
      */
-    protected static bool $autoIncrement = true;
+    protected static string | bool $autoIncrement = true;
 
     /**
      * The data holder in this object
