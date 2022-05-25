@@ -289,11 +289,11 @@ class Db implements SessionHandlerInterface
 	/**
 	 * @param int $max_lifetime
 	 *
-	 * @return int
+	 * @return int|false
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function gc(int $max_lifetime): int
+    public function gc(int $max_lifetime): int|false
     {
         $timestamp = time() - $max_lifetime;
 
@@ -303,7 +303,6 @@ class Db implements SessionHandlerInterface
 
         try {
             $stmt = $this->getAdapter()->delete($this->getTableName())->where('time', '<', $timestamp)->exec();
-			$counter = $stmt->rowCount();
 
 	        if ($this->disableLog) {
 		        Log::restoreTemporaryDisablement();
@@ -316,11 +315,11 @@ class Db implements SessionHandlerInterface
 		        Log::restoreTemporaryDisablement();
 	        }
 
-            $counter = 0;
+            return false;
 
         }
 
-	    return $counter;
+	    return $stmt->rowCount();
     }
 
 }

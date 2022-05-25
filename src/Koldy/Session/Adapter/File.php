@@ -66,7 +66,7 @@ class File implements SessionHandlerInterface
     /**
      * @return bool
      */
-    public function close(): bool
+    public function close()
     {
         return true;
     }
