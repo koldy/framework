@@ -20,12 +20,9 @@ class Where
      * The array of where statements
      * @var array
      */
-    protected $where = [];
+    protected array $where = [];
 
-    /**
-     * @var array
-     */
-    protected $bindings = null;
+    protected Bindings | null $bindings = null;
 
     /**
      * Bind some value for PDO
@@ -34,7 +31,7 @@ class Where
      * @param $value
      * @param string $prefix - optional, use in special cases when there might a field duplicate, usually in clones or sub queries
      *
-     * @return string
+     * @return string - the bind name
      */
     public function bind(string $field, $value, string $prefix = ''): string
     {
@@ -43,8 +40,7 @@ class Where
 	    }
 
     	$parameter = $prefix . $field;
-    	$bindName = $this->bindings->makeAndSet($parameter, $value);
-        return $bindName;
+        return $this->bindings->makeAndSet($parameter, $value);
     }
 
     /**
@@ -57,7 +53,7 @@ class Where
      *
      * @return $this
      */
-    private function addCondition(string $link, $field, $value, string $operator)
+    private function addCondition(string $link, mixed $field, mixed $value, string $operator): static
     {
         $this->where[] = [
           'link' => $link,
@@ -83,7 +79,7 @@ class Where
      * @example where('id', '>', 5) produces WHERE id > 5
      * @example where('id', '<=', '0100') produces WHERE id <= '0100'
      */
-    public function where($field, $valueOrOperator = null, $value = null)
+    public function where(mixed $field, mixed $valueOrOperator = null, mixed $value = null): static
     {
         if (is_string($field) && $valueOrOperator === null) {
             throw new \InvalidArgumentException('Invalid second argument; argument must not be null in case when first argument is string');
@@ -101,7 +97,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhere($field, $valueOrOperator = null, $value = null)
+    public function orWhere(mixed $field, mixed $valueOrOperator = null, mixed $value = null): static
     {
         if (is_string($field) && $valueOrOperator === null) {
             throw new \InvalidArgumentException('Invalid second argument; argument must not be null');
@@ -117,7 +113,7 @@ class Where
      *
      * @return $this
      */
-    public function whereNull(string $field)
+    public function whereNull(string $field): static
     {
         return $this->addCondition('AND', $field, new Expr('NULL'), 'IS');
     }
@@ -129,7 +125,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhereNull(string $field)
+    public function orWhereNull(string $field): static
     {
         return $this->addCondition('OR', $field, new Expr('NULL'), 'IS');
     }
@@ -141,7 +137,7 @@ class Where
      *
      * @return $this
      */
-    public function whereNotNull(string $field)
+    public function whereNotNull(string $field): static
     {
         return $this->addCondition('AND', $field, new Expr('NULL'), 'IS NOT');
     }
@@ -153,7 +149,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhereNotNull(string $field)
+    public function orWhereNotNull(string $field): static
     {
         return $this->addCondition('OR', $field, new Expr('NULL'), 'IS NOT');
     }
@@ -167,7 +163,7 @@ class Where
      *
      * @return $this
      */
-    public function whereBetween(string $field, $value1, $value2)
+    public function whereBetween(string $field, mixed $value1, mixed $value2): static
     {
         return $this->addCondition('AND', $field, [$value1, $value2], 'BETWEEN');
     }
@@ -181,7 +177,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhereBetween($field, $value1, $value2)
+    public function orWhereBetween(string $field, mixed $value1, mixed $value2): static
     {
         return $this->addCondition('OR', $field, [$value1, $value2], 'BETWEEN');
     }
@@ -195,7 +191,7 @@ class Where
      *
      * @return $this
      */
-    public function whereNotBetween($field, $value1, $value2)
+    public function whereNotBetween(string $field, mixed $value1, mixed $value2): static
     {
         return $this->addCondition('AND', $field, [$value1, $value2], 'NOT BETWEEN');
     }
@@ -209,7 +205,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhereNotBetween($field, $value1, $value2)
+    public function orWhereNotBetween(string $field, mixed $value1, mixed $value2): static
     {
         return $this->addCondition('OR', $field, [$value1, $value2], 'NOT BETWEEN');
     }
@@ -222,7 +218,7 @@ class Where
      *
      * @return $this
      */
-    public function whereIn(string $field, array $values)
+    public function whereIn(string $field, array $values): static
     {
         return $this->addCondition('AND', $field, array_values($values), 'IN');
     }
@@ -235,7 +231,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhereIn(string $field, array $values)
+    public function orWhereIn(string $field, array $values): static
     {
         return $this->addCondition('OR', $field, array_values($values), 'IN');
     }
@@ -248,7 +244,7 @@ class Where
      *
      * @return $this
      */
-    public function whereNotIn(string $field, array $values)
+    public function whereNotIn(string $field, array $values): static
     {
         return $this->addCondition('AND', $field, array_values($values), 'NOT IN');
     }
@@ -261,7 +257,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhereNotIn(string $field, array $values)
+    public function orWhereNotIn(string $field, array $values): static
     {
         return $this->addCondition('OR', $field, array_values($values), 'NOT IN');
     }
@@ -274,7 +270,7 @@ class Where
      *
      * @return $this
      */
-    public function whereLike(string $field, $value)
+    public function whereLike(string $field, string $value): static
     {
         return $this->addCondition('AND', $field, $value, 'LIKE');
     }
@@ -287,7 +283,7 @@ class Where
      *
      * @return $this
      */
-    public function orWhereLike($field, $value)
+    public function orWhereLike(string $field, string $value): static
     {
         return $this->addCondition('OR', $field, $value, 'LIKE');
     }
@@ -300,7 +296,7 @@ class Where
      *
      * @return $this
      */
-    public function whereNotLike($field, $value)
+    public function whereNotLike(string $field, string $value): static
     {
         return $this->addCondition('AND', $field, $value, 'NOT LIKE');
     }
@@ -313,13 +309,13 @@ class Where
      *
      * @return $this
      */
-    public function orWhereNotLike($field, $value)
+    public function orWhereNotLike(string $field, string $value): static
     {
         return $this->addCondition('OR', $field, $value, 'NOT LIKE');
     }
 
     /**
-     * Is there any WHERE statement
+     * Is there a WHERE statement?
      *
      * @return boolean
      */
@@ -358,16 +354,16 @@ class Where
         $this->bindings = new Bindings();
     }
 
-    /**
-     * Get where statement appended to query
-     *
-     * @param array $whereArray
-     * @param int $cnt
-     *
-     * @throws Exception
-     * @return string
-     */
-    public function getWhereSql(array $whereArray = null, $cnt = 0): string
+	/**
+	 * Get where statement appended to query
+	 *
+	 * @param array|null $whereArray
+	 * @param int $cnt
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+    public function getWhereSql(array $whereArray = null, int $cnt = 0): string
     {
     	if ($this->bindings === null) {
     		$this->bindings = new Bindings();

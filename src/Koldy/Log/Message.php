@@ -19,22 +19,22 @@ class Message
      *
      * @var array
      */
-    protected $messages = [];
-
-    /**
-     * @var string|null
-     */
-    protected $level;
-
-    /**
-     * @var DateTime
-     */
-    protected $time;
+    protected array $messages = [];
 
     /**
      * @var string
      */
-    protected $who = null;
+    protected string $level;
+
+    /**
+     * @var DateTime
+     */
+    protected DateTime $time;
+
+    /**
+     * @var string|null
+     */
+    protected string | null $who = null;
 
     private const TYPE_PHP = 'php_error';
     private const DEFAULT_TIME_FORMAT = 'Y-m-d\TH:i:s.uO';
@@ -82,7 +82,7 @@ class Message
      *
      * @return Message
      */
-    public function setTime(DateTime $time): self
+    public function setTime(DateTime $time): Message
     {
         $this->time = $time;
         return $this;
@@ -95,7 +95,7 @@ class Message
      *
      * @return Message
      */
-    public function addMessagePart(string $message): self
+    public function addMessagePart(string $message): Message
     {
         $this->messages[] = $message;
         return $this;
@@ -111,7 +111,7 @@ class Message
      *
      * @return Message
      */
-    public function addPHPErrorMessage(string $message, string $file, int $number, int $line): self
+    public function addPHPErrorMessage(string $message, string $file, int $number, int $line): Message
     {
         $this->messages[] = [
           'type' => self::TYPE_PHP,
@@ -131,7 +131,7 @@ class Message
      *
      * @return Message
      */
-    public function setMessages(array $messages): self
+    public function setMessages(array $messages): Message
     {
         $this->messages = $messages;
         return $this;
@@ -165,13 +165,13 @@ class Message
             if (is_array($part)) {
 
                 $type = $part['type'] ?? '';
-                if (!in_array($type, [self::TYPE_PHP])) {
+                if ($type != self::TYPE_PHP) {
                     $return[] = print_r($part, true);
                 } else {
                     $return[] = "PHP [{$part['number']}] {$part['message']} in file {$part['file']}:{$part['line']}";
                 }
 
-            } else if (is_object($part) && $part instanceof Throwable) {
+            } else if ($part instanceof Throwable) {
                 $isCli = defined('KOLDY_CLI') && KOLDY_CLI === true;
 
                 if ($isCli) {
@@ -205,16 +205,16 @@ class Message
      *
      * @return Message
      */
-    public function setWho(string $who): self
+    public function setWho(string $who): Message
     {
         $this->who = $who;
         return $this;
     }
 
     /**
-     * Get "who" on this log message only
+     * Get "who" is on this log message only
      *
-     * @return string
+     * @return string|null
      */
     public function getWho(): ?string
     {
@@ -228,7 +228,7 @@ class Message
      *
      * @return Message
      */
-    public function setLevel(string $level): self
+    public function setLevel(string $level): Message
     {
         $this->level = $level;
         return $this;

@@ -8,9 +8,9 @@ class Exception extends \Koldy\Exception
 {
 
     /**
-     * @var Validator
+     * @var Validator|null
      */
-    private $validator = null;
+    private Validator | null $validator = null;
 
     /**
      * @param Validator $validator

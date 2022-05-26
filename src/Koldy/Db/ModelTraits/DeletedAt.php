@@ -10,7 +10,7 @@ use Koldy\Exception;
  * Trait DeletedAt
  * @package Koldy\Db\ModelTraits
  *
- * @property string deleted_at
+ * @property string|null deleted_at
  */
 trait DeletedAt
 {
@@ -20,7 +20,7 @@ trait DeletedAt
      */
     public function isDeleted(): bool
     {
-	    return $this->deleted_at !== null && is_string($this->deleted_at) && strlen($this->deleted_at) > 0;
+	    return is_string($this->deleted_at) && strlen($this->deleted_at) > 0;
     }
 
     /**
@@ -28,10 +28,6 @@ trait DeletedAt
      */
     public function getDeletedAt(): ?string
     {
-        if (!$this->isDeleted()) {
-            return null;
-        }
-
         return $this->deleted_at;
     }
 
@@ -74,21 +70,14 @@ trait DeletedAt
     /**
      * Sets the deleted at value
      *
-     * @param string|null $deletedAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value, or leave undefined
+     * @param DateTime|string|null $deletedAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value, or leave undefined
      */
-    public function setDeletedAt(?string $deletedAt): void
+    public function setDeletedAt(DateTime | string | null $deletedAt): void
     {
-        $this->deleted_at = $deletedAt;
+		if ($deletedAt instanceof DateTime) {
+			$this->deleted_at = $deletedAt->format('Y-m-d H:i:s');
+		} else {
+			$this->deleted_at = $deletedAt;
+		}
     }
-
-    /**
-     * Set the deleted at date time by passing instance of deletedAt
-     *
-     * @param DateTime|null $deletedAt
-     */
-    public function setDeletedAtDateTime(?DateTime $deletedAt): void
-    {
-        $this->deleted_at = $deletedAt === null ? null : $deletedAt->format('Y-m-d H:i:s');
-    }
-
 }

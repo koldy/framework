@@ -10,7 +10,7 @@ use Koldy\Exception;
  * Trait CreatedAt
  * @package Koldy\Db\ModelTraits
  *
- * @property string created_at
+ * @property string|null created_at
  */
 trait CreatedAt
 {
@@ -20,7 +20,7 @@ trait CreatedAt
      */
     public function hasCreatedAt(): bool
     {
-        return $this->created_at !== null && is_string($this->created_at) && strlen($this->created_at) > 0;
+        return is_string($this->created_at) && strlen($this->created_at) > 0;
     }
 
     /**
@@ -94,25 +94,14 @@ trait CreatedAt
     /**
      * Sets the created at value
      *
-     * @param string|null $createdAt - Pass the SQL's Y-m-d H:i:s or Y-m-d value
-     * @return $this
+     * @param DateTime|string|null $createdAt - if string, then pass the SQL's Y-m-d H:i:s or Y-m-d value
      */
-    public function setCreatedAt(?string $createdAt)
+    public function setCreatedAt(string | DateTime | null $createdAt): void
     {
-        $this->created_at = $createdAt;
-        return $this;
+		if ($createdAt instanceof DateTime) {
+			$this->created_at = $createdAt->format('Y-m-d H:i:s');
+		} else {
+			$this->created_at = $createdAt;
+		}
     }
-
-    /**
-     * Set the created at date time by passing instance of createdAt
-     *
-     * @param DateTime $createdAt
-     * @return $this
-     */
-    public function setCreatedAtDateTime(?DateTime $createdAt)
-    {
-        $this->created_at = $createdAt === null ? null : $createdAt->format('Y-m-d H:i:s');
-        return $this;
-    }
-
 }

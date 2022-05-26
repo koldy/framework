@@ -62,7 +62,6 @@ class Manager
         if (is_file('KoldyMigration.php')) {
             require_once 'KoldyMigration.php';
 
-            /** @var Model $class */
             $class = '\KoldyMigration';
 
             if (!class_exists($class, false)) {

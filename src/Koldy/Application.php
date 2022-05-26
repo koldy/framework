@@ -31,35 +31,35 @@ class Application
      *
      * @var Config[]
      */
-    protected static $configs = [];
+    protected static array $configs = [];
 
     /**
      * Directory in which all configs are stored, with ending slash
      *
-     * @var string
+     * @var string|null
      */
-    protected static $configsPath = null;
+    protected static string | null $configsPath = null;
 
     /**
      * The array of already registered modules, so we don't execute code if you already registered your module
      *
      * @var array
      */
-    private static $registeredModules = [];
+    private static array $registeredModules = [];
 
     /**
      * Current running module, if any
      *
-     * @var string
+     * @var string|null
      */
-    private static $currentModule = null;
+    private static string | null $currentModule = null;
 
     /**
      * The application environment mode
      *
      * @var int
      */
-    protected static $env = self::DEVELOPMENT;
+    protected static int $env = self::DEVELOPMENT;
 
     /**
      * Is this application on live server or not? So you can do combinations:
@@ -72,105 +72,105 @@ class Application
      *
      * @var bool
      */
-    protected static $isLive = false;
+    protected static bool $isLive = false;
 
     /**
      * Thr routing class instance - this is the instance of class
      * defined in config/application.php under routing_class
      *
-     * @var \Koldy\Route\AbstractRoute
+     * @var \Koldy\Route\AbstractRoute|null
      */
-    protected static $routing = null;
+    protected static AbstractRoute | null $routing = null;
 
     /**
-     * @var Url
+     * @var Url|null
      */
-    private static $currentUrl = null;
+    private static Url | null $currentUrl = null;
 
     /**
      * The requested URI. Basically $_SERVER['REQUEST_URI'], but not if you pass your own
      *
-     * @var string
+     * @var string|null
      */
-    protected static $uri = null;
+    protected static string | null $uri = null;
 
     /**
      * If CLI env, then this is the path of CLI script
      *
-     * @var string
+     * @var string|null
      */
-    protected static $cliScriptPath = null;
+    protected static string | null $cliScriptPath = null;
 
     /**
      * The parameter from CLI call - the script name
      *
-     * @var string
+     * @var string|null
      */
-    protected static $cliName = null;
+    protected static string | null $cliName = null;
 
     /**
      * The name of the app. Can be set to anything. Not required, but sometimes useful when working with huge multi-domain system.
      *
-     * @var string
+     * @var string|null
      * @example website
      */
-    protected static $appName = null;
+    protected static string | null $appName = null;
 
     /**
      * Current domain on which we're running
      *
-     * @var string
+     * @var string|null
      */
-    protected static $domain = null;
+    protected static string | null $domain = null;
 
     /**
      * Are we behind SSL?
      *
      * @var bool
      */
-    protected static $isSSL = false;
+    protected static bool $isSSL = false;
 
     /**
      * Path to application folder, with ending SLASH
      *
-     * @var string
+     * @var string|null
      */
-    private static $applicationPath = null;
+    private static string | null $applicationPath = null;
 
     /**
      * Path to module folder, with ending SLASH
      *
-     * @var string
+     * @var string|null
      */
-    private static $modulePath = null;
+    private static string | null $modulePath = null;
 
     /**
      * Path to storage folder, with ending SLASH
      *
-     * @var string
+     * @var string|null
      */
-    private static $storagePath = null;
+    private static string | null $storagePath = null;
 
     /**
      * Path to view folder, with ending SLASH
      *
-     * @var string
+     * @var string|null
      */
-    private static $viewPath = null;
+    private static string | null $viewPath = null;
 
     /**
      * Path to scripts folder, with ending SLASH
      *
-     * @var string
+     * @var string|null
      */
-    private static $scriptsPath = null;
+    private static string | null $scriptsPath = null;
 
     /**
      * Path to public folder, with ending SLASH
      *
-     * @var string
+     * @var string|null
      */
-    private static $publicPath = null;
+    private static string | null $publicPath = null;
 
     /**
      * Terminate execution immediately - use it when there's no other way of recovering from error, usually
@@ -219,15 +219,17 @@ class Application
      *
      * @throws Exception
      */
-    public static function useConfig($data): void
+    public static function useConfig(mixed $data): void
     {
+		// argument accepts everything, so we can print better error message
+
+	    if (!is_string($data) && !is_array($data)) {
+		    static::terminateWithError('Can not start application, argument 1 in Application::useConfig() is expected to be array or string (a path to config file); got ' . gettype($data) . ' instead');
+	    }
+
         defined('KOLDY_START') || define('KOLDY_START', microtime(true));
         defined('KOLDY_CLI') || define('KOLDY_CLI', PHP_SAPI == 'cli');
         defined('DS') || define('DS', DIRECTORY_SEPARATOR); // this is just shorthand for Directory Separator
-
-        if (!is_string($data) && !is_array($data)) {
-            static::terminateWithError('Can not start application, expected array or string (path to config file) when useConfig is called; got ' . gettype($data));
-        }
 
         $configInstance = new Config('application');
 
@@ -235,7 +237,7 @@ class Application
             $applicationConfigPath = stream_resolve_include_path($data); // this is path to /application/configs/application.php
 
             if ($applicationConfigPath === false || !is_file($applicationConfigPath)) {
-                static::terminateWithError('Can not resolve the full path to the main application config file or file doesn\'t exists!');
+                static::terminateWithError('Can not resolve the full path to the main application config file or file doesn\'t exists! Please check the config that the app received through Application::useConfig()');
             }
 
             try {
@@ -261,15 +263,15 @@ class Application
                 $siteUrl = explode('//', $siteUrl);
 
                 if (count($siteUrl) != 2) {
-                    throw new ConfigException('Defined site_url in application config must contain double slash');
+                    throw new ConfigException('Defined site_url in application config must contain double slash; please check the config received through Application::useConfig()');
                 }
 
                 static::$domain = $siteUrl[1];
-                static::$isSSL = substr($siteUrl[0], 0, 6) == 'https:';
+                static::$isSSL = str_starts_with($siteUrl[0], 'https:');
 
             } else if (is_array($siteUrl)) {
                 if (count($siteUrl) === 0) {
-                    throw new ConfigException('If site_url is defined as array, then it must be non-empty array');
+                    throw new ConfigException('If site_url is defined as array, then it must be non-empty array; please check the config received through; please check the config received through Application::useConfig()');
                 }
 
                 if (isset($_SERVER['HTTP_HOST'])) {
@@ -277,7 +279,7 @@ class Application
                         $doubleSlashPosition = strpos($domainWithSchema, '//');
 
                         if ($doubleSlashPosition === false) {
-                            throw new ConfigException('Every defined site_url in application config must contain double slash (//)');
+                            throw new ConfigException('Every defined site_url in application config must contain double slash (//); please check the config received through Application::useConfig()');
                         }
 
                         $domain = substr($domainWithSchema, $doubleSlashPosition + 2);
@@ -285,7 +287,7 @@ class Application
                         if ($domain == $_SERVER['HTTP_HOST']) {
 
                             static::$domain = $domain;
-                            static::$isSSL = substr($domainWithSchema, 0, 6) == 'https:';
+                            static::$isSSL = str_starts_with($domainWithSchema, 'https:');
                         }
                     }
                 } else {
@@ -295,13 +297,13 @@ class Application
                     $doubleSlashPosition = strpos($domainWithSchema, '//');
 
                     if ($doubleSlashPosition === false) {
-                        throw new ConfigException('Every defined site_url in application config must contain double slash (//)');
+                        throw new ConfigException('Every defined site_url in application config must contain double slash (//); please check the config received through Application::useConfig()');
                     }
 
                     $domain = substr($domainWithSchema, $doubleSlashPosition + 2);
 
                     static::$domain = $domain;
-                    static::$isSSL = substr($domainWithSchema, 0, 6) == 'https:';
+                    static::$isSSL = str_starts_with($domainWithSchema, 'https:');
                 }
 
                 // beware then static::$domain might stay null, in this case, in run(), redirect to first domain if site_url is array
@@ -314,14 +316,14 @@ class Application
         $paths = $configInstance->get('paths');
 
         if (!is_array($paths)) {
-            static::terminateWithError('Application config doesn\'t have paths array defined');
+            static::terminateWithError('Application config doesn\'t have paths array defined; please check the config received through Application::useConfig()');
         }
 
         ///// APPLICATION PATH /////
         if (!isset($paths['application'])) {
-            static::terminateWithError('Path to \'application\' in \'paths\' is not defined');
-        } else if (substr($paths['application'], -1) != '/') {
-            static::terminateWithError('Path to \'application\' in \'paths\' must end with slash (/)');
+            static::terminateWithError('Path to \'application\' in \'paths\' is not defined; please check the config received through Application::useConfig()');
+        } else if (!str_ends_with($paths['application'], '/')) {
+            static::terminateWithError('Path to \'application\' in \'paths\' must end with slash (/); please check the config received through Application::useConfig()');
         }
 
         static::$applicationPath = $paths['application'];
@@ -329,41 +331,41 @@ class Application
 
         ///// STORAGE PATH /////
         if (!isset($paths['storage'])) {
-            static::terminateWithError('Path to \'storage\' in \'paths\' is not defined');
-        } else if (substr($paths['storage'], -1) != '/') {
-            static::terminateWithError('Path to \'storage\' in \'paths\' must end with slash (/)');
+            static::terminateWithError('Path to \'storage\' in \'paths\' is not defined; please check the config received through Application::useConfig()');
+        } else if (!str_ends_with($paths['storage'], '/')) {
+            static::terminateWithError('Path to \'storage\' in \'paths\' must end with slash (/); please check the config received through Application::useConfig()');
         }
 
         static::$storagePath = $paths['storage'];
 
 
         ///// VIEW PATH /////
-        if (isset($paths['view']) && substr($paths['storage'], -1) != '/') {
-            static::terminateWithError('Path to \'storage\' in \'paths\' must end with slash (/)');
+        if (isset($paths['view']) && !str_ends_with($paths['storage'], '/')) {
+            static::terminateWithError('Path to \'storage\' in \'paths\' must end with slash (/); please check the config received through Application::useConfig()');
         }
 
         static::$viewPath = $paths['view'] ?? (static::$applicationPath . 'views/');
 
 
         ///// MODULES PATH /////
-        if (isset($paths['modules']) && substr($paths['modules'], -1) != '/') {
-            static::terminateWithError('Path to \'modules\' in \'paths\' must end with slash (/)');
+        if (isset($paths['modules']) && !str_ends_with($paths['modules'], '/')) {
+            static::terminateWithError('Path to \'modules\' in \'paths\' must end with slash (/); please check the config received through Application::useConfig()');
         }
 
         static::$modulePath = $paths['modules'] ?? (static::$applicationPath . 'modules/');
 
 
         ///// CONFIGS PATH /////
-        if (isset($paths['configs']) && substr($paths['configs'], -1) != '/') {
-            static::terminateWithError('Path to \'configs\' in \'paths\' must end with slash (/)');
+        if (isset($paths['configs']) && !str_ends_with($paths['configs'], '/')) {
+            static::terminateWithError('Path to \'configs\' in \'paths\' must end with slash (/); please check the config received through Application::useConfig()');
         }
 
         static::$configsPath = $paths['configs'] ?? (static::$applicationPath . 'configs/');
 
 
         ///// SCRIPTS PATH /////
-        if (isset($paths['scripts']) && substr($paths['scripts'], -1) != '/') {
-            static::terminateWithError('Path to \'scripts\' in \'paths\' must end with slash (/)');
+        if (isset($paths['scripts']) && !str_ends_with($paths['scripts'], '/')) {
+            static::terminateWithError('Path to \'scripts\' in \'paths\' must end with slash (/); please check the config received through Application::useConfig()');
         }
 
         static::$scriptsPath = $paths['scripts'] ?? (static::$applicationPath . 'scripts/');
@@ -372,18 +374,18 @@ class Application
         // check the environment
         $env = $configInstance->get('env');
         if ($env === null || !($env == static::DEVELOPMENT || $env == static::PRODUCTION || $env == static::TEST)) {
-            static::terminateWithError('Invalid ENV parameter in main application config');
+            static::terminateWithError('Invalid ENV parameter in main application config; please check the config received through Application::useConfig()');
         }
         static::$env = $env;
 
         $key = $configInstance->get('key');
         if (!isset($key) || !is_string($key) || strlen($key) > 32) {
-            static::terminateWithError('Invalid unique key in main application config. It has to be max 32 chars long.');
+            static::terminateWithError('Invalid unique key in main application config. It has to be max 32 chars long; please check the config received through Application::useConfig()');
         }
 
         $timezone = $configInstance->get('timezone');
         if (!isset($timezone)) {
-            static::terminateWithError('Timezone is not set in main application config');
+            static::terminateWithError('Timezone is not set in main application config; please check the config received through Application::useConfig()');
         }
 
         static::$isLive = $configInstance->get('live') === true;
@@ -394,7 +396,7 @@ class Application
     /**
      * Add additional include path(s) - add anything you want under include path
      *
-     * @param array ...$path
+     * @param string|array ...$path
      */
     public static function addIncludePath(...$path): void
     {
@@ -417,7 +419,7 @@ class Application
     /**
      * Add additional include path(s) - add anything you want under include path
      *
-     * @param array ...$path
+     * @param string|array ...$path
      */
     public static function prependIncludePath(...$path): void
     {
@@ -440,14 +442,14 @@ class Application
         set_include_path(implode(PATH_SEPARATOR, array_unique($finalPaths)));
     }
 
-    /**
-     * Get the path to application folder with ending slash
-     *
-     * @param string $append [optional] append anything you want to application path
-     *
-     * @return string
-     * @example /var/www/your.site/com/application/
-     */
+	/**
+	 * Get the path to application folder with ending slash
+	 *
+	 * @param string|null $append [optional] append anything you want to application path
+	 *
+	 * @return string
+	 * @example /var/www/your.site/com/application/
+	 */
     public static function getApplicationPath(string $append = null): string
     {
         if ($append === null) {
@@ -457,14 +459,14 @@ class Application
         }
     }
 
-    /**
-     * Get the path to storage folder with ending slash
-     *
-     * @param string $append [optional] append anything you want to application path
-     *
-     * @return string
-     * @example /var/www/your.site/com/storage/
-     */
+	/**
+	 * Get the path to storage folder with ending slash
+	 *
+	 * @param string|null $append [optional] append anything you want to application path
+	 *
+	 * @return string
+	 * @example /var/www/your.site/com/storage/
+	 */
     public static function getStoragePath(string $append = null): string
     {
         if ($append === null) {
@@ -474,14 +476,14 @@ class Application
         }
     }
 
-    /**
-     * Get the path to the public folder with ending slash
-     *
-     * @param string $append [optional] append anything you want to application path
-     *
-     * @return string
-     * @example /var/www/your.site/com/public/
-     */
+	/**
+	 * Get the path to the public folder with ending slash
+	 *
+	 * @param string|null $append [optional] append anything you want to application path
+	 *
+	 * @return string
+	 * @example /var/www/your.site/com/public/
+	 */
     public static function getPublicPath(string $append = null): string
     {
         if ($append === null) {
@@ -570,7 +572,7 @@ class Application
 		    throw new ConfigException('The main "application" config is NOT passed to the web app so framework can\'t load other configs because it doesn\'t know where they are');
 	    }
 
-	    $configFiles = $applicationConfig->get('config', []);
+	    $configFiles = $applicationConfig->get('config') ?? [];
 
         $config = new Config($name, $isPointerConfig);
 
@@ -844,7 +846,7 @@ class Application
      *
      * @return string
      */
-    public static function getModulePath($name): string
+    public static function getModulePath(string $name): string
     {
         $modulePath = static::$modulePath;
         return str_replace(DS . DS, DS, $modulePath . DS . $name . DS);
@@ -857,7 +859,7 @@ class Application
      *
      * @return bool
      */
-    public static function isModuleRegistered($name): bool
+    public static function isModuleRegistered(string $name): bool
     {
         return isset(static::$registeredModules[$name]);
     }
@@ -909,7 +911,7 @@ class Application
     public static function getEncoding(): string
     {
 	    if (static::hasConfig('application')) {
-		    return static::getConfig('application')->get('encoding', 'UTF-8');
+		    return static::getConfig('application')->get('encoding') ?? 'UTF-8';
 	    } else {
 		    return 'UTF-8';
 	    }
@@ -941,7 +943,7 @@ class Application
 
         $config = static::getConfig('application');
 
-        date_default_timezone_set($config->get('timezone', 'UTC'));
+        date_default_timezone_set($config->get('timezone') ?? 'UTC');
 
         $includePaths = [];
         $basePath = static::getApplicationPath();
@@ -956,7 +958,7 @@ class Application
         // adding additional include paths if there are any
         $additionalIncludePath = $config->get('additional_include_path') ?? [];
 
-        // set the include path
+        // set include path
         static::addIncludePath($includePaths, $additionalIncludePath);
 
         // set the error handler
@@ -973,26 +975,20 @@ class Application
                     Log::message($logMessage);
                     break;
 
-                case E_USER_WARNING:
-                case E_DEPRECATED:
-                case E_STRICT:
-                    $logMessage = new \Koldy\Log\Message('warning');
-                    $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
-                    Log::message($logMessage);
-                    break;
-
                 case E_USER_NOTICE:
                     $logMessage = new \Koldy\Log\Message('notice');
                     $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
                     Log::message($logMessage);
                     break;
 
-
-                default:
-                    $logMessage = new \Koldy\Log\Message('warning');
-                    $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
-                    Log::message($logMessage);
-                    break;
+	            default:
+	            case E_USER_WARNING:
+	            case E_DEPRECATED:
+	            case E_STRICT:
+		            $logMessage = new \Koldy\Log\Message('warning');
+		            $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
+		            Log::message($logMessage);
+		            break;
             }
 
             /* Don't execute PHP internal error handler */
@@ -1022,7 +1018,7 @@ class Application
         });
 
         // check the log for any enabled adapter
-        $logConfigs = static::getConfig('application')->get('log', []);
+        $logConfigs = static::getConfig('application')->get('log') ?? [];
         $logConfigsCount = count($logConfigs);
         $logEnabled = false;
 
@@ -1038,14 +1034,15 @@ class Application
         }
     }
 
-    /**
-     * Run the application with given URI. If URI is not set, then application
-     * will try to detect it automatically.
-     *
-     * @param string $uri [optional]
-     * @throws ConfigException
-     * @throws Exception
-     */
+	/**
+	 * Run the application with given URI. If URI is not set, then application
+	 * will try to detect it automatically.
+	 *
+	 * @param string|null $uri [optional]
+	 *
+	 * @throws ConfigException
+	 * @throws Exception
+	 */
     public static function run(string $uri = null): void
     {
         static::init($uri);
@@ -1114,7 +1111,7 @@ class Application
                     $scriptName = $script;
                     $module = null;
 
-                    if (strpos($script, ':') !== false) {
+                    if (str_contains($script, ':')) {
                         // script name has colon - it means that the script needs to be looked for in modules
                         $tmp = explode(':', $script);
                         $cliScriptPath = static::getApplicationPath("modules/{$tmp[0]}/scripts/{$tmp[1]}.php");

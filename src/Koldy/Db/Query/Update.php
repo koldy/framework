@@ -18,23 +18,23 @@ class Update extends Where
 
     /**
      * The table name on which UPDATE will be performed
-     * @var string
+     * @var string|null
      */
-    protected $table = null;
+    protected string | null $table = null;
 
     /**
      * The key-value pairs of fields and values to be set
      * @var array
      */
-    protected $what = [];
+    protected array $what = [];
 
     /**
      * @var array
      */
-    protected $orderBy = [];
+    protected array $orderBy = [];
 
 	/**
-	 * @param string $table
+	 * @param string|null $table
 	 * @param array|null $values [optional] auto set values in this query
 	 * @param string|null $adapter
 	 *
@@ -67,11 +67,11 @@ class Update extends Where
      * Set field to be updated
      *
      * @param string $field
-     * @param mixed $value
+     * @param int|float|bool|string $value
      *
      * @return \Koldy\Db\Query\Update
      */
-    public function set(string $field, $value): Update
+    public function set(string $field, int | float | bool | string | Expr $value): Update
     {
         $this->what[$field] = $value;
         return $this;
@@ -90,25 +90,21 @@ class Update extends Where
         return $this;
     }
 
-    /**
-     * Add field to ORDER BY
-     *
-     * @param string $field
-     * @param string $direction
-     *
-     * @throws Exception
-     * @return \Koldy\Db\Query\Update
-     */
+	/**
+	 * Add field to ORDER BY
+	 *
+	 * @param string $field
+	 * @param string|null $direction
+	 *
+	 * @return \Koldy\Db\Query\Update
+	 * @throws Exception
+	 */
     public function orderBy(string $field, string $direction = null): Update
     {
         if ($direction === null) {
             $direction = 'ASC';
         } else {
             $direction = strtoupper($direction);
-        }
-
-        if ($direction !== 'ASC' && $direction !== 'DESC') {
-            throw new Exception("Can not use invalid direction order ({$direction}) in ORDER BY statement");
         }
 
         $this->orderBy[] = [
@@ -202,7 +198,7 @@ class Update extends Where
     }
 
     /**
-     * Get how many rows was deleted
+     * Get how many rows was updated
      *
      * @return int
      * @throws Exception

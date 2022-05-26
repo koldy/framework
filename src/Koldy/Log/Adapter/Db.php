@@ -2,6 +2,7 @@
 
 namespace Koldy\Log\Adapter;
 
+use Closure;
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Db as DbAdapter;
 use Koldy\Db\Adapter\AbstractAdapter;
@@ -36,29 +37,29 @@ class Db extends AbstractLogAdapter
     /**
      * @var string|null
      */
-    protected $adapter;
+    protected string | null $adapter;
 
     /**
      * @var string
      */
-    protected $table;
+    protected string $table;
 
     /**
      * The flag if query is being inserted into database to prevent recursion
      *
      * @var boolean
      */
-    protected $inserting = false;
+    protected bool $inserting = false;
 
     /**
-     * @var callable|null
+     * @var Closure|null
      */
-    protected $insertFn = null;
+    protected Closure|null $insertFn = null;
 
     /**
      * @var bool
      */
-    protected $disableLog = true;
+    protected bool $disableLog = true;
 
     /**
      * Construct the DB writer
@@ -159,7 +160,6 @@ class Db extends AbstractLogAdapter
 
                 } finally {
                     Log::restoreTemporaryDisablement();
-                    // @todo write tests for failures
                     $this->inserting = false;
                 }
             }

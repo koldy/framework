@@ -24,83 +24,87 @@ use Throwable;
 class DefaultRoute extends AbstractRoute
 {
 
+	protected array | null $uriParts = null;
+
     /**
      * The resolved module URL part
      *
      * @var string|null
      */
-    protected $moduleUrl = null;
+    protected string | null $moduleUrl = null;
 
     /**
      * The resolved controller URL part
      *
-     * @var string
+     * @var string|null
      * @example if URI is "/users/login", this will be "users"
      */
-    protected $controllerUrl = null;
+    protected string | null $controllerUrl = null;
 
     /**
      * The resolved controller class name
      *
-     * @var string
+     * @var string|null
      */
-    protected $controllerClass = null;
+    protected string | null $controllerClass = null;
 
     /**
      * The controller path
      *
-     * @var string
+     * @var string|null
      */
-    private $controllerPath = null;
+    private string | null $controllerPath = null;
 
     /**
      * The resolved action url
      *
-     * @var string
+     * @var string|null
      */
-    protected $actionUrl = null;
+    protected string | null $actionUrl = null;
 
     /**
      * The resolved action method name
      *
-     * @var string
+     * @var string|null
      */
-    protected $actionMethod = null;
+    protected string | null $actionMethod = null;
 
     /**
      * Flag if this request is an ajax request maybe?
      *
      * @var boolean
      */
-    protected $isAjax = false;
+    protected bool $isAjax = false;
 
     /**
      * The controller's instance
      *
-     * @var object
+     * @var object|null
      */
-    protected $controllerInstance = null;
+    protected object | null $controllerInstance = null;
 
-    /**
-     * Prepare HTTP before executing exec() method
-     *
-     * @param string $uri
-     *
-     * @throws Exception
-     * @throws NotFoundException
-     */
-    public function prepareHttp(string $uri)
+	/**
+	 * Prepare HTTP before executing exec() method
+	 *
+	 * @param string $uri
+	 *
+	 * @throws Application\Exception
+	 * @throws Exception
+	 * @throws NotFoundException
+	 * @throws \Koldy\Exception
+	 */
+    public function prepareHttp(string $uri): void
     {
         $this->uri = $uri;
 
         // first, check the URI for duplicate slashes - they are not allowed
         // if you must pass duplicate slashes in URL, then urlencode them
         $redirect = null;
-        if (strpos($this->uri, '//') !== false) {
+        if (str_contains($this->uri, '//')) {
             $redirect = str_replace('//', '/', $this->uri);
         }
 
-        if (strlen($this->uri) > 1 && substr($this->uri, -1) == '/') {
+        if (strlen($this->uri) > 1 && str_ends_with($this->uri, '/')) {
             // ending slash is not needed, unless you have a namespace
             // if you need to pass slash on the end of URI, then urlencode it
             if ($redirect === null) {
@@ -122,20 +126,20 @@ class DefaultRoute extends AbstractRoute
 
         $ds = DS;
 
-        $this->uri = explode('/', $this->uri);
-        if (!isset($this->uri[1])) {
-            $this->uri[1] = '';
+        $this->uriParts = explode('/', $this->uri);
+        if (!isset($this->uriParts[1])) {
+            $this->uriParts[1] = '';
         }
 
         // There are two possible scenarios:
         // 1. The first part of URL leads to the module controller
         // 2. The first part of URL leads to the default controller
 
-        if ($this->uri[1] == '') {
+        if ($this->uriParts[1] == '') {
             $this->controllerUrl = 'index';
             $this->controllerClass = 'IndexController';
         } else {
-            $this->controllerUrl = strtolower($this->uri[1]);
+            $this->controllerUrl = strtolower($this->uriParts[1]);
             $this->controllerClass = str_replace(' ', '', ucwords(str_replace(['-', '.'], ' ', $this->controllerUrl))) . 'Controller';
         }
 
@@ -151,8 +155,8 @@ class DefaultRoute extends AbstractRoute
             $moduleUrl = $this->controllerUrl;
             $this->moduleUrl = $moduleUrl;
 
-            if (isset($this->uri[2]) && $this->uri[2] != '') {
-                $this->controllerUrl = strtolower($this->uri[2]);
+            if (isset($this->uriParts[2]) && $this->uriParts[2] != '') {
+                $this->controllerUrl = strtolower($this->uriParts[2]);
                 $this->controllerClass = str_replace(' ', '', ucwords(str_replace(['-', '.'], ' ', $this->controllerUrl))) . 'Controller';
             } else {
                 $this->controllerUrl = 'index';
@@ -163,7 +167,7 @@ class DefaultRoute extends AbstractRoute
             $mainControllerExists = true;
 
             if (!is_file($this->controllerPath)) {
-                // lets try with default controller when requested one is not here
+                // let's try with default controller when requested one is not here
                 $this->controllerPath = Application::getModulePath($moduleUrl) . "controllers{$ds}IndexController.php";
 
                 if (!is_file($this->controllerPath)) {
@@ -176,17 +180,17 @@ class DefaultRoute extends AbstractRoute
             }
 
             if ($mainControllerExists) {
-                if (!isset($this->uri[3]) || $this->uri[3] == '') {
+                if (!isset($this->uriParts[3]) || $this->uriParts[3] == '') {
                     $this->actionUrl = 'index';
                     $this->actionMethod = 'index';
                 } else {
-                    $this->actionUrl = strtolower($this->uri[3]);
+                    $this->actionUrl = strtolower($this->uriParts[3]);
                     $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                     $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                     $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
                 }
-            } else if (isset($this->uri[2]) && $this->uri[2] != '') {
-                $this->actionUrl = strtolower($this->uri[2]);
+            } else if (isset($this->uriParts[2]) && $this->uriParts[2] != '') {
+                $this->actionUrl = strtolower($this->uriParts[2]);
                 $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                 $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                 $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
@@ -215,31 +219,38 @@ class DefaultRoute extends AbstractRoute
             }
 
             if ($mainControllerExists) {
-                if (!isset($this->uri[2]) || $this->uri[2] == '') {
+                if (!isset($this->uriParts[2]) || $this->uriParts[2] == '') {
                     $this->actionUrl = 'index';
                     $this->actionMethod = 'index';
                 } else {
-                    $this->actionUrl = strtolower($this->uri[2]);
+                    $this->actionUrl = strtolower($this->uriParts[2]);
                     $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                     $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                     $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
                 }
             } else {
-                $this->actionUrl = strtolower($this->uri[1]);
+                $this->actionUrl = strtolower($this->uriParts[1]);
                 $this->actionMethod = ucwords(str_replace(['-', '.'], ' ', $this->actionUrl));
                 $this->actionMethod = str_replace(' ', '', $this->actionMethod);
                 $this->actionMethod = strtolower(substr($this->actionMethod, 0, 1)) . substr($this->actionMethod, 1);
             }
 
-            // and now, configure the include paths according to the case
+            // and now, configure include paths according to the case
             $basePath = Application::getApplicationPath();
             Application::addIncludePath($basePath . 'controllers',    // so you can extend abstract controllers in the same directory if needed,
               $basePath . 'library'      // the place where you can define your own classes and methods
             );
         }
 
-        $this->isAjax = (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'],
-              'application/json') !== false);
+        $this->isAjax = (
+			isset($_SERVER['REQUEST_METHOD'])
+			&& $_SERVER['REQUEST_METHOD'] == 'POST'
+			&& isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+			&& strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
+	        ) || (
+				isset($_SERVER['HTTP_ACCEPT'])
+				&& str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')
+	        );
 
         $controllerClassName = $this->getControllerClass();
 
@@ -279,29 +290,28 @@ class DefaultRoute extends AbstractRoute
     /**
      * Get the variable value from parameters
      *
-     * @param string $whatVar
-     * @param string $default
+     * @param string|int $whatVar
      *
-     * @return mixed|null|string
+     * @return null|string
      */
-    public function getVar($whatVar, $default = null)
+    public function getVar(string | int $whatVar): ?string
     {
         if (is_numeric($whatVar)) {
             $whatVar = (int)$whatVar + 1;
 
-            if (isset($this->uri[$whatVar])) {
-                $value = trim($this->uri[$whatVar]);
-                return ($value != '') ? $value : $default;
+            if (isset($this->uriParts[$whatVar])) {
+                $value = trim($this->uriParts[$whatVar]);
+                return ($value !== '') ? $value : null;
             } else {
-                return $default;
+                return null;
             }
         } else {
             // if variable is string, then treat it like GET parameter
             if (isset($_GET[$whatVar])) {
                 $value = trim($_GET[$whatVar]);
-                return ($value != '') ? $value : $default;
+                return ($value !== '') ? $value : null;
             } else {
-                return $default;
+                return null;
             }
         }
     }
@@ -346,14 +356,15 @@ class DefaultRoute extends AbstractRoute
         return $this->actionMethod;
     }
 
-    /**
-     * @param string $controller
-     * @param string|null $action
-     * @param array|null $params
-     * @param string|null $lang
-     *
-     * @return string
-     */
+	/**
+	 * @param string|null $controller
+	 * @param string|null $action
+	 * @param array|null $params
+	 * @param string|null $lang
+	 *
+	 * @return string
+	 * @throws \Koldy\Exception
+	 */
     public function href(string $controller = null, string $action = null, array $params = null, string $lang = null): string
     {
         return $this->siteHref('', $controller, $action, $params, $lang);
@@ -371,11 +382,11 @@ class DefaultRoute extends AbstractRoute
      */
     public function siteHref(string $site, string $controller = null, string $action = null, array $params = null, string $lang = null): string
     {
-        if ($controller !== null && strpos($controller, '/') !== false) {
+        if ($controller !== null && str_contains($controller, '/')) {
             throw new \InvalidArgumentException('Slash is not allowed in controller name');
         }
 
-        if ($action !== null && strpos($action, '/') !== false) {
+        if ($action !== null && str_contains($action, '/')) {
             throw new \InvalidArgumentException('Slash is not allowed in action name');
         }
 
@@ -424,11 +435,12 @@ class DefaultRoute extends AbstractRoute
         return $url;
     }
 
-    /**
-     * @return mixed
-     * @throws NotFoundException
-     */
-    public function exec()
+	/**
+	 * @return mixed
+	 * @throws Application\Exception
+	 * @throws NotFoundException
+	 */
+    public function exec(): mixed
     {
         if (method_exists($this->controllerInstance, 'before')) {
             $response = $this->controllerInstance->before();
@@ -461,16 +473,19 @@ class DefaultRoute extends AbstractRoute
             }
 
         } else {
-            // the method we need doesn't exists, so, there is nothing we can do about it any more
+            // the method we need doesn't exist, so, there is nothing we can do about it
             throw new NotFoundException("Can not find method={$method} in class={$this->getControllerClass()} on path={$this->controllerPath} for URI=" . Application::getUri());
         }
     }
 
-    /**
-     * If your app throws any kind of exception, it will end up here, so, handle it!
-     *
-     * @param Throwable $e
-     */
+	/**
+	 * If your app throws any kind of exception, it will end up here, so, handle it!
+	 *
+	 * @param Throwable $e
+	 *
+	 * @throws \Koldy\Json\Exception
+	 * @throws \Koldy\Response\Exception
+	 */
     public function handleException(Throwable $e): void
     {
         $exceptionHandlerPath = null;
@@ -486,7 +501,7 @@ class DefaultRoute extends AbstractRoute
 
         if (is_file($exceptionHandlerPath)) {
             require_once $exceptionHandlerPath;
-            $exceptionHandler = new \ExceptionHandler($e);
+            $exceptionHandler = new \ExceptionHandler($e); // it will exist once the $exceptionHandlerPath file is included
 
             if ($exceptionHandler instanceof ResponseExceptionHandler) {
                 $exceptionHandler->exec();

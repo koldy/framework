@@ -8,17 +8,17 @@ class Exception extends \Koldy\Db\Exception
 	/**
 	 * @var null|string
 	 */
-	protected $sql = null;
+	protected string | null $sql = null;
 
 	/**
 	 * @var null|Bindings
 	 */
-	protected $bindings = null;
+	protected Bindings | null $bindings = null;
 
 	/**
 	 * @var null|bool
 	 */
-	protected $wasPrepared = null;
+	protected bool | null $wasPrepared = null;
 
 	/**
 	 * @return null|string

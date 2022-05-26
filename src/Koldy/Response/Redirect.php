@@ -71,42 +71,48 @@ class Redirect extends AbstractResponse
         return static::href();
     }
 
-    /**
-     * Redirect client (302) to the URL generated with Route::href method
-     *
-     * @param string $controller
-     * @param string $action
-     * @param array $params
-     *
-     * @return Redirect
-     */
+	/**
+	 * Redirect client (302) to the URL generated with Route::href method
+	 *
+	 * @param string|null $controller
+	 * @param string|null $action
+	 * @param array|null $params
+	 *
+	 * @return Redirect
+	 * @throws \Koldy\Exception
+	 */
     public static function href(string $controller = null, string $action = null, array $params = null): Redirect
     {
         return static::temporary(Application::route()->href($controller, $action, $params));
     }
 
-    /**
-     * Redirect client the the given link under the same domain.
-     *
-     * @param string $path
-     * @param string|null $assetSite
-     *
-     * @return Redirect
-     * @deprecated use asset() method instead of this mthod
-     */
+	/**
+	 * Redirect client the the given link under the same domain.
+	 *
+	 * @param string $path
+	 * @param string|null $assetSite
+	 *
+	 * @return Redirect
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @deprecated use asset() method instead of this mthod
+	 */
     public static function link(string $path, string $assetSite = null): Redirect
     {
         return self::temporary(Application::route()->asset($path, $assetSite));
     }
 
-    /**
-     * Redirect client to asset URL (defined by key in mandatory config under assets)
-     * 
-     * @param string $path
-     * @param string|null $assetKey
-     *
-     * @return Redirect
-     */
+	/**
+	 * Redirect client to asset URL (defined by key in mandatory config under assets)
+	 *
+	 * @param string $path
+	 * @param string|null $assetKey
+	 *
+	 * @return Redirect
+	 * @throws Route\Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 */
     public static function asset(string $path, string $assetKey = null): Redirect
     {
         return self::temporary(Route::asset($path, $assetKey));

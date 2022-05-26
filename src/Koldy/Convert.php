@@ -17,7 +17,7 @@ class Convert
      *
      * @var array
      */
-    private static $measure = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB', 'BB'];
+    private static array $measure = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB', 'BB'];
 
     /**
      * Get file's measure
@@ -69,39 +69,19 @@ class Convert
         $original = trim($string);
         $number = (int)$original;
 
-        if ($number === $original || $number === 0) {
+        if ((string)$number === $original || $number === 0) {
             return $number;
         } else {
             $char = strtoupper(substr($original, -1, 1));
-            switch ($char) {
-                case 'K': // KILO
-                    return $number * 1024;
-                    break;
-
-                case 'M': // MEGA
-                    return $number * pow(1024, 2);
-                    break;
-
-                case 'G': // GIGA
-                    return $number * pow(1024, 3);
-                    break;
-
-                case 'T': // TERA
-                    return $number * pow(1024, 4);
-                    break;
-
-                case 'P': // PETA
-                    return $number * pow(1024, 5);
-                    break;
-
-                case 'E': // EXA
-                    return $number * pow(1024, 6);
-                    break;
-
-                default:
-                    throw new ConvertException('Not implemented sizes greater than exabytes');
-                    break;
-            }
+	        return match ($char) {
+		        'K' => $number * 1024,
+		        'M' => $number * pow(1024, 2),
+		        'G' => $number * pow(1024, 3),
+		        'T' => $number * pow(1024, 4),
+		        'P' => $number * pow(1024, 5),
+		        'E' => $number * pow(1024, 6),
+		        default => throw new ConvertException('Not implemented sizes greater than exabytes'),
+	        };
         }
     }
 
@@ -120,7 +100,6 @@ class Convert
     public static function stringToUtf8(string $string): string
     {
         if (!mb_check_encoding($string, 'UTF-8') || !($string === mb_convert_encoding(mb_convert_encoding($string, 'UTF-32', 'UTF-8'), 'UTF-8', 'UTF-32'))) {
-
             $string = mb_convert_encoding($string, 'UTF-8');
 
             if (!mb_check_encoding($string, 'UTF-8')) {

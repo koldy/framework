@@ -14,12 +14,12 @@ class Token
     /**
      * @var string
      */
-    private $token = null;
+    private string $token;
 
     /**
-     * @var string
+     * @var string|null
      */
-    private $cookieToken = null;
+    private string | null $cookieToken = null;
 
     /**
      * Token constructor.
@@ -33,17 +33,11 @@ class Token
         $this->cookieToken = $cookieToken;
     }
 
-    /**
-     * @return string
-     */
-    public function getToken(): ?string
+    public function getToken(): string
     {
         return $this->token;
     }
 
-    /**
-     * @return string
-     */
     public function getCookieToken(): ?string
     {
         return $this->cookieToken;

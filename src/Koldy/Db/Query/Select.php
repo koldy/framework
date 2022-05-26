@@ -3,6 +3,7 @@
 namespace Koldy\Db\Query;
 
 use Generator;
+use stdClass;
 use Koldy\Db\{
   Where, Query, Expr
 };
@@ -18,40 +19,19 @@ class Select extends Where
 
     use Statement;
 
-    /**
-     * @var array
-     */
-    protected $fields = [];
+    protected array $fields = [];
 
-    /**
-     * @var array
-     */
-    protected $from = [];
+    protected array $from = [];
 
-    /**
-     * @var array
-     */
-    protected $joins = [];
+    protected array $joins = [];
 
-    /**
-     * @var array
-     */
-    protected $groupBy = [];
+    protected array $groupBy = [];
 
-    /**
-     * @var array
-     */
-    protected $having = [];
+    protected array $having = [];
 
-    /**
-     * @var array
-     */
-    protected $orderBy = [];
+    protected array $orderBy = [];
 
-    /**
-     * @var null
-     */
-    protected $limit = null;
+    protected stdClass | null $limit = null;
 
     /**
      * @param string|null $table
@@ -70,12 +50,12 @@ class Select extends Where
      * Set the table FROM which fields will be fetched
      *
      * @param string $table
-     * @param string $alias
-     * @param mixed $field one field as string or more fields as array or just '*'
+     * @param string|null $alias
+     * @param string|array|null $field one field as string or more fields as array or just '*'
      *
      * @return Select
      */
-    public function from(string $table, string $alias = null, $field = null): Select
+    public function from(string $table, string $alias = null, string | array | null $field = null): Select
     {
         $this->from[] = [
           'table' => $table,
@@ -95,18 +75,18 @@ class Select extends Where
         return $this;
     }
 
-    /**
-     * "Inner" join two tables
-     *
-     * @param string $table
-     * @param string|array $firstTableField
-     * @param string $operator
-     * @param string $secondTableField
-     *
-     * @return Select
-     * @example innerJoin('user u', 'u.id', '=', 'r.user_role_id')
-     */
-    public function innerJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
+	/**
+	 * "Inner" join two tables
+	 *
+	 * @param string $table
+	 * @param string|array $firstTableField
+	 * @param string|null $operator
+	 * @param string|null $secondTableField
+	 *
+	 * @return Select
+	 * @example innerJoin('user u', 'u.id', '=', 'r.user_role_id')
+	 */
+    public function innerJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
     {
         $this->joins[] = [
           'type' => 'INNER JOIN',
@@ -118,22 +98,22 @@ class Select extends Where
         return $this;
     }
 
-    /**
-     * "Left" join two tables
-     *
-     * @param string $table
-     * @param string|array $firstTableField
-     * @param string $operator
-     * @param string $secondTableField
-     *
-     * @return Select
-     * @example leftJoin('user u', 'u.id', '=', 'r.user_role_id')
-     * @example leftJoin('user u', [
-     *   ['u.id', '=', 'r.user_role_id'],
-     *   ['u.group_id', '=', 2]
-     * ])
-     */
-    public function leftJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
+	/**
+	 * "Left" join two tables
+	 *
+	 * @param string $table
+	 * @param string|array $firstTableField
+	 * @param string|null $operator
+	 * @param string|null $secondTableField
+	 *
+	 * @return Select
+	 * @example leftJoin('user u', 'u.id', '=', 'r.user_role_id')
+	 * @example leftJoin('user u', [
+	 *   ['u.id', '=', 'r.user_role_id'],
+	 *   ['u.group_id', '=', 2]
+	 * ])
+	 */
+    public function leftJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
     {
         $this->joins[] = [
           'type' => 'LEFT JOIN',
@@ -145,18 +125,18 @@ class Select extends Where
         return $this;
     }
 
-    /**
-     * "Right" join two tables.
-     *
-     * @param string $table
-     * @param string|array $firstTableField
-     * @param string $operator
-     * @param string $secondTableField
-     *
-     * @return Select
-     * @example rightJoin('user u', 'u.id', '=', 'r.user_role_id')
-     */
-    public function rightJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
+	/**
+	 * "Right" join two tables.
+	 *
+	 * @param string $table
+	 * @param string|array $firstTableField
+	 * @param string|null $operator
+	 * @param string|null $secondTableField
+	 *
+	 * @return Select
+	 * @example rightJoin('user u', 'u.id', '=', 'r.user_role_id')
+	 */
+    public function rightJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
     {
         $this->joins[] = [
           'type' => 'RIGHT JOIN',
@@ -168,17 +148,17 @@ class Select extends Where
         return $this;
     }
 
-    /**
-     * "Full" join two tables.
-     *
-     * @param string $table
-     * @param string|array $firstTableField
-     * @param string $operator
-     * @param string $secondTableField
-     *
-     * @return Select
-     */
-    public function fullJoin(string $table, $firstTableField, string $operator = null, string $secondTableField = null): Select
+	/**
+	 * "Full" join two tables.
+	 *
+	 * @param string $table
+	 * @param string|array $firstTableField
+	 * @param string|null $operator
+	 * @param string|null $secondTableField
+	 *
+	 * @return Select
+	 */
+    public function fullJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
     {
         $this->joins[] = [
           'type' => 'FULL JOIN',
@@ -190,31 +170,31 @@ class Select extends Where
         return $this;
     }
 
-    /**
-     * Join two tables. This is alias of innerJoin() method.
-     *
-     * @param string $table
-     * @param string $firstTableField
-     * @param string $operator
-     * @param string $secondTableField
-     *
-     * @return Select
-     * @example join('user u', 'u.id', '=', 'r.user_role_id')
-     * @see \Koldy\Db\Query\Select::innerJoin()
-     */
-    public function join(string $table, $firstTableField, string $operator, string $secondTableField): Select
+	/**
+	 * Join two tables. This is alias of innerJoin() method.
+	 *
+	 * @param string $table
+	 * @param string|array $firstTableField
+	 * @param string $operator
+	 * @param string $secondTableField
+	 *
+	 * @return Select
+	 * @example join('user u', 'u.id', '=', 'r.user_role_id')
+	 * @see \Koldy\Db\Query\Select::innerJoin()
+	 */
+    public function join(string $table, string | array $firstTableField, string $operator, string $secondTableField): Select
     {
         return $this->innerJoin($table, $firstTableField, $operator, $secondTableField);
     }
 
-    /**
-     * Add one field that will be fetched
-     *
-     * @param string $field
-     * @param string $as
-     *
-     * @return Select
-     */
+	/**
+	 * Add one field that will be fetched
+	 *
+	 * @param string $field
+	 * @param string|null $as
+	 *
+	 * @return Select
+	 */
     public function field(string $field, string $as = null): Select
     {
         $this->fields[] = [
@@ -297,17 +277,12 @@ class Select extends Where
      *
      * @param string|Expr $field
      * @param string|null $operator
-     * @param mixed $value
+     * @param int|float|string|bool|Expr|null $value
      *
      * @return Select
      */
-    public function having($field, string $operator = null, $value = null): Select
+    public function having(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): Select
     {
-    	if (!is_string($field) && !($field instanceof Expr)) {
-    		$other = is_object($field) ? get_class($field) : gettype($field);
-    		throw new \InvalidArgumentException("First parameter should be string or instance of \Koldy\Db\Expr, got {$other} instead");
-	    }
-
         $this->having[] = [
           'link' => 'AND',
           'field' => $field,
@@ -323,17 +298,12 @@ class Select extends Where
      *
      * @param string|Expr $field
      * @param string|null $operator
-     * @param mixed $value
+     * @param int|float|string|bool|Expr|null $value
      *
      * @return Select
      */
-    public function orHaving($field, string $operator = null, $value = null): Select
+    public function orHaving(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): Select
     {
-	    if (!is_string($field) && !($field instanceof Expr)) {
-		    $other = is_object($field) ? get_class($field) : gettype($field);
-		    throw new \InvalidArgumentException("First parameter should be string or instance of \Koldy\Db\Expr, got {$other} instead");
-	    }
-
         $this->having[] = [
           'link' => 'OR',
           'field' => $field,
@@ -354,14 +324,14 @@ class Select extends Where
         return $this;
     }
 
-    /**
-     * Add field to ORDER BY
-     *
-     * @param string $field
-     * @param string $direction
-     *
-     * @return Select
-     */
+	/**
+	 * Add field to ORDER BY
+	 *
+	 * @param string $field
+	 * @param string|null $direction
+	 *
+	 * @return Select
+	 */
     public function orderBy(string $field, string $direction = null): Select
     {
         if ($direction === null) {
@@ -396,7 +366,7 @@ class Select extends Where
      */
     public function limit(int $start, int $howMuch): Select
     {
-        $this->limit = new \stdClass;
+        $this->limit = new stdClass;
         $this->limit->start = $start;
         $this->limit->howMuch = $howMuch;
         return $this;
@@ -499,7 +469,7 @@ class Select extends Where
                         $query .= "{$joinArg[0]} {$joinArg[1]} {$joinArg[2]} AND ";
 
                     } else if (is_array($joinArg) && count($joinArg) == 4) {
-                        if (substr($query, -5) == ' AND ') {
+                        if (str_ends_with($query, ' AND ')) {
                             $query = substr($query, 0, -5);
                         }
 
@@ -716,19 +686,19 @@ class Select extends Where
 
         $this->resetLimit()->limit(0, 1);
         $results = $this->fetchAll();
-        return isset($results[0]) ? $results[0] : null;
+        return count($results) > 0 ? $results[0] : null;
     }
 
-    /**
-     * Fetch only first record as object
-     *
-     * @param string $class
-     *
-     * @return null|object
-     * @throws Exception
-     * @throws \Koldy\Exception
-     */
-    public function fetchFirstObj(string $class = null)
+	/**
+	 * Fetch only first record as object
+	 *
+	 * @param string|null $class
+	 *
+	 * @return null|object
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
+    public function fetchFirstObj(string $class = null): ?object
     {
         if (!$this->wasExecuted()) {
             $this->exec();

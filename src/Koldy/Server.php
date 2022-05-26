@@ -17,7 +17,7 @@ class Server
      * @return string
      * @throws Exception
      */
-    public static function getServerLoad(): string
+	public static function getServerLoad(): string
     {
         if (function_exists('sys_getloadavg')) {
             $a = sys_getloadavg();
@@ -61,13 +61,13 @@ class Server
     }
 
     /**
-     * Get the server's "signature" in this moment with all useful debug data
+     * Get the server's "signature" with all useful debug data
      *
      * @return array
      * @throws Convert\Exception
      * @throws Exception
      */
-    public static function signatureArray(): array
+	public static function signatureArray(): array
     {
         $numberOfIncludedFiles = count(get_included_files());
         $serverIP = static::ip();
@@ -152,7 +152,7 @@ class Server
      * @throws Convert\Exception
      * @throws Exception
      */
-    public static function signature(): string
+	public static function signature(): string
     {
         return implode("\n", static::signatureArray());
     }
@@ -162,9 +162,9 @@ class Server
      *
      * @return string
      */
-    public static function ip(): string
+	public static function ip(): string
     {
-        return isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
+        return $_SERVER['SERVER_ADDR'] ?? '127.0.0.1';
     }
 
 }

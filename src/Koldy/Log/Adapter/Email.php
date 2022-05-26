@@ -25,14 +25,14 @@ class Email extends AbstractLogAdapter
      *
      * @var boolean
      */
-    private $emailing = false;
+    private bool $emailing = false;
 
     /**
      * The array of last X messages (by default, the last 100 messages)
      *
      * @var Message[]
      */
-    protected $messages = [];
+    protected array $messages = [];
 
     private const FN_CONFIG_KEY = 'get_mail_fn';
 
@@ -108,7 +108,7 @@ class Email extends AbstractLogAdapter
         $mail->from('alert@' . $domain, $domain)->subject($subject)->body($body);
 
         $to = $this->config['to'];
-        if (!is_array($this->config['to']) && strpos($this->config['to'], ',') !== false) {
+        if (!is_array($this->config['to']) && str_contains($this->config['to'], ',')) {
             $to = explode(',', $this->config['to']);
         }
 

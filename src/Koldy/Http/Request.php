@@ -2,6 +2,7 @@
 
 namespace Koldy\Http;
 
+use CURLFile;
 use Koldy\Http\Exception as HttpException;
 use Koldy\Json;
 use Koldy\Util;
@@ -22,31 +23,31 @@ class Request
     /**
      * @var string
      */
-    protected $url = null;
+    protected string $url;
 
     /**
-     * @var string[]
+     * @var array
      */
-    protected $params = [];
+    protected array $params = [];
 
     /**
      * @var string
      */
-    protected $method = 'GET';
+    protected string $method = 'GET';
 
     /**
      * The CURL options
      *
      * @var array
      */
-    protected $options = [];
+    protected array $options = [];
 
     /**
      * Request headers
      *
      * @var array
      */
-    protected $headers = [];
+    protected array $headers = [];
 
     /**
      * Update the request's target URL
@@ -55,7 +56,7 @@ class Request
      *
      * @return Request
      */
-    public function setUrl(string $url): Request
+    public function setUrl(string $url): static
     {
         $this->url = $url;
         return $this;
@@ -74,7 +75,7 @@ class Request
             if (count($this->params) > 0) {
                 $params = http_build_query($this->getParams());
 
-                if (strpos('?', $url) !== false && substr($url, -1) != '?') {
+                if (str_contains('?', $url) && !str_ends_with($url, '?')) {
                     // just add "&"
                     $url .= $params;
                 } else {
@@ -90,7 +91,7 @@ class Request
      *
      * @return Request
      */
-    public function setMethod(string $method): Request
+    public function setMethod(string $method): static
     {
         $this->method = $method;
         return $this;
@@ -104,26 +105,16 @@ class Request
         return $this->method;
     }
 
-    /**
-     * Set the request parameter
-     *
-     * @param string $name
-     * @param mixed $value
-     *
-     * @return Request
-     * @throws Exception
-     */
-    public function setParam(string $name, $value): Request
+	/**
+	 * Set the request parameter
+	 *
+	 * @param string $name
+	 * @param mixed $value
+	 *
+	 * @return Request
+	 */
+    public function setParam(string $name, mixed $value): static
     {
-        if (is_object($value)) {
-            if (property_exists($value, '__toString')) {
-                $value = $value->__toString();
-            } else {
-                $class = get_class($value);
-                throw new HttpException("Can not set param={$name} when instance of {$class} can't be converted to string");
-            }
-        }
-
         $this->params[$name] = $value;
         return $this;
     }
@@ -135,7 +126,7 @@ class Request
      *
      * @return Request
      */
-    public function setParams(array $params): Request
+    public function setParams(array $params): static
     {
         $this->params = $params;
         return $this;
@@ -165,22 +156,22 @@ class Request
     /**
      * @param string $key
      *
-     * @return mixed|null
+     * @return mixed
      */
-    public function getParam($key)
+    public function getParam(string $key): mixed
     {
-        return $this->hasParam($key) ? $this->params[$key] : null;
+        return $this->params[$key] ?? null;
     }
 
-    /**
-     * Set the request header
-     *
-     * @param string $name
-     * @param string $value
-     *
-     * @return Request
-     */
-    public function setHeader(string $name, string $value): Request
+	/**
+	 * Set the request header
+	 *
+	 * @param string $name
+	 * @param string|int|float $value
+	 *
+	 * @return Request
+	 */
+    public function setHeader(string $name, string | int | float $value): static
     {
         $this->headers[$name] = $value;
         return $this;
@@ -193,7 +184,7 @@ class Request
      *
      * @return Request
      */
-    public function setHeaders(array $headers): Request
+    public function setHeaders(array $headers): static
     {
         $this->headers = $headers;
         return $this;
@@ -235,7 +226,7 @@ class Request
      *
      * @return Request
      */
-    public function removeHeader(string $name): Request
+    public function removeHeader(string $name): static
     {
         if ($this->hasHeader($name)) {
             unset($this->headers[$name]);
@@ -251,7 +242,7 @@ class Request
      * @return Request
      * @link http://php.net/manual/en/function.curl-setopt.php
      */
-    public function setOptions(array $curlOptions): Request
+    public function setOptions(array $curlOptions): static
     {
         $this->options = $curlOptions;
         return $this;
@@ -260,13 +251,13 @@ class Request
     /**
      * Set the CURL option
      *
-     * @param string|int $name
+     * @param int $name
      * @param mixed $value
      *
      * @return Request
      * @link http://php.net/manual/en/function.curl-setopt.php
      */
-    public function setOption($name, $value): Request
+    public function setOption(int $name, mixed $value): static
     {
         $this->options[$name] = $value;
         return $this;
@@ -275,13 +266,13 @@ class Request
     /**
      * Check if CURL option is set (exists in options array)
      *
-     * @param string $key
+     * @param int $key
      *
      * @return boolean
      */
-    public function hasOption($key): bool
+    public function hasOption(int $key): bool
     {
-        return isset($this->options[$key]);
+        return array_key_exists($key, $this->options);
     }
 
     /**
@@ -295,11 +286,11 @@ class Request
     }
 
     /**
-     * @param string|int $option
+     * @param int $option
      *
      * @return mixed|null
      */
-    public function getOption($option)
+    public function getOption(int $option): mixed
     {
         return $this->options[$option] ?? null;
     }
@@ -309,7 +300,7 @@ class Request
      *
      * @return Request
      */
-    public function removeOption($option): Request
+    public function removeOption(int $option): static
     {
         if ($this->hasOption($option)) {
             unset($this->options[$option]);
@@ -336,12 +327,13 @@ class Request
         return [];
     }
 
-    /**
-     * Get the prepared curl options for the HTTP request
-     *
-     * @return array
-     * @throws Json\Exception
-     */
+	/**
+	 * Get the prepared curl options for the HTTP request
+	 *
+	 * @return array
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
     protected function getCurlOptions(): array
     {
         $options = [];
@@ -360,7 +352,20 @@ class Request
                 }
 
                 if (!$this->hasOption(CURLOPT_POSTFIELDS)) {
-                    $options[CURLOPT_POSTFIELDS] = count($this->getParams()) > 0 ? http_build_query($this->getParams()) : '';
+	                // check if there are files in the request
+	                $hasFileInParams = false;
+
+	                foreach ($this->getParams() as $key => $value) {
+		                if ($value instanceof CURLFile) {
+			                $hasFileInParams = true;
+		                }
+	                }
+
+	                if ($hasFileInParams) {
+		                $options[CURLOPT_POSTFIELDS] = $this->getParams();
+	                } else {
+		                $options[CURLOPT_POSTFIELDS] = count($this->getParams()) > 0 ? http_build_query($this->getParams()) : '';
+	                }
                 }
 
                 if ($this->hasHeader('Content-Type') &&
@@ -389,20 +394,25 @@ class Request
         return $options;
     }
 
-    /**
-     * Execute request
-     * @return Response
-     * @throws Exception
-     * @throws Json\Exception
-     */
+	/**
+	 * Execute request
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function exec(): Response
     {
         $url = $this->getUrl();
 
         $ch = curl_init($url);
 
+		if ($ch === false) {
+			throw new HttpException('Can not construct CURL Handle class; please check if you have cURL installed');
+		}
+
         foreach ($this->getCurlOptions() as $option => $value) {
-            // iterating it so we have all options applied in given order
+            // iterating so we have all options applied in given order
             curl_setopt($ch, $option, $value);
         }
 
@@ -412,22 +422,26 @@ class Request
             throw new HttpException(curl_error($ch));
         }
 
+		if (is_bool($body)) {
+			throw new HttpException('cURL exec returned boolean (' . ($body ? 'TRUE' : 'FALSE') . ') instead of string; please check the request options');
+		}
+
         return new Response($ch, $body, $this);
     }
 
-    /**
-     * @param string $url
-     * @param string $method
-     * @param array|null $params
-     * @param array|null $headers
-     *
-     * @return Response
-     * @throws Exception
-     * @throws Json\Exception
-     */
+	/**
+	 * @param string $url
+	 * @param string $method
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
     protected static function quickRequest(string $url, string $method, array $params = null, array $headers = null): Response
     {
-        /** @var Request $self */
         $self = new static();
         $self->setUrl($url)->setMethod($method);
 
@@ -445,77 +459,82 @@ class Request
         return $self->exec();
     }
 
-    /**
-     * Make quick GET request
-     *
-     * @param string $url
-     * @param array|null $params
-     * @param array|null $headers
-     *
-     * @return Response
-     * @throws Exception
-     * @throws Json\Exception
-     */
-    public static function get(string $url, array $params = null, array $headers = null)
+	/**
+	 * Make quick GET request
+	 *
+	 * @param string $url
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public static function get(string $url, array $params = null, array $headers = null): Response
     {
         return static::quickRequest($url, self::GET, $params, $headers);
     }
 
-    /**
-     * Make quick POST request
-     *
-     * @param string $url
-     * @param array|null $params
-     * @param array|null $headers
-     *
-     * @return Response
-     * @throws Exception
-     * @throws Json\Exception
-     */
-    public static function post(string $url, array $params = null, array $headers = null)
+	/**
+	 * Make quick POST request
+	 *
+	 * @param string $url
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public static function post(string $url, array $params = null, array $headers = null): Response
     {
         return static::quickRequest($url, self::POST, $params, $headers);
     }
 
-    /**
-     * Make quick PUT request
-     *
-     * @param string $url
-     * @param array|null $params
-     * @param array|null $headers
-     *
-     * @return Response
-     * @throws Exception
-     * @throws Json\Exception
-     */
-    public static function put(string $url, array $params = null, array $headers = null)
+	/**
+	 * Make quick PUT request
+	 *
+	 * @param string $url
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public static function put(string $url, array $params = null, array $headers = null): Response
     {
         return static::quickRequest($url, self::PUT, $params, $headers);
     }
 
-    /**
-     * Make quick DELETE request
-     *
-     * @param string $url
-     * @param array|null $params
-     * @param array|null $headers
-     *
-     * @return Response
-     * @throws Exception
-     * @throws Json\Exception
-     */
-    public static function delete(string $url, array $params = null, array $headers = null)
+	/**
+	 * Make quick DELETE request
+	 *
+	 * @param string $url
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public static function delete(string $url, array $params = null, array $headers = null): Response
     {
         return static::quickRequest($url, self::DELETE, $params, $headers);
     }
 
-    /**
-     * Print settings and all values useful for troubleshooting
-     *
-     * @return string
-     * @throws Json\Exception
-     */
-    public function debug()
+	/**
+	 * Print settings and all values useful for troubleshooting
+	 *
+	 * @return string
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public function debug(): string
     {
         $constants = get_defined_constants(true);
         $flipped = array_flip($constants['curl']);
@@ -554,10 +573,11 @@ class Request
         return $msg;
     }
 
-    /**
-     * @return string
-     * @throws Json\Exception
-     */
+	/**
+	 * @return string
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
     public function __toString()
     {
         return $this->debug();

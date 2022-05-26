@@ -22,34 +22,34 @@ class Insert
      *
      * @var string
      */
-    protected $table = null;
+    protected string | null $table = null;
 
     /**
      * The fields on which will data be inserted
      *
      * @var array
      */
-    protected $fields = [];
+    protected array $fields = [];
 
     /**
      * Array of rows of data
      *
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * For INSERT INTO () SELECT statements
      *
-     * @var Select|string
+     * @var Select|string|null
      */
-    protected $select = null;
+    protected Select | string | null $select = null;
 
 	/**
 	 * Construct the object
 	 *
 	 * @param string|null $table
-	 * @param array $rowValues is key => value array to insert into database
+	 * @param array|null $rowValues is key => value array to insert into database
 	 * @param string|null $adapter
 	 *
 	 * @throws Exception
@@ -82,19 +82,6 @@ class Insert
         if ($adapter !== null) {
             $this->setAdapter($adapter);
         }
-    }
-
-    /**
-     * The table on which insert will be executed
-     *
-     * @param string $table
-     *
-     * @return Insert
-     * @deprecated Deprecated since v2.0. Use \Koldy\Db\Query\Insert::into() instead of table() method.
-     */
-    public function table(string $table): Insert
-    {
-        return $this->into($table);
     }
 
     /**
@@ -182,7 +169,7 @@ class Insert
      */
     public function addRows(array $rows): Insert
     {
-        foreach ($rows as $index => $row) {
+        foreach ($rows as $row) {
             $this->add($row);
         }
         return $this;
@@ -191,11 +178,11 @@ class Insert
     /**
      * The select query to insert from
      *
-     * @param Select|string $selectQuery
+     * @param string|Select $selectQuery
      *
      * @return Insert
      */
-    public function selectFrom($selectQuery): Insert
+    public function selectFrom(string|Select $selectQuery): Insert
     {
         $this->select = $selectQuery;
         return $this;

@@ -21,17 +21,9 @@ class Json
 	 * @throws Exception
 	 * @link https://koldy.net/framework/docs/2.0/json.md
 	 */
-    public static function encode($data, int $flags = null, int $depth = null): string
+    public static function encode(mixed $data, int $flags = null, int $depth = null): string
     {
-    	if ($flags === null) {
-    		$flags = 0;
-	    }
-
-    	if ($depth === null) {
-    		$depth = 512;
-	    }
-
-        $json = json_encode($data, $flags, $depth);
+        $json = json_encode($data, $flags ?? 0, $depth ?? 512);
 
         if ($json === false) {
             $errNo = json_last_error();
@@ -56,15 +48,7 @@ class Json
      */
     public static function decode(string $stringData, int $flags = null, int $depth = null): array
     {
-	    if ($flags === null) {
-		    $flags = 0;
-	    }
-
-	    if ($depth === null) {
-		    $depth = 512;
-	    }
-
-        $decoded = json_decode($stringData, true, $depth, $flags);
+        $decoded = json_decode($stringData, true, $depth ?? 512, $flags ?? 0);
 
         if ($decoded === null) {
             $errNo = json_last_error();
@@ -89,15 +73,7 @@ class Json
 	 */
     public static function decodeToObj(string $stringData, int $flags = null, int $depth = null): \stdClass
     {
-	    if ($flags === null) {
-		    $flags = 0;
-	    }
-
-	    if ($depth === null) {
-		    $depth = 512;
-	    }
-
-        $decoded = json_decode($stringData, false, $depth, $flags);
+        $decoded = json_decode($stringData, false, $depth ?? 512, $flags ?? 0);
 
         if ($decoded === null) {
             $errNo = json_last_error();

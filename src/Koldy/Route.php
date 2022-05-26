@@ -32,14 +32,13 @@ class Route
      * Get the variable from request. This depends about the route you're using.
      *
      * @param string|int $whatVar
-     * @param mixed $default
      *
      * @return string
      * @throws Exception
      */
-    public static function getVar($whatVar, $default = null)
+    public static function getVar(string|int $whatVar): string
     {
-        return Application::route()->getVar($whatVar, $default);
+        return Application::route()->getVar($whatVar);
     }
 
     /**
@@ -104,16 +103,16 @@ class Route
         return $controller == Application::route()->getControllerUrl() && $action == Application::route()->getActionUrl();
     }
 
-    /**
-     * Is this the matching module, controller and action?
-     *
-     * @param string $module
-     * @param string $controller
-     * @param string $action
-     *
-     * @return bool
-     * @throws Exception
-     */
+	/**
+	 * Is this the matching module, controller and action?
+	 *
+	 * @param string $module
+	 * @param string|null $controller
+	 * @param string|null $action
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
     public static function isModule(string $module, string $controller = null, string $action = null): bool
     {
         $route = Application::route();
@@ -137,33 +136,33 @@ class Route
         }
     }
 
-    /**
-     * Generate the link suitable for <a> tags. Generating links depends about the routing class you're using.
-     *
-     * @param string $controller
-     * @param string $action
-     * @param array $params
-     *
-     * @return string
-     * @throws Exception
-     */
+	/**
+	 * Generate the link suitable for <a> tags. Generating links depends about the routing class you're using.
+	 *
+	 * @param null $controller
+	 * @param string|null $action
+	 * @param array|null $params
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
     public static function href($controller = null, string $action = null, array $params = null): string
     {
         return Application::route()->href($controller, $action, $params);
     }
 
-    /**
-     * Generate the link to other site defined in sites.php, suitable for <a> tags. Generating links depends
-     * about the routing class you're using.
-     *
-     * @param string $site
-     * @param string $controller
-     * @param string $action
-     * @param array $params
-     *
-     * @return string
-     * @throws Exception
-     */
+	/**
+	 * Generate the link to other site defined in sites.php, suitable for <a> tags. Generating links depends
+	 * about the routing class you're using.
+	 *
+	 * @param string $site
+	 * @param string|null $controller
+	 * @param string|null $action
+	 * @param array|null $params
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
     public static function siteHref(string $site, string $controller = null, string $action = null, array $params = null): string
     {
         return Application::route()->siteHref($site, $controller, $action, $params);
@@ -208,24 +207,21 @@ class Route
         return static::href();
     }
 
-    /**
-     * Generate link to static asset on the same host where application is. This method is using link() method in
-     * routing class, so be careful because it might be overridden in your case.
-     *
-     * @param string $path
-     * @param string $server
-     *
-     * @return string
-     * @throws Exception
-     */
+	/**
+	 * Generate link to static asset on the same host where application is. This method is using link() method in
+	 * routing class, so be careful because it might be overridden in your case.
+	 *
+	 * @param string $path
+	 * @param string|null $server
+	 *
+	 * @return string
+	 * @throws Config\Exception
+	 * @throws Exception
+	 * @throws RouteException
+	 */
     public static function asset(string $path, string $server = null): string
     {
         $route = Application::route();
-
-        if (!($route instanceof AbstractRoute)) {
-            throw new RouteException('Invalid route; expected instance of \Koldy\Route\AbstractRoute, got ' . gettype($route));
-        }
-
         return $route->asset($path, $server);
     }
 

@@ -2,9 +2,12 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Closure;
+use Exception;
 use Koldy\Config\Exception as ConfigException;
 use Memcached as NativeMemcached;
 use Koldy\Cache\Exception as CacheException;
+use Throwable;
 
 /**
  * The Memcached adapter defined in Koldy is using Memcached and not Memcache class. Notice the difference with "d" letter.
@@ -19,9 +22,9 @@ class Memcached extends AbstractCacheAdapter
     /**
      * If you need access to native instance, you may use this public property
      *
-     * @var NativeMemcached
+     * @var NativeMemcached|null
      */
-    public $memcached = null;
+    public NativeMemcached | null $memcached = null;
 
     /**
      * Get the instance of \Memcached
@@ -89,7 +92,7 @@ class Memcached extends AbstractCacheAdapter
      * @throws ConfigException
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         $key = $this->getKeyName($key);
         $value = $this->getInstance()->get($key);
@@ -135,32 +138,32 @@ class Memcached extends AbstractCacheAdapter
         return $result;
     }
 
-    /**
-     * Set the value to cache identified by key
-     *
-     * @param string $key
-     * @param mixed $value
-     * @param int $seconds [optional] if not set, default is used
-     *
-     * @throws ConfigException
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
-    public function set(string $key, $value, int $seconds = null): void
+	/**
+	 * Set the value to cache identified by key
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 * @param int|null $seconds [optional] if not set, default is used
+	 *
+	 * @throws ConfigException
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
+    public function set(string $key, mixed $value, int $seconds = null): void
     {
         $key = $this->getKeyName($key);
         $this->getInstance()->set($key, $value, ($seconds ?? $this->defaultDuration));
     }
 
-    /**
-     * Set multiple values to default cache engine and overwrite if keys already exists
-     *
-     * @param array $keyValuePairs
-     * @param int $seconds [optional] if not set, default is used
-     *
-     * @throws CacheException
-     * @throws ConfigException
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Set multiple values to default cache engine and overwrite if keys already exists
+	 *
+	 * @param array $keyValuePairs
+	 * @param int|null $seconds [optional] if not set, default is used
+	 *
+	 * @throws CacheException
+	 * @throws ConfigException
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
         if (count($keyValuePairs) == 0) {
@@ -178,14 +181,14 @@ class Memcached extends AbstractCacheAdapter
 
     /**
      * @param array $keys
-     * @param \Closure $functionOnMissingKeys
+     * @param Closure $functionOnMissingKeys
      * @param int|null $seconds
      *
      * @return array
      * @throws CacheException
      * @throws ConfigException
      */
-    public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
     {
         $found = $this->getMulti($keys);
         $missing = [];
@@ -206,7 +209,7 @@ class Memcached extends AbstractCacheAdapter
         if (count($missing) > 0) {
 	        try {
 		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
-	        } catch (\Exception | \Throwable $e) {
+	        } catch (Exception | Throwable $e) {
 		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
 	        }
 
@@ -276,12 +279,12 @@ class Memcached extends AbstractCacheAdapter
         $this->getInstance()->flush();
     }
 
-    /**
-     * Delete all cache items older then ...
-     *
-     * @param int $olderThen [optional] if not set, then default duration is used
-     */
-    public function deleteOld(int $olderThen = null): void
+	/**
+	 * Delete all cache items older then ...
+	 *
+	 * @param int|null $olderThanSeconds [optional] if not set, then default duration is used
+	 */
+    public function deleteOld(int $olderThanSeconds = null): void
     {
         // Note1: won't be implemented - you might potentially have a lot of keys stored and you really don't want to
         // accidentally iterate through it

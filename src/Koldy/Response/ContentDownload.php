@@ -14,21 +14,21 @@ class ContentDownload extends AbstractResponse
      *
      * @var string
      */
-    protected $content = null;
+    protected string $content;
 
     /**
      * Download as name (file name that user will get)
      *
-     * @var string
+     * @var string|null
      */
-    protected $asName = null;
+    protected string | null $asName = null;
 
     /**
      * The content type of download
      *
-     * @var string
+     * @var string|null
      */
-    protected $contentType = null;
+    protected string | null $contentType = null;
 
     /**
      * ContentDownload constructor.
@@ -66,15 +66,15 @@ class ContentDownload extends AbstractResponse
         return $this;
     }
 
-    /**
-     * Shorthand for creating this class, pass all required parameters at once
-     *
-     * @param string $content
-     * @param string $asName
-     * @param string $contentType [optional]
-     *
-     * @return ContentDownload
-     */
+	/**
+	 * Shorthand for creating this class, pass all required parameters at once
+	 *
+	 * @param string $content
+	 * @param string $asName
+	 * @param string|null $contentType [optional]
+	 *
+	 * @return ContentDownload
+	 */
     public static function create(string $content, string $asName, string $contentType = null): ContentDownload
     {
         $self = new static($content);
@@ -87,9 +87,10 @@ class ContentDownload extends AbstractResponse
         return $self;
     }
 
-    /**
-     * @throws Exception
-     */
+	/**
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
     public function flush(): void
     {
         $asName = $this->asName;
@@ -99,7 +100,6 @@ class ContentDownload extends AbstractResponse
 
         $this->prepareFlush();
         $this->runBeforeFlush();
-        $contentType = null;
 
         if ($this->contentType === null) {
             $contentType = 'application/octet-stream';
@@ -107,9 +107,9 @@ class ContentDownload extends AbstractResponse
             $contentType = $this->contentType;
         }
 
-        if ($contentType === null) {
-            $contentType = 'application/force-download';
-        }
+//        if ($contentType === null) {
+//            $contentType = 'application/force-download';
+//        }
 
         $this->setHeader('Connection', 'close')
             ->setHeader('Pragma', 'public')

@@ -2,27 +2,22 @@
 
 namespace Koldy\Db;
 
+use Stringable;
+
 /**
  * The expression data holder - string stored in this class will be
  * literally printed in query with no additional adding slashes or anything similar.
  *
  */
-class Expr
+class Expr implements Stringable
 {
-
-    /**
-     * @var string
-     */
-    private $expression;
-
     /**
      * Construct the object
      *
      * @param string $expression
      */
-    public function __construct(string $expression)
+    public function __construct(private string $expression)
     {
-        $this->expression = $expression;
     }
 
     /**
@@ -32,16 +27,6 @@ class Expr
     public function getExpression(): string
     {
         return $this->expression;
-    }
-
-    /**
-     * Get the data
-     * @return string
-     * @deprecated Deprecated since 2.0. Use getExpression() instead.
-     */
-    public function getData(): string
-    {
-        return $this->getExpression();
     }
 
     /**

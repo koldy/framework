@@ -2,6 +2,7 @@
 
 namespace Koldy\Http;
 
+use CurlHandle;
 use Koldy\Application;
 
 /**
@@ -12,40 +13,40 @@ class Response
 {
 
     /**
-     * @var resource
+     * @var CurlHandle
      */
-    protected $ch;
+    protected CurlHandle $ch;
 
     /**
      * The response body from request
      *
      * @var string
      */
-    protected $body;
+    protected string $body;
 
     /**
-     * @var null
+     * @var string|null
      */
-    protected $headersText = null;
+    protected string | null $headersText = null;
 
     /**
-     * @var null
+     * @var array|null
      */
-    protected $headers = null;
+    protected array | null $headers = null;
 
     /**
      * @var Request
      */
-    protected $request;
+    protected Request $request;
 
     /**
      * Response constructor.
      *
-     * @param resource $ch
-     * @param mixed $body
+     * @param CurlHandle $ch
+     * @param string $body
      * @param Request $request
      */
-    public function __construct($ch, $body, Request $request)
+    public function __construct(CurlHandle $ch, string $body, Request $request)
     {
         $this->ch = $ch;
         $this->request = $request;
@@ -55,8 +56,8 @@ class Response
         if ($headerSize == 0) {
             $this->body = $body;
         } else {
-            $this->headersText = trim(substr((string)$body, 0, $headerSize));
-            $this->body = substr((string)$body, $headerSize);
+            $this->headersText = trim(substr($body, 0, $headerSize));
+            $this->body = substr($body, $headerSize);
         }
     }
 
@@ -78,9 +79,9 @@ class Response
     /**
      * Get the response body
      *
-     * @return mixed
+     * @return string
      */
-    public function getBody()
+    public function getBody(): string
     {
         return $this->body;
     }
@@ -102,7 +103,7 @@ class Response
      */
     public function isSuccess(): bool
     {
-        return $this->getHttpCode() == 200;
+        return $this->getHttpCode() >= 200 && $this->getHttpCode() <= 299;
     }
 
     /**
@@ -207,9 +208,9 @@ class Response
      *
      * @param string $name
      *
-     * @return mixed|null
+     * @return string|null
      */
-    public function getHeader(string $name)
+    public function getHeader(string $name): ?string
     {
         return $this->getHeaders()[$name] ?? null;
     }
@@ -242,7 +243,7 @@ class Response
      * @return string
      * @throws \Koldy\Exception
      */
-    public function debug($allDetails = false)
+    public function debug(bool $allDetails = false): string
     {
         $className = get_class($this);
         $msg = "{$className} ({$this->getHttpCode()}) {$this->request->getMethod()}={$this->getUrl()} IN {$this->getTotalTime()}s";

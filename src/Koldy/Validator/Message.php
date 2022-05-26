@@ -2,7 +2,9 @@
 
 namespace Koldy\Validator;
 
+use Closure;
 use Koldy\Validator\ConfigException as ValidatorException;
+use Throwable;
 
 /**
  * Class ErrorMessage
@@ -48,14 +50,14 @@ class Message
      *
      * @var bool
      */
-    protected static $initialized = false;
+    protected static bool $initialized = false;
 
     /**
      * Array of validator error messages
      *
      * @var array
      */
-    protected static $messages = [
+    protected static array $messages = [
       self::PRESENT => 'Parameter {param} is not present', // {param}, {value}
       self::REQUIRED => 'This field is required', // {param}, {value}
       self::MIN_VALUE => 'Has to be at least {min}', // {param}, {value}, {min}
@@ -90,7 +92,7 @@ class Message
     /**
      * Initialize this class. Override if needed, e.g. in case if you want to pull translations from some other source
      */
-    public static function init()
+    public static function init(): void
     {
         static::$initialized = true;
     }
@@ -124,12 +126,11 @@ class Message
         }
 
         $msg = static::$messages[$constant];
-        $return = null;
 
-        if ($msg instanceof \Closure) {
+        if ($msg instanceof Closure) {
 	        try {
 		        $return = call_user_func($msg, $data);
-	        } catch (\Exception | \Throwable $e) {
+	        } catch (\Exception | Throwable $e) {
 		        throw new Exception("Failed to execute custom validator function: {$e->getMessage()}", $e->getCode(), $e);
 	        }
 
@@ -164,7 +165,7 @@ class Message
      * @param int $constant
      * @param string $message
      */
-    public static function setMessageString(int $constant, string $message)
+    public static function setMessageString(int $constant, string $message): void
     {
         static::$messages[$constant] = $message;
     }
@@ -173,9 +174,9 @@ class Message
      * Set custom validation message by passing function that will be executed when message occurs
      *
      * @param int $constant
-     * @param \Closure $userFunction The user function must return string, otherwise \Koldy\Validator\Exception will be thrown
+     * @param Closure $userFunction The user function must return string, otherwise \Koldy\Validator\Exception will be thrown
      */
-    public static function setMessageFunction(int $constant, \Closure $userFunction)
+    public static function setMessageFunction(int $constant, Closure $userFunction): void
     {
         static::$messages[$constant] = $userFunction;
     }

@@ -2,7 +2,10 @@
 
 namespace Koldy\Cache\Adapter;
 
+use Closure;
+use Exception;
 use Koldy\Cache\Exception as CacheException;
+use Throwable;
 
 /**
  * This cache adapter holds cached data only in request's scope (memory, or runtime). As soon as request/script ends, everything will
@@ -18,7 +21,7 @@ class Runtime extends AbstractCacheAdapter
      *
      * @var array
      */
-    private $data = [];
+    private array $data = [];
 
     /**
      * Get the value from the cache by key
@@ -27,7 +30,7 @@ class Runtime extends AbstractCacheAdapter
      *
      * @return mixed value or null if key doesn't exists or cache is disabled
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         if ($this->has($key)) {
             return $this->data[$key]->data;
@@ -48,7 +51,7 @@ class Runtime extends AbstractCacheAdapter
     {
         $result = [];
 
-        foreach (array_values($keys) as $key) {
+        foreach ($keys as $key) {
             $result[$key] = $this->get($key);
         }
 
@@ -57,13 +60,13 @@ class Runtime extends AbstractCacheAdapter
 
 	/**
 	 * @param array $keys
-	 * @param \Closure $functionOnMissingKeys
+	 * @param Closure $functionOnMissingKeys
 	 * @param int|null $seconds
 	 *
 	 * @return array
 	 * @throws CacheException
 	 */
-    public function getOrSetMulti(array $keys, \Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
     {
         $found = [];
         $missing = [];
@@ -84,7 +87,7 @@ class Runtime extends AbstractCacheAdapter
         if (count($missing) > 0) {
 	        try {
 		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
-	        } catch (\Exception | \Throwable $e) {
+	        } catch (Exception | Throwable $e) {
 		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
 	        }
             $return = array_merge($return, $setValues);
@@ -93,27 +96,27 @@ class Runtime extends AbstractCacheAdapter
         return $return;
     }
 
-    /**
-     * Set the cache value by the key
-     *
-     * @param string $key
-     * @param string $value
-     * @param integer $seconds
-     */
+	/**
+	 * Set the cache value by the key
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @param int|null $seconds
+	 */
     public function set(string $key, $value, int $seconds = null): void
     {
         $this->data[$key] = $value;
         // TODO: Respect time limit
     }
 
-    /**
-     * Set multiple values to default cache engine and overwrite if keys already exists
-     *
-     * @param array $keyValuePairs
-     * @param int $seconds [optional] if not set, default is used
-     *
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Set multiple values to default cache engine and overwrite if keys already exists
+	 *
+	 * @param array $keyValuePairs
+	 * @param int|null $seconds [optional] if not set, default is used
+	 *
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
     {
         foreach ($keyValuePairs as $key => $value) {
@@ -131,9 +134,6 @@ class Runtime extends AbstractCacheAdapter
         return array_key_exists($key, $this->data);
     }
 
-    /**
-     * @param string $key
-     */
     public function delete(string $key): void
     {
         if ($this->has($key)) {
@@ -150,7 +150,7 @@ class Runtime extends AbstractCacheAdapter
      */
     public function deleteMulti(array $keys): void
     {
-        foreach (array_values($keys) as $key) {
+        foreach ($keys as $key) {
             $this->delete($key);
         }
     }
@@ -163,10 +163,7 @@ class Runtime extends AbstractCacheAdapter
         $this->data = [];
     }
 
-    /**
-     * @param int $olderThenSeconds
-     */
-    public function deleteOld(int $olderThenSeconds = null): void
+    public function deleteOld(int $olderThanSeconds = null): void
     {
         // nothing to do
     }

@@ -12,12 +12,12 @@ trait Statement
     /**
      * @var string|null
      */
-    protected $adapter = null;
+    protected string | null $adapter = null;
 
     /**
      * @var Query|null
      */
-    private $lastQuery = null;
+    private Query | null $lastQuery = null;
 
 	/**
 	 * Get the adapter on which query will be performed
@@ -71,12 +71,14 @@ trait Statement
      */
     abstract public function getQuery(): Query;
 
-    /**
-     * Get SQL prepared for PDO, before binding real values
-     *
-     * @return string
-     * @throws Exception
-     */
+	/**
+	 * Get SQL prepared for PDO, before binding real values
+	 *
+	 * @return string
+	 * @throws Db\Exception
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
     public function getSQL(): string
     {
         return $this->getQuery()->getSQL();
@@ -91,7 +93,7 @@ trait Statement
      * @throws Exception
      * @throws \Koldy\Exception
      */
-    public function exec(string $adapter = null)
+    public function exec(string $adapter = null): static
     {
         $this->lastQuery = $this->getQuery();
 

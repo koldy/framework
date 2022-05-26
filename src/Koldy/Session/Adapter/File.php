@@ -19,16 +19,16 @@ class File implements SessionHandlerInterface
     /**
      * The directory where files will be stored
      *
-     * @var string
+     * @var string|null
      */
-    protected $savePath = null;
+    protected string | null $savePath = null;
 
     /**
      * The 'options' part from config/session.php
      *
      * @var array
      */
-    protected $config = [];
+    protected array $config;
 
     /**
      * Construct the File Session storage handler
@@ -41,12 +41,12 @@ class File implements SessionHandlerInterface
     }
 
     /**
-     * @param string $save_path
-     * @param string $sessionid
+     * @param string $path
+     * @param string $name
      *
      * @return bool
      */
-    public function open($save_path, $sessionid)
+    public function open(string $path, string $name): bool
     {
         // we'll ignore $save_path because we have our own path from config
 
@@ -72,34 +72,34 @@ class File implements SessionHandlerInterface
     }
 
     /**
-     * @param string $sessionid
+     * @param string $id
      *
      * @return string
      */
-    public function read($sessionid)
+    public function read(string $id): string
     {
-        return (string)@file_get_contents("{$this->savePath}{$sessionid}.txt");
+        return (string)@file_get_contents("{$this->savePath}{$id}.txt");
     }
 
 	/**
-	 * @param string $sessionid
-	 * @param string $sessiondata
+	 * @param string $id
+	 * @param string $data
 	 *
 	 * @return bool
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 * @throws \Koldy\Filesystem\Exception
 	 */
-    public function write($sessionid, $sessiondata)
+    public function write(string $id, string $data): bool
     {
-        $wasWritten = !(file_put_contents("{$this->savePath}{$sessionid}.txt", $sessiondata) === false);
+        $wasWritten = !(file_put_contents("{$this->savePath}{$id}.txt", $data) === false);
 
         if (!$wasWritten) {
             // maybe there's no folder on file system?
 
             if (!is_dir($this->savePath)) {
                 Directory::mkdir($this->savePath, 0755);
-                $wasWritten = !(file_put_contents("{$this->savePath}{$sessionid}.txt", $sessiondata) === false);
+                $wasWritten = !(file_put_contents("{$this->savePath}{$id}.txt", $data) === false);
             }
         }
 
@@ -107,13 +107,13 @@ class File implements SessionHandlerInterface
     }
 
     /**
-     * @param string $sessionid
+     * @param string $id
      *
      * @return bool
      */
-    public function destroy($sessionid)
+    public function destroy(string $id): bool
     {
-        $file = "{$this->savePath}{$sessionid}.txt";
+        $file = "{$this->savePath}{$id}.txt";
         if (file_exists($file)) {
             unlink($file);
         }
@@ -122,19 +122,27 @@ class File implements SessionHandlerInterface
     }
 
     /**
-     * @param int $maxlifetime
+     * @param int $max_lifetime
      *
-     * @return bool
+     * @return int|false
      */
-    public function gc($maxlifetime)
+    public function gc(int $max_lifetime): int | false
     {
-        foreach (glob("{$this->savePath}*") as $file) {
-            if (filemtime($file) + $maxlifetime < time() && file_exists($file)) {
-                unlink($file);
+		$list = glob("{$this->savePath}*");
+
+		if ($list === false) {
+			return false;
+		}
+
+		$counter = 0;
+
+        foreach ($list as $file) {
+            if (filemtime($file) + $max_lifetime < time() && file_exists($file) && unlink($file)) {
+				$counter++;
             }
         }
 
-        return true;
+        return $counter;
     }
 
 }

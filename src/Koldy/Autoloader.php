@@ -15,23 +15,23 @@ class Autoloader
 {
 
     /**
-     * @var string
+     * @var string|null
      */
-    private static $directory = null;
+    private static string | null $directory = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    private static $prefix = null;
+    private static string | null $prefix = null;
 
     /**
-     * @var int
+     * @var int|null
      */
-    private static $prefixLength = null;
+    private static int | null $prefixLength = null;
 
-    /**
-     * @param string $baseDirectory Base directory where the source files are located.
-     */
+	/**
+	 * @param string|null $baseDirectory Base directory where the source files are located.
+	 */
     public static function init(string $baseDirectory = null)
     {
         if (static::$directory === null || $baseDirectory !== null) {
@@ -67,7 +67,7 @@ class Autoloader
      */
     public static function autoload(string $className): void
     {
-        if (0 === strpos($className, static::$prefix)) {
+        if (str_starts_with($className, static::$prefix)) {
             $parts = explode('\\', substr($className, static::$prefixLength));
             $filepath = static::$directory . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts) . '.php';
 

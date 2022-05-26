@@ -5,18 +5,18 @@
 	"keywords": [
 		"framework"
 	],
-	"homepage": "http://koldy.net",
+	"homepage": "https://koldy.net",
 	"license": "MIT",
 	"authors": [
 		{
 			"name": "Vlatko Koudela",
 			"email": "vlatko@koldy.net",
-			"homepage": "http://vlatko.koudela.org",
+			"homepage": "https://vlatko.koudela.org",
 			"role": "Developer"
 		}
 	],
 	"require": {
-		"php": ">=7.3.0",
+		"php": ">=8.1",
 		"ext-pdo": "*",
 		"ext-mbstring": "*",
 		"ext-memcached": "*",
@@ -24,7 +24,8 @@
 		"ext-json": "*",
 		"ext-curl": "*",
 		"ext-iconv": "*",
-		"ext-ctype": "*"
+		"ext-ctype": "*",
+		"ext-bcmath": "*"
 	},
 	"autoload": {
 		"psr-4": {

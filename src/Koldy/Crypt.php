@@ -12,7 +12,7 @@ use Koldy\Crypt\MalformedException;
 class Crypt
 {
 
-    protected const DEFAULT_METHOD = 'aes-256-cbc'; // will be used if it's not set in config
+    protected const DEFAULT_METHOD = 'aes-256-cbc'; // this one will be used if it's not set in application config
 
     /**
      * @return string
@@ -21,7 +21,7 @@ class Crypt
      */
     final protected static function getMethod(): string
     {
-        return Application::getConfig('application')->getArrayItem('security', 'openssl_default_method', self::DEFAULT_METHOD);
+        return Application::getConfig('application')->getArrayItem('security', 'openssl_default_method') ?? self::DEFAULT_METHOD;
     }
 
     /**

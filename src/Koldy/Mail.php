@@ -57,7 +57,7 @@ class Mail
         }
 
         $key = $adapter ?? static::$firstKey;
-        $configArray = $config->get($key, []);
+        $configArray = $config->get($key) ?? [];
 
         if (($configArray['enabled'] ?? false) === true) {
             if (isset($configArray['module'])) {
