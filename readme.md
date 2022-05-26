@@ -22,6 +22,12 @@ The main goal of this framework is to have MVC PHP framework which is simple, ea
 
 Documentation is available on [koldy.net](https://koldy.net).
 
+## Related packages
+
+| Composer package                                      | description                                                |
+|-------------------------------------------------------|------------------------------------------------------------|
+| [koldy/phpmailer](https://github.com/koldy/phpmailer) | Use this package for PHPMailer integration in your project |
+
 ## Licence
 
 Open sourced and published under [MIT licence](http://opensource.org/licenses/MIT).
