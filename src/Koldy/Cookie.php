@@ -147,7 +147,7 @@ class Cookie
     public static function delete(string $name, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null, ?string $samesite = null): void
     {
 	    $options = [
-		    'expires' => $expire ?? 0,
+		    'expires' => time() - 3600 * 24,
 		    'path' => $path ?? '/',
 		    'domain' => $domain ?? '',
 		    'secure' => $secure ?? false,
@@ -158,7 +158,7 @@ class Cookie
 		    $options['samesite'] = $samesite;
 	    }
 
-        setcookie($name, '', time() - 3600 * 24, $options);
+        setcookie($name, '', $options);
     }
 
 }
