@@ -144,7 +144,7 @@ class Message
                 foreach ($data as $key => $value) {
                     if ($value === null || is_scalar($value)) {
                         if ($value !== null) {
-                            $return = str_replace("{{$key}}", $value, $return);
+                            $return = str_replace("{{$key}}", (string)$value, $return);
                         }
                     } else {
                         throw new ValidatorException("Parameters for validator error message contains non-primitive value in key={$key}");
