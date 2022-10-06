@@ -3,6 +3,7 @@
 namespace Koldy\Db\Query;
 
 use Generator;
+use InvalidArgumentException;
 use stdClass;
 use Koldy\Db\{
   Where, Query, Expr
@@ -205,6 +206,46 @@ class Select extends Where
         return $this;
     }
 
+	/**
+	 * Removes the field that was already added to Select statement
+	 *
+	 * @param string|null $field
+	 * @param string|null $as
+	 *
+	 * @return Select
+	 */
+	public function removeField(string $field = null, string $as = null): Select
+	{
+		if ($field === null && $as === null) {
+			throw new InvalidArgumentException('Received null for parameter 1 and 2; removeField() method must be called with at least one parameter or both');
+		}
+
+		$count = count($this->fields);
+
+		for ($index = null, $i = null; $i < $count && $index == null; $i++) {
+			if ($field !== null && $as !== null) {
+				if ($this->fields[$i]['name'] === $field && $this->fields[$i]['as'] === $as) {
+					$index = $i;
+				}
+			} else if ($field !== null && $as === null) {
+				if ($this->fields[$i]['name'] === $field) {
+					$index = $i;
+				}
+			} else if ($field === null && $as !== null) {
+				if ($this->fields[$i]['as'] === $as) {
+					$index = $i;
+				}
+			}
+		}
+
+		if ($index !== null) {
+			unset($this->fields[$i]);
+			$this->fields = array_values($this->fields);
+		}
+
+		return $this;
+	}
+
     /**
      * Add fields to fetch by passing array of fields
      *
@@ -271,6 +312,31 @@ class Select extends Where
         $this->groupBy = [];
         return $this;
     }
+
+	/**
+	 * Removes previously set field through groupBy() method
+	 *
+	 * @param string $field
+	 *
+	 * @return Select
+	 */
+	public function removeGroupBy(string $field): Select
+	{
+		$count = count($this->groupBy);
+
+		for ($index = null, $i = null; $i < $count && $index == null; $i++) {
+			if ($this->groupBy[$i]['field'] === $field) {
+				$index = $i;
+			}
+		}
+
+		if ($index !== null) {
+			unset($this->groupBy[$i]);
+			$this->groupBy = array_values($this->groupBy);
+		}
+
+		return $this;
+	}
 
     /**
      * Add HAVING to your SELECT query
@@ -355,6 +421,31 @@ class Select extends Where
         $this->orderBy = [];
         return $this;
     }
+
+	/**
+	 * Removes the order by directive by previously set field through orderBy() method
+	 *
+	 * @param string $field
+	 *
+	 * @return Select
+	 */
+	public function removeOrderBy(string $field): Select
+	{
+		$count = count($this->orderBy);
+
+		for ($index = null, $i = null; $i < $count && $index == null; $i++) {
+			if ($this->orderBy[$i]['field'] === $field) {
+				$index = $i;
+			}
+		}
+
+		if ($index !== null) {
+			unset($this->orderBy[$i]);
+			$this->orderBy = array_values($this->orderBy);
+		}
+
+		return $this;
+	}
 
     /**
      * Set the LIMIT on query results
