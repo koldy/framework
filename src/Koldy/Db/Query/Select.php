@@ -222,7 +222,7 @@ class Select extends Where
 
 		$count = count($this->fields);
 
-		for ($index = null, $i = null; $i < $count && $index == null; $i++) {
+		for ($index = null, $i = 0; $i < $count && $index === null; $i++) {
 			if ($field !== null && $as !== null) {
 				if ($this->fields[$i]['name'] === $field && $this->fields[$i]['as'] === $as) {
 					$index = $i;
@@ -324,7 +324,7 @@ class Select extends Where
 	{
 		$count = count($this->groupBy);
 
-		for ($index = null, $i = null; $i < $count && $index == null; $i++) {
+		for ($index = null, $i = 0; $i < $count && $index === null; $i++) {
 			if ($this->groupBy[$i]['field'] === $field) {
 				$index = $i;
 			}
@@ -433,7 +433,7 @@ class Select extends Where
 	{
 		$count = count($this->orderBy);
 
-		for ($index = null, $i = null; $i < $count && $index == null; $i++) {
+		for ($index = null, $i = 0; $i < $count && $index === null; $i++) {
 			if ($this->orderBy[$i]['field'] === $field) {
 				$index = $i;
 			}
