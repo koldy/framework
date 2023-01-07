@@ -19,6 +19,7 @@ class Request
     public const POST = 'POST';
     public const PUT = 'PUT';
     public const DELETE = 'DELETE';
+    public const HEAD = 'HEAD';
 
     /**
      * @var string
@@ -377,6 +378,7 @@ class Request
 
             case self::PUT:
             case self::DELETE:
+            case self::HEAD:
                 if (!$this->hasOption(CURLOPT_CUSTOMREQUEST)) {
                     $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
                 }

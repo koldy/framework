@@ -357,7 +357,7 @@ class Util
 
         $s = str_replace(' ', '-', $s);
 
-        while (strpos($s, '--') !== false) {
+        while (str_contains($s, '--')) {
             $s = str_replace('--', '-', $s);
         }
 

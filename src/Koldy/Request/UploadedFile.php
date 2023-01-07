@@ -8,42 +8,24 @@ use Koldy\Security\Exception as SecurityException;
 class UploadedFile
 {
 
-	/**
-	 * @var string
-	 */
-	protected $name;
+	protected string $name;
 
-	/**
-	 * @var string
-	 */
-	protected $mimeType;
+	protected string $mimeType;
 
 	/**
 	 * Mime type detected by mime_content_type()
 	 *
 	 * @var string|null
 	 */
-	protected $detectedMimeType = null;
+	protected string|null $detectedMimeType = null;
 
-	/**
-	 * @var int
-	 */
-	protected $size;
+	protected int $size;
 
-	/**
-	 * @var string
-	 */
-	protected $tmpName;
+	protected string $tmpName;
 
-	/**
-	 * @var int
-	 */
-	protected $errorCode;
+	protected int $errorCode;
 
-	/**
-	 * @var string|null
-	 */
-	protected $location = null;
+	protected string|null $location = null;
 
 	/**
 	 * UploadedFile constructor.
@@ -83,7 +65,7 @@ class UploadedFile
 	 * Get the file's extension, lowercase. If extension can't be detected (for example, files that has no dot in name),
 	 * you'll get null back.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getExtension(): ?string
 	{
@@ -109,7 +91,12 @@ class UploadedFile
 		}
 
 		if (function_exists('mime_content_type')) {
-			$this->detectedMimeType = mime_content_type($this->location ?? $this->tmpName);
+			if (($mimeType = mime_content_type($this->location ?? $this->tmpName)) !== false) {
+				$this->detectedMimeType = $mimeType;
+			} else {
+				// unable to detect the real mime type based on content
+				$this->detectedMimeType = $this->mimeType;
+			}
 		} else {
 			$this->detectedMimeType = $this->mimeType;
 		}
@@ -141,7 +128,7 @@ class UploadedFile
 	 * Get the error code of uploaded file (the "error" information from $_FILES array) - this method will return null
 	 * if there's no upload error.
 	 *
-	 * @return int
+	 * @return int|null
 	 */
 	public function getErrorCode(): ?int
 	{
@@ -174,7 +161,7 @@ class UploadedFile
 	}
 
 	/**
-	 * Get's the PHP's error code; returns null if there's no error
+	 * Get the PHP's error code; returns null if there's no error
 	 *
 	 * @return int|null
 	 */
@@ -243,7 +230,7 @@ class UploadedFile
 				throw new Exception("Unable to move uploaded file {$this->name} from {$this->tmpName} to {$to}");
 			}
 		} else {
-			// every other move should will be done with rename()
+			// every other move should be done with rename()
 			if (rename($this->location, $to) === false) {
 				throw new Exception("Unable to move uploaded file {$this->name} from {$this->location} to {$to}");
 			}
@@ -259,7 +246,7 @@ class UploadedFile
 	 */
 	public function isImage(): bool
 	{
-		return substr($this->getMimeType(), 0, 5) === 'image';
+		return str_starts_with($this->getMimeType(), 'image');
 	}
 
 }

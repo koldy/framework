@@ -12,22 +12,22 @@ use Koldy\Filesystem\Exception as FilesystemException;
 class Directory
 {
 
-    /**
-     * Get the list of all files and folders from the given folder
-     *
-     * @param string $path the directory path to read
-     * @param string $filter [optional] regex for filtering the list
-     *
-     * @return array assoc; the key is full path of the file and value is only file name
-     * @throws FilesystemException
-     * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
-     */
+	/**
+	 * Get the list of all files and folders from the given folder
+	 *
+	 * @param string $path the directory path to read
+	 * @param string|null $filter [optional] regex for filtering the list
+	 *
+	 * @return array assoc; the key is full path of the file and value is only file name
+	 * @throws Exception
+	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
+	 */
     public static function read(string $path, string $filter = null): array
     {
         if (is_dir($path) && $handle = opendir($path)) {
             $files = [];
 
-            if (substr($path, -1) != '/') {
+            if (!str_ends_with($path, '/')) {
                 $path .= '/';
             }
 
@@ -36,7 +36,7 @@ class Directory
                     if ($filter === null || preg_match($filter, $entry)) {
                         $fullPath = $path . $entry;
 
-                        if (substr($fullPath, 0, 1) == '.') {
+                        if (str_starts_with($fullPath, '.')) {
                             $fullPath = stream_resolve_include_path($path . $entry);
                         }
 
@@ -51,23 +51,23 @@ class Directory
         }
     }
 
-    /**
-     * Get the list of all files in in given folder, but with no subdirectories
-     *
-     * @param string $path the directory path to read
-     * @param string $filter [optional] regex for filtering the list
-     *
-     * @return array assoc; the key is full path of the file and value is only file name
-     * @throws FilesystemException
-     * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
-     */
+	/**
+	 * Get the list of all files in in given folder, but with no subdirectories
+	 *
+	 * @param string $path the directory path to read
+	 * @param string|null $filter [optional] regex for filtering the list
+	 *
+	 * @return array assoc; the key is full path of the file and value is only file name
+	 * @throws Exception
+	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
+	 */
     public static function readFiles(string $path, string $filter = null): array
     {
         if (is_dir($path) && $handle = opendir($path)) {
             $files = [];
 
             // append slash if path doesn't contain slash
-            if (substr($path, -1) != '/') {
+            if (!str_ends_with($path, '/')) {
                 $path .= '/';
             }
 
@@ -76,7 +76,7 @@ class Directory
                     if ($filter === null || preg_match($filter, $entry)) {
                         $fullPath = $path . $entry;
 
-                        if (substr($fullPath, 0, 1) == '.') {
+                        if (str_starts_with($fullPath, '.')) {
                             $fullPath = stream_resolve_include_path($path . $entry);
                         }
 
@@ -91,23 +91,23 @@ class Directory
         }
     }
 
-    /**
-     * Get the list of all only files from the given folder and its sub-folders
-     *
-     * @param string $path the directory path to read
-     * @param string $filter [optional] regex for filtering the list
-     *
-     * @return array assoc; the key is full path of the file and value is only file name
-     * @throws FilesystemException
-     * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
-     */
+	/**
+	 * Get the list of all only files from the given folder and its sub-folders
+	 *
+	 * @param string $path the directory path to read
+	 * @param string|null $filter [optional] regex for filtering the list
+	 *
+	 * @return array assoc; the key is full path of the file and value is only file name
+	 * @throws Exception
+	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
+	 */
     public static function readFilesRecursive(string $path, string $filter = null): array
     {
         if (is_dir($path) && $handle = opendir($path)) {
             $files = [];
 
             // append slash if path doesn't contain slash
-            if (substr($path, -1) != '/') {
+            if (!str_ends_with($path, '/')) {
                 $path .= '/';
             }
 
@@ -117,7 +117,7 @@ class Directory
                         if ($filter === null || preg_match($filter, $entry)) {
                             $fullPath = $path . $entry;
 
-                            if (substr($fullPath, 0, 1) == '.') {
+                            if (str_starts_with($fullPath, '.')) {
                                 $fullPath = stream_resolve_include_path($path . $entry);
                             }
 

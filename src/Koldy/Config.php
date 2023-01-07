@@ -222,7 +222,7 @@ class Config
     }
 
 	/**
-	 * Gets the value for requested key in the confi
+	 * Gets the value for requested key in the config
 	 *
 	 * @param string $key
 	 *

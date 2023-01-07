@@ -24,9 +24,9 @@ class Mail
     /**
      * First config key in configs/mail.php
      *
-     * @var string
+     * @var string|null
      */
-    protected static $firstKey = null;
+    protected static string|null $firstKey = null;
 
     /**
      * Get mail config

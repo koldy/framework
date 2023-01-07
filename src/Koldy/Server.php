@@ -27,7 +27,7 @@ class Server
             return implode(', ', $a);
         } else {
             $os = strtolower(PHP_OS);
-            if (strpos($os, 'win') === false) {
+            if (!str_contains($os, 'win')) {
                 if (@file_exists('/proc/loadavg') && @is_readable('/proc/loadavg')) {
                     $load = file_get_contents('/proc/loadavg');
                     $load = explode(' ', $load);
