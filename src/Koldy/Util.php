@@ -2,6 +2,10 @@
 
 namespace Koldy;
 
+use DateTime;
+use DateTimeZone;
+use Exception;
+
 /**
  * This class contains some common functions that are helpful in many projects.
  */
@@ -460,4 +464,18 @@ class Util
         return implode('/', $relPath);
     }
 
+	/**
+	 * This method exists because gmdate('Y-m-d H:i:s.u') doesn't return milliseconds. This method creates a DateTime
+	 * with milliseconds, so you can format your current time with "Y-m-d H:i:s.u"
+	 *
+	 * @param string|null $format  default is "Y-m-d H:i:s.u"
+	 * @param string|null $timezone  default is "UTC"
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	public static function now(string $format = null, string $timezone = null): string
+	{
+		return (new DateTime('now', new DateTimeZone($timezone ?? 'UTC')))->format($format ?? 'Y-m-d H:i:s.u');
+	}
 }
