@@ -521,16 +521,27 @@ class Application
         return static::$cliScriptPath;
     }
 
-    /**
-     * Get the CLI script name
-     *
-     * @return string
-     * @example if you call "php cli.php backup", this method will return "backup" only
-     */
-    public static function getCliName(): string
-    {
-        return static::$cliName;
-    }
+	/**
+	 * Get the CLI script name
+	 *
+	 * @return string
+	 * @example if you call "php cli.php backup", this method will return "backup" only
+	 * @example if you call "./bin/phpunit --configuration phpunit.xml", this method will return "./bin/phpunit --configuration phpunit.xml"
+	 */
+	public static function getCliName(): string
+	{
+		if (is_string(static::$cliName)) {
+			return static::$cliName;
+		}
+
+		global $argv;
+
+		if (count($argv) > 0) {
+			return implode(' ', $argv);
+		}
+
+		return '[unknown CLI]';
+	}
 
     /**
      * Is this CLI request?
