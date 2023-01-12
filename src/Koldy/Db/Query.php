@@ -61,9 +61,9 @@ class Query implements Stringable
      * @param string $query
      * @param Bindings|array|null $bindings
      *
-     * @return Query
+     * @return static
      */
-    public function setQuery(string $query, Bindings | array | null $bindings = null): Query
+    public function setQuery(string $query, Bindings | array | null $bindings = null): static
     {
         $this->query = $query;
 
@@ -132,9 +132,9 @@ class Query implements Stringable
     /**
      * @param string $adapter
      *
-     * @return Query
+     * @return static
      */
-    public function setAdapterConnection(string $adapter): Query
+    public function setAdapterConnection(string $adapter): static
     {
         $this->adapter = $adapter;
         return $this;
@@ -157,9 +157,9 @@ class Query implements Stringable
     /**
      * @param Bindings|array $bindings
      *
-     * @return Query
+     * @return static
      */
-    public function setBindings(Bindings | array $bindings): Query
+    public function setBindings(Bindings | array $bindings): static
     {
 	    if (is_array($bindings)) {
 		    $this->bindings = new Bindings();

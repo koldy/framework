@@ -63,9 +63,9 @@ class ResultSet extends Select
     /**
      * @param string $modelClass
      *
-     * @return ResultSet
+     * @return static
      */
-    public function setModelClass(string $modelClass): ResultSet
+    public function setModelClass(string $modelClass): static
     {
         $this->modelClass = $modelClass;
         return $this;
@@ -85,9 +85,9 @@ class ResultSet extends Select
      *
      * @param Select $query
      *
-     * @return ResultSet
+     * @return static
      */
-    public function setCountQuery(Select $query): ResultSet
+    public function setCountQuery(Select $query): static
     {
         $this->countQuery = $query;
         return $this;
@@ -148,9 +148,9 @@ class ResultSet extends Select
      *
      * @param array $fields
      *
-     * @return ResultSet
+     * @return static
      */
-    public function setSearchFields(array $fields): ResultSet
+    public function setSearchFields(array $fields): static
     {
         $this->searchFields = $fields;
         return $this;
@@ -165,9 +165,9 @@ class ResultSet extends Select
     }
 
     /**
-     * @return ResultSet
+     * @return static
      */
-    public function resetGroupByOnCount(): self
+    public function resetGroupByOnCount(): static
     {
         $this->resetGroupBy = true;
         return $this;
@@ -178,9 +178,9 @@ class ResultSet extends Select
      *
      * @param string $searchText
      *
-     * @return ResultSet
+     * @return static
      */
-    public function search(string $searchText): ResultSet
+    public function search(string $searchText): static
     {
         $this->searchTerm = $searchText;
         return $this;

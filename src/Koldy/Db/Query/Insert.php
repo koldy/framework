@@ -20,7 +20,7 @@ class Insert
     /**
      * The table on which insert will be executed
      *
-     * @var string
+     * @var string|null
      */
     protected string | null $table = null;
 
@@ -89,9 +89,9 @@ class Insert
      *
      * @param string $table
      *
-     * @return Insert
+     * @return static
      */
-    public function into(string $table): Insert
+    public function into(string $table): static
     {
         $this->table = $table;
         return $this;
@@ -102,9 +102,9 @@ class Insert
      *
      * @param string $field
      *
-     * @return Insert
+     * @return static
      */
-    public function field(string $field): Insert
+    public function field(string $field): static
     {
         $this->fields[] = $field;
         return $this;
@@ -115,9 +115,9 @@ class Insert
      *
      * @param array $fields
      *
-     * @return Insert
+     * @return static
      */
-    public function fields(array $fields): Insert
+    public function fields(array $fields): static
     {
         $this->fields = array_values($fields);
         return $this;
@@ -128,9 +128,9 @@ class Insert
      *
      * @param array $data array of values in row
      *
-     * @return Insert
+     * @return static
      */
-    public function add(array $data): Insert
+    public function add(array $data): static
     {
         if (!isset($data[0]) && count($this->fields) == 0) {
             $this->fields(array_keys($data));
@@ -165,9 +165,9 @@ class Insert
      *
      * @param array $rows
      *
-     * @return Insert
+     * @return static
      */
-    public function addRows(array $rows): Insert
+    public function addRows(array $rows): static
     {
         foreach ($rows as $row) {
             $this->add($row);
@@ -180,9 +180,9 @@ class Insert
      *
      * @param string|Select $selectQuery
      *
-     * @return Insert
+     * @return static
      */
-    public function selectFrom(string|Select $selectQuery): Insert
+    public function selectFrom(string|Select $selectQuery): static
     {
         $this->select = $selectQuery;
         return $this;

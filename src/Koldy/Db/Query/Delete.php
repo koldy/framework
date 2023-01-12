@@ -42,9 +42,9 @@ class Delete extends Where
     /**
      * @param string $table
      *
-     * @return Delete
+     * @return static
      */
-    public function from(string $table): Delete
+    public function from(string $table): static
     {
         $this->table = $table;
         return $this;

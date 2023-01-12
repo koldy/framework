@@ -54,9 +54,9 @@ class Select extends Where
      * @param string|null $alias
      * @param string|array|null $field one field as string or more fields as array or just '*'
      *
-     * @return Select
+     * @return static
      */
-    public function from(string $table, string $alias = null, string | array | null $field = null): Select
+    public function from(string $table, string $alias = null, string | array | null $field = null): static
     {
         $this->from[] = [
           'table' => $table,
@@ -84,10 +84,10 @@ class Select extends Where
 	 * @param string|null $operator
 	 * @param string|null $secondTableField
 	 *
-	 * @return Select
+	 * @return static
 	 * @example innerJoin('user u', 'u.id', '=', 'r.user_role_id')
 	 */
-    public function innerJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
+    public function innerJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'INNER JOIN',
@@ -107,14 +107,14 @@ class Select extends Where
 	 * @param string|null $operator
 	 * @param string|null $secondTableField
 	 *
-	 * @return Select
+	 * @return static
 	 * @example leftJoin('user u', 'u.id', '=', 'r.user_role_id')
 	 * @example leftJoin('user u', [
 	 *   ['u.id', '=', 'r.user_role_id'],
 	 *   ['u.group_id', '=', 2]
 	 * ])
 	 */
-    public function leftJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
+    public function leftJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'LEFT JOIN',
@@ -134,10 +134,10 @@ class Select extends Where
 	 * @param string|null $operator
 	 * @param string|null $secondTableField
 	 *
-	 * @return Select
+	 * @return static
 	 * @example rightJoin('user u', 'u.id', '=', 'r.user_role_id')
 	 */
-    public function rightJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
+    public function rightJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'RIGHT JOIN',
@@ -157,9 +157,9 @@ class Select extends Where
 	 * @param string|null $operator
 	 * @param string|null $secondTableField
 	 *
-	 * @return Select
+	 * @return static
 	 */
-    public function fullJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): Select
+    public function fullJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'FULL JOIN',
@@ -179,11 +179,11 @@ class Select extends Where
 	 * @param string $operator
 	 * @param string $secondTableField
 	 *
-	 * @return Select
+	 * @return static
 	 * @example join('user u', 'u.id', '=', 'r.user_role_id')
 	 * @see \Koldy\Db\Query\Select::innerJoin()
 	 */
-    public function join(string $table, string | array $firstTableField, string $operator, string $secondTableField): Select
+    public function join(string $table, string | array $firstTableField, string $operator, string $secondTableField): static
     {
         return $this->innerJoin($table, $firstTableField, $operator, $secondTableField);
     }
@@ -194,9 +194,9 @@ class Select extends Where
 	 * @param string $field
 	 * @param string|null $as
 	 *
-	 * @return Select
+	 * @return static
 	 */
-    public function field(string $field, string $as = null): Select
+    public function field(string $field, string $as = null): static
     {
         $this->fields[] = [
           'name' => $field,
@@ -212,9 +212,9 @@ class Select extends Where
 	 * @param string|null $field
 	 * @param string|null $as
 	 *
-	 * @return Select
+	 * @return static
 	 */
-	public function removeField(string $field = null, string $as = null): Select
+	public function removeField(string $field = null, string $as = null): static
 	{
 		if ($field === null && $as === null) {
 			throw new InvalidArgumentException('Received null for parameter 1 and 2; removeField() method must be called with at least one parameter or both');
@@ -252,9 +252,9 @@ class Select extends Where
      * @param array $fields
      * @param null|string $alias
      *
-     * @return Select
+     * @return static
      */
-    public function fields(array $fields, string $alias = null): Select
+    public function fields(array $fields, string $alias = null): static
     {
         $alias = ($alias === null) ? '' : "{$alias}.";
 
@@ -271,9 +271,9 @@ class Select extends Where
 
     /**
      * Reset all fields that will be fetched
-     * @return Select
+     * @return static
      */
-    public function resetFields(): Select
+    public function resetFields(): static
     {
         $this->fields = [];
         return $this;
@@ -293,9 +293,9 @@ class Select extends Where
      *
      * @param string $field
      *
-     * @return Select
+     * @return static
      */
-    public function groupBy(string $field): Select
+    public function groupBy(string $field): static
     {
         $this->groupBy[] = [
           'field' => $field
@@ -305,9 +305,9 @@ class Select extends Where
 
     /**
      * Reset GROUP BY (remove GROUP BY)
-     * @return Select
+     * @return static
      */
-    public function resetGroupBy(): Select
+    public function resetGroupBy(): static
     {
         $this->groupBy = [];
         return $this;
@@ -318,9 +318,9 @@ class Select extends Where
 	 *
 	 * @param string $field
 	 *
-	 * @return Select
+	 * @return static
 	 */
-	public function removeGroupBy(string $field): Select
+	public function removeGroupBy(string $field): static
 	{
 		$count = count($this->groupBy);
 
@@ -345,9 +345,9 @@ class Select extends Where
      * @param string|null $operator
      * @param int|float|string|bool|Expr|null $value
      *
-     * @return Select
+     * @return static
      */
-    public function having(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): Select
+    public function having(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): static
     {
         $this->having[] = [
           'link' => 'AND',
@@ -366,9 +366,9 @@ class Select extends Where
      * @param string|null $operator
      * @param int|float|string|bool|Expr|null $value
      *
-     * @return Select
+     * @return static
      */
-    public function orHaving(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): Select
+    public function orHaving(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): static
     {
         $this->having[] = [
           'link' => 'OR',
@@ -382,9 +382,9 @@ class Select extends Where
 
     /**
      * Reset HAVING statement
-     * @return Select
+     * @return static
      */
-    public function resetHaving(): Select
+    public function resetHaving(): static
     {
         $this->having = [];
         return $this;
@@ -396,9 +396,9 @@ class Select extends Where
 	 * @param string $field
 	 * @param string|null $direction
 	 *
-	 * @return Select
+	 * @return static
 	 */
-    public function orderBy(string $field, string $direction = null): Select
+    public function orderBy(string $field, string $direction = null): static
     {
         if ($direction === null) {
             $direction = 'ASC';
@@ -414,9 +414,9 @@ class Select extends Where
 
     /**
      * Reset ORDER BY (remove ORDER BY)
-     * @return Select
+     * @return static
      */
-    public function resetOrderBy(): Select
+    public function resetOrderBy(): static
     {
         $this->orderBy = [];
         return $this;
@@ -427,9 +427,9 @@ class Select extends Where
 	 *
 	 * @param string $field
 	 *
-	 * @return Select
+	 * @return static
 	 */
-	public function removeOrderBy(string $field): Select
+	public function removeOrderBy(string $field): static
 	{
 		$count = count($this->orderBy);
 
@@ -453,9 +453,9 @@ class Select extends Where
      * @param int $start
      * @param int $howMuch
      *
-     * @return Select
+     * @return static
      */
-    public function limit(int $start, int $howMuch): Select
+    public function limit(int $start, int $howMuch): static
     {
         $this->limit = new stdClass;
         $this->limit->start = $start;
@@ -469,18 +469,18 @@ class Select extends Where
      * @param int $number
      * @param int $limitPerPage
      *
-     * @return Select
+     * @return static
      */
-    public function page(int $number, int $limitPerPage): Select
+    public function page(int $number, int $limitPerPage): static
     {
         return $this->limit(($number - 1) * $limitPerPage, $limitPerPage);
     }
 
     /**
      * Reset LIMIT (remove the LIMIT)
-     * @return Select
+     * @return static
      */
-    public function resetLimit(): Select
+    public function resetLimit(): static
     {
         $this->limit = null;
         return $this;

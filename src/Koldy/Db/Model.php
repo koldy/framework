@@ -134,9 +134,9 @@ abstract class Model implements Stringable
      *
      * @param array $values
      *
-     * @return Model
+     * @return static
      */
-    final public function setData(array $values): Model
+    final public function setData(array $values): static
     {
         if (!is_array($this->data)) {
             $this->data = $values;
@@ -179,9 +179,9 @@ abstract class Model implements Stringable
      *
      * @param array|null $values
      *
-     * @return Model
+     * @return static
      */
-    final protected function setOriginalData(?array $values): Model
+    final protected function setOriginalData(?array $values): static
     {
         $this->originalData = $values;
         return $this;
@@ -287,13 +287,13 @@ abstract class Model implements Stringable
      *
      * @param array $data pass array of data for this model \Koldy\Db\Model
      *
-     * @return Model
+     * @return static
      * @throws Exception
      * @throws Json\Exception
      * @throws Query\Exception
      * @throws \Koldy\Exception
      */
-    public static function create(array $data): Model
+    public static function create(array $data): static
     {
         $insert = new Insert(static::getTableName(), $data, static::getAdapterConnection());
         $insert->exec();
@@ -314,12 +314,12 @@ abstract class Model implements Stringable
 	 * Reloads this model with the latest data from database. It's using primary key to fetch the data. If primary key
 	 * contains multiple columns, then all columns must be present in the model in order to refresh the data successfully.
 	 *
-	 * @return Model
+	 * @return static
 	 * @throws Exception
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function reload(): Model
+    public function reload(): static
     {
         $pk = static::$primaryKey;
 
@@ -655,13 +655,13 @@ abstract class Model implements Stringable
 	 * @param  int|float|string|null $value
 	 * @param array|null $fields
 	 *
-	 * @return Model|null null will be returned if record is not found
+	 * @return static|null null will be returned if record is not found
 	 * @throws Exception
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/models#fetchOne
 	 */
-    public static function fetchOne(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): ?Model
+    public static function fetchOne(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): ?static
     {
         $select = static::select();
 
@@ -708,14 +708,14 @@ abstract class Model implements Stringable
 	 * @param  int|float|string|null $value
 	 * @param array|null $fields
 	 *
-	 * @return Model
+	 * @return static
 	 * @throws Exception
 	 * @throws NotFoundException
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/models#fetchOne
 	 */
-    public static function fetchOneOrFail(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): Model
+    public static function fetchOneOrFail(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): static
     {
         $record = static::fetchOne($field, $value, $fields);
 
@@ -737,7 +737,7 @@ abstract class Model implements Stringable
 	 *
 	 * @param int|null $start
 	 *
-	 * @return Model[]
+	 * @return static[]
 	 *
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
@@ -825,7 +825,7 @@ abstract class Model implements Stringable
 	 * @param string|null $orderField
 	 * @param string|null $orderDirection
 	 *
-	 * @return Model[]
+	 * @return static[]
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 * @link http://www.php.net/manual/en/pdo.constants.php

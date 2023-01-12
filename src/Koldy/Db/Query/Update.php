@@ -57,7 +57,7 @@ class Update extends Where
      *
      * @return Update
      */
-    public function table(string $table): Update
+    public function table(string $table): static
     {
         $this->table = $table;
         return $this;
@@ -69,9 +69,9 @@ class Update extends Where
      * @param string $field
      * @param int|float|bool|string $value
      *
-     * @return \Koldy\Db\Query\Update
+     * @return static
      */
-    public function set(string $field, int | float | bool | string | Expr $value): Update
+    public function set(string $field, int | float | bool | string | Expr $value): static
     {
         $this->what[$field] = $value;
         return $this;
@@ -82,9 +82,9 @@ class Update extends Where
      *
      * @param array $values
      *
-     * @return \Koldy\Db\Query\Update
+     * @return static
      */
-    public function setValues(array $values): Update
+    public function setValues(array $values): static
     {
         $this->what = $values;
         return $this;
@@ -96,10 +96,10 @@ class Update extends Where
 	 * @param string $field
 	 * @param string|null $direction
 	 *
-	 * @return \Koldy\Db\Query\Update
+	 * @return static
 	 * @throws Exception
 	 */
-    public function orderBy(string $field, string $direction = null): Update
+    public function orderBy(string $field, string $direction = null): static
     {
         if ($direction === null) {
             $direction = 'ASC';
@@ -117,9 +117,9 @@ class Update extends Where
 
     /**
      * Reset ORDER BY (remove ORDER BY)
-     * @return \Koldy\Db\Query\Update
+     * @return static
      */
-    public function resetOrderBy(): Update
+    public function resetOrderBy(): static
     {
         $this->orderBy = [];
         return $this;
@@ -131,9 +131,9 @@ class Update extends Where
      * @param string $field
      * @param int $howMuch
      *
-     * @return \Koldy\Db\Query\Update
+     * @return static
      */
-    public function increment(string $field, int $howMuch = 1): Update
+    public function increment(string $field, int $howMuch = 1): static
     {
         return $this->set($field, new Expr("{$field} + {$howMuch}"));
     }
@@ -144,9 +144,9 @@ class Update extends Where
      * @param string $field
      * @param int $howMuch
      *
-     * @return \Koldy\Db\Query\Update
+     * @return static
      */
-    public function decrement(string $field, int $howMuch = 1): Update
+    public function decrement(string $field, int $howMuch = 1): static
     {
         return $this->set($field, new Expr("{$field} - {$howMuch}"));
     }

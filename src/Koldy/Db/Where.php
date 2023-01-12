@@ -72,7 +72,7 @@ class Where
      * @param mixed $valueOrOperator
      * @param mixed $value
      *
-     * @return $this
+     * @return static
      *
      * @example where('id', 2) produces WHERE id = 2
      * @example where('id', '00385') produces WHERE id = '00385'
@@ -95,7 +95,7 @@ class Where
      * @param mixed $valueOrOperator
      * @param mixed $value
      *
-     * @return $this
+     * @return static
      */
     public function orWhere(mixed $field, mixed $valueOrOperator = null, mixed $value = null): static
     {
@@ -111,7 +111,7 @@ class Where
      *
      * @param string $field
      *
-     * @return $this
+     * @return static
      */
     public function whereNull(string $field): static
     {
@@ -123,7 +123,7 @@ class Where
      *
      * @param string $field
      *
-     * @return $this
+     * @return static
      */
     public function orWhereNull(string $field): static
     {
@@ -135,7 +135,7 @@ class Where
      *
      * @param string $field
      *
-     * @return $this
+     * @return static
      */
     public function whereNotNull(string $field): static
     {
@@ -161,7 +161,7 @@ class Where
      * @param mixed $value1
      * @param mixed $value2
      *
-     * @return $this
+     * @return static
      */
     public function whereBetween(string $field, mixed $value1, mixed $value2): static
     {
@@ -175,7 +175,7 @@ class Where
      * @param mixed $value1
      * @param mixed $value2
      *
-     * @return $this
+     * @return static
      */
     public function orWhereBetween(string $field, mixed $value1, mixed $value2): static
     {
@@ -189,7 +189,7 @@ class Where
      * @param mixed $value1
      * @param mixed $value2
      *
-     * @return $this
+     * @return static
      */
     public function whereNotBetween(string $field, mixed $value1, mixed $value2): static
     {
@@ -203,7 +203,7 @@ class Where
      * @param mixed $value1
      * @param mixed $value2
      *
-     * @return $this
+     * @return static
      */
     public function orWhereNotBetween(string $field, mixed $value1, mixed $value2): static
     {
@@ -216,7 +216,7 @@ class Where
      * @param string $field
      * @param array $values
      *
-     * @return $this
+     * @return static
      */
     public function whereIn(string $field, array $values): static
     {
@@ -229,7 +229,7 @@ class Where
      * @param string $field
      * @param array $values
      *
-     * @return $this
+     * @return static
      */
     public function orWhereIn(string $field, array $values): static
     {
@@ -242,7 +242,7 @@ class Where
      * @param string $field
      * @param array $values
      *
-     * @return $this
+     * @return static
      */
     public function whereNotIn(string $field, array $values): static
     {
@@ -255,7 +255,7 @@ class Where
      * @param string $field
      * @param array $values
      *
-     * @return $this
+     * @return static
      */
     public function orWhereNotIn(string $field, array $values): static
     {
@@ -268,7 +268,7 @@ class Where
      * @param string $field
      * @param string $value
      *
-     * @return $this
+     * @return static
      */
     public function whereLike(string $field, string $value): static
     {
@@ -281,7 +281,7 @@ class Where
      * @param string $field
      * @param string $value
      *
-     * @return $this
+     * @return static
      */
     public function orWhereLike(string $field, string $value): static
     {
@@ -294,7 +294,7 @@ class Where
      * @param string $field
      * @param string $value
      *
-     * @return $this
+     * @return static
      */
     public function whereNotLike(string $field, string $value): static
     {
@@ -307,7 +307,7 @@ class Where
      * @param string $field
      * @param string $value
      *
-     * @return $this
+     * @return static
      */
     public function orWhereNotLike(string $field, string $value): static
     {
@@ -466,9 +466,9 @@ class Where
     }
 
     /**
-     * @return Where
+     * @return static
      */
-    public static function init(): Where
+    public static function init(): static
     {
         return new self();
     }

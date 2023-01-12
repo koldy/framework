@@ -44,11 +44,11 @@ trait Statement
 	/**
 	 * @param string|null $adapter
 	 *
-	 * @return Statement
+	 * @return static
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function setAdapter(string $adapter = null)
+    public function setAdapter(string $adapter = null): static
     {
         $this->adapter = $adapter ?? Db::getDefaultAdapterKey();
         return $this;
