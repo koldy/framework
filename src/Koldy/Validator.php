@@ -1361,6 +1361,36 @@ class Validator
         return null;
     }
 
+    protected function validateUuid(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    {
+        //$value = $this->getValue($parameter);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_scalar($value)) {
+            return Message::getMessage(Message::PRIMITIVE, [
+                'param' => $parameter
+            ]);
+        }
+
+        $value = trim((string)$value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (!Validate::isUUID($value)) {
+            return Message::getMessage(Message::UUID, [
+                'param' => $parameter,
+                'value' => $value
+            ]);
+        }
+
+        return null;
+    }
+
 	/**
 	 * Validate if given parameter has required value
 	 *

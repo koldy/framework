@@ -52,4 +52,41 @@ class Validate
         return (bool)preg_match('/^[a-z0-9\-]+(-[a-z0-9]+)*$/', $slug);
     }
 
+	/**
+	 * Checks if value have the correct UUID format (the 8-4-4-4-12 hex strings)
+	 *
+	 * @param string $uuid
+	 *
+	 * @return bool
+	 */
+	public static function isUUID(string $uuid): bool
+	{
+		// not using regex validator because it's slower compared to this approach
+
+		if (strlen($uuid) !== 36) {
+			return false;
+		}
+
+		// validating 8-4-4-4-12 hex format
+		$parts = explode('-', $uuid);
+
+		if (count($parts) !== 5) {
+			return false;
+		}
+
+		[$s1, $s2, $s3, $s4, $s5] = $parts;
+
+		if (strlen($s1) !== 8 || strlen($s2) !== 4 || strlen($s3) !== 4 || strlen($s4) !== 4 || strlen($s5) !== 12) {
+			return false;
+		}
+
+		foreach ($parts as $part) {
+			if (!ctype_xdigit($part)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 }

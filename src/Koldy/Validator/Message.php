@@ -44,6 +44,7 @@ class Message
     public const BOOL = 26;
     public const STARTS_WITH = 27;
     public const ENDS_WITH = 28;
+	public const UUID = 29;
 
     /**
      * Flag if this class has been initialized or not
@@ -86,7 +87,8 @@ class Message
       self::CSRF_FAILED => 'CSRF check has failed', // {param}
       self::BOOL => 'Parameter is not boolean', // {param}
       self::STARTS_WITH => 'Value should start with {startsWith}', // {param}, {value}, {startsWith}
-      self::ENDS_WITH => 'Value should end with {endsWith}' // {param}, {value}, {endsWith}
+      self::ENDS_WITH => 'Value should end with {endsWith}', // {param}, {value}, {endsWith}
+      self::UUID => 'Value doesn\'t have correct UUID format' // {param}, {value}
     ];
 
     /**
