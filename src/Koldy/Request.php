@@ -651,11 +651,20 @@ class Request
 			throw new RequestException('There are no parameters in CLI env, you might want to use Cli class instead');
 		}
 
-		return match ($_SERVER['REQUEST_METHOD']) {
-			'GET' => $_GET,
-			'POST' => $_POST,
-			default => static::getInputVars(),
-		};
+		$method = $_SERVER['REQUEST_METHOD'];
+
+		if ($method === 'GET') {
+			return $_GET;
+		} else {
+			$contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? null;
+			$isJson = $contentType == 'application/json' && static::getRawData() !== '';
+
+			if ($method === 'POST') {
+				return $isJson ? static::getDataFromJSON() : $_POST;
+			}
+
+			return $isJson ? static::getDataFromJSON() : static::getInputVars();
+		}
 	}
 
 	/**
