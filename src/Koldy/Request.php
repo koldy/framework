@@ -277,6 +277,51 @@ class Request
 	}
 
 	/**
+	 * Is this HEAD request?
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public static function isHead(): bool
+	{
+		if (!isset($_SERVER['REQUEST_METHOD'])) {
+			throw new RequestException('There is no request method type');
+		}
+
+		return $_SERVER['REQUEST_METHOD'] == 'HEAD';
+	}
+
+	/**
+	 * Is this PATCH request?
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public static function isPatch(): bool
+	{
+		if (!isset($_SERVER['REQUEST_METHOD'])) {
+			throw new RequestException('There is no request method type');
+		}
+
+		return $_SERVER['REQUEST_METHOD'] == 'PATCH';
+	}
+
+	/**
+	 * Is this OPTIONS request?
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public static function isOptions(): bool
+	{
+		if (!isset($_SERVER['REQUEST_METHOD'])) {
+			throw new RequestException('There is no request method type');
+		}
+
+		return $_SERVER['REQUEST_METHOD'] == 'OPTIONS';
+	}
+
+	/**
 	 * Get request method
 	 *
 	 * @return string
@@ -381,15 +426,11 @@ class Request
 				break;
 
 			case 'PUT':
-				if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
-					return null;
-				}
-
-				$resource = static::getInputVars();
-				break;
-
 			case 'DELETE':
-				if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+			case 'HEAD':
+			case 'PATCH':
+			case 'OPTIONS':
+				if ($_SERVER['REQUEST_METHOD'] !== $resourceName) {
 					return null;
 				}
 
@@ -640,7 +681,10 @@ class Request
 	}
 
 	/**
-	 * Get all parameters according to request method
+	 * Get all parameters according to request method; if request is made with Content-Type=application/json, it will be
+	 * detected and JSON will be parsed. If request contains that header, but the request body is empty, it'll be ignored
+	 * and standard Form Data will be taken as parameters data.
+	 *
 	 * @return array
 	 * @throws Exception
 	 * @link http://koldy.net/docs/input#all

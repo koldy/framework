@@ -46,7 +46,7 @@ class Validator
      * Enable automatic CSRF check
      *
      * @var bool
-     * @deprecated Don't rely on CSRF validation here as it's deprecated. To avoid any issues in the future, disable CSRF check in application config.
+     * @deprecated Don't rely on CSRF validation here as it's deprecated and will be removed in future releases. To avoid any issues in the future, disable CSRF check in application config.
      */
     protected bool $csrfEnabled = false;
 
@@ -58,9 +58,10 @@ class Validator
     /**
      * Validator constructor.
      *
-     * @param array $rules
-     * @param array|null $data
+     * @param array $rules - rules that will validate data
+     * @param array|null $data - the data you want to validate with a rules; if not set, data will be taken from Request::getAllParameters()
      * @throws Exception
+     * @see Request::getAllParameters()
      */
     public function __construct(array $rules, array $data = null)
     {

@@ -20,6 +20,8 @@ class Request
     public const PUT = 'PUT';
     public const DELETE = 'DELETE';
     public const HEAD = 'HEAD';
+    public const PATCH = 'PATCH';
+    public const OPTIONS = 'OPTIONS';
 
     /**
      * @var string
@@ -348,6 +350,7 @@ class Request
 
         switch ($this->getMethod()) {
             case self::POST:
+            case self::PATCH:
                 if (!$this->hasOption(CURLOPT_CUSTOMREQUEST)) {
                     $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
                 }
@@ -379,6 +382,7 @@ class Request
             case self::PUT:
             case self::DELETE:
             case self::HEAD:
+            case self::OPTIONS:
                 if (!$this->hasOption(CURLOPT_CUSTOMREQUEST)) {
                     $options[CURLOPT_CUSTOMREQUEST] = $this->getMethod();
                 }
@@ -527,6 +531,57 @@ class Request
     public static function delete(string $url, array $params = null, array $headers = null): Response
     {
         return static::quickRequest($url, self::DELETE, $params, $headers);
+    }
+
+	/**
+	 * Make quick PATCH request
+	 *
+	 * @param string $url
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public static function patch(string $url, array $params = null, array $headers = null): Response
+    {
+        return static::quickRequest($url, self::PATCH, $params, $headers);
+    }
+
+	/**
+	 * Make quick OPTIONS request
+	 *
+	 * @param string $url
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public static function options(string $url, array $params = null, array $headers = null): Response
+    {
+        return static::quickRequest($url, self::OPTIONS, $params, $headers);
+    }
+
+	/**
+	 * Make quick HEAD request
+	 *
+	 * @param string $url
+	 * @param array|null $params
+	 * @param array|null $headers
+	 *
+	 * @return Response
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws \Koldy\Exception
+	 */
+    public static function head(string $url, array $params = null, array $headers = null): Response
+    {
+        return static::quickRequest($url, self::HEAD, $params, $headers);
     }
 
 	/**
