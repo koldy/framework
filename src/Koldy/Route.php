@@ -33,10 +33,10 @@ class Route
      *
      * @param string|int $whatVar
      *
-     * @return string
+     * @return string|null
      * @throws Exception
      */
-    public static function getVar(string|int $whatVar): string
+    public static function getVar(string|int $whatVar): ?string
     {
         return Application::route()->getVar($whatVar);
     }
