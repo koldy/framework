@@ -2,6 +2,8 @@
 
 namespace Koldy\Db\Query;
 
+use Koldy\Db\Expr;
+
 /**
  * Class Bindings is used for easier parameter binding within the SQL statements.
  * It's using PDO's bindValue() method. To keep everything simple, we don't use any
@@ -86,15 +88,21 @@ class Bindings
 	}
 
 	/**
-	 * @param string $parameter
+	 * @param string|Expr $parameter
 	 * @param $value
 	 * @param int|null $typeConstant
 	 *
 	 * @return string
 	 */
-	public function makeAndSet(string $parameter, $value, int $typeConstant = null): string
+	public function makeAndSet(string | Expr $parameter, $value, int $typeConstant = null): string
 	{
-		$bindName = static::make($parameter);
+		if ($parameter instanceof Expr) {
+			// something complex in the field name, so create generic name instead of trying to create human-friendly-readable name
+			$bindName = 'expr' . static::getNextIndex();
+		} else {
+			$bindName = static::make($parameter);
+		}
+
 		$this->bindings[$bindName] = new Bind($bindName, $value, $typeConstant);
 		return $bindName;
 	}
