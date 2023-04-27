@@ -35,12 +35,12 @@ class Select extends Where
     protected stdClass | null $limit = null;
 
     /**
-     * @param string|null $table
+     * @param string|self|null $table
      * @param string|null $tableAlias
      *
      * @link http://koldy.net/docs/database/query-builder#select
      */
-    public function __construct(string $table = null, string $tableAlias = null)
+    public function __construct(string | self $table = null, string $tableAlias = null)
     {
         if ($table !== null) {
             $this->from($table, $tableAlias);
@@ -50,13 +50,13 @@ class Select extends Where
     /**
      * Set the table FROM which fields will be fetched
      *
-     * @param string $table
+     * @param string|self $table
      * @param string|null $alias
      * @param string|array|null $field one field as string or more fields as array or just '*'
      *
      * @return static
      */
-    public function from(string $table, string $alias = null, string | array | null $field = null): static
+    public function from(string | self $table, string $alias = null, string | array | null $field = null): static
     {
         $this->from[] = [
           'table' => $table,
@@ -523,10 +523,10 @@ class Select extends Where
 
         $query .= "\nFROM";
         foreach ($this->from as $from) {
-            if ($from['table'] instanceof static) {
-                /* @var $subSelect \Koldy\Db\Query\Select */
+            if ($from['table'] instanceof self || $from['table'] instanceof static) {
+                /* @var self|static $subSelect */
                 $subSelect = $from['table'];
-                $subSql = $subSelect->__toString();
+                $subSql = $subSelect->getSQL();
                 $subSql = str_replace("\n", "\n\t", $subSql);
                 $query .= " (\n\t{$subSql}\n) {$from['alias']}\n";
 
