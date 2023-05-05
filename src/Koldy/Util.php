@@ -478,4 +478,47 @@ class Util
 	{
 		return (new DateTime('now', new DateTimeZone($timezone ?? 'UTC')))->format($format ?? 'Y-m-d H:i:s.u');
 	}
+
+	/**
+	 * Parses given multipart content into array of params
+	 *
+	 * @param string $input the whole multipart content with boundary marks, that one that can be got with file_get_contents('php://input')
+	 * @param string $contentType pass content type header, such as information from $_SERVER['CONTENT_TYPE']
+	 *
+	 * @return array
+	 * @link https://stackoverflow.com/questions/5483851/manually-parse-raw-multipart-form-data-data-with-php/5488449#5488449
+	 */
+	public static function parseMultipartContent(string $input, string $contentType): array
+	{
+		$data = [];
+
+		// grab multipart boundary from content type header
+		preg_match('/boundary=(.*)$/', $contentType, $matches);
+		$boundary = $matches[1];
+
+		// split content by boundary and get rid of last -- element
+		$a_blocks = preg_split("/-+$boundary/", $input);
+		array_pop($a_blocks);
+
+		// loop data blocks
+		foreach ($a_blocks as $id => $block) {
+			if (!empty($block)) {
+				// you'll have to var_dump $block to understand this and maybe replace \n or \r with a visibile char
+
+				// parse uploaded files
+				if (str_contains($block, 'application/octet-stream')) {
+					// match "name", then everything after "stream" (optional) except for prepending newlines
+					preg_match('/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s', $block, $matches);
+				} // parse all other fields
+				else {
+					// match "name" and optional value in between newline sequences
+					preg_match('/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s', $block, $matches);
+				}
+
+				$data[$matches[1]] = $matches[2] ?? '';
+			}
+		}
+
+		return $data;
+	}
 }

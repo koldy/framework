@@ -56,6 +56,13 @@ class Request
 	protected static array|null $uploadedFiles = null;
 
 	/**
+	 * The once-initialized array of parsed multipart content received through HTTP request
+	 *
+	 * @var array|null
+	 */
+	private static array|null $parsedMultipartContent = null;
+
+	/**
 	 * Get the real IP address of remote user. If you're looking for server's IP, please refer to Server::ip()
 	 *
 	 * @return string
@@ -620,7 +627,7 @@ class Request
 	 *
 	 * @example
 	 *    $params = Input::requireParams('id', 'email');
-	 *    echo $params->email;
+	 *    echo $params['email'];
 	 */
 	public static function requireParams(string ...$requiredParameters): array
 	{
@@ -668,6 +675,10 @@ class Request
 	 * @return stdClass
 	 * @throws BadRequestException
 	 * @throws Exception
+	 *
+	 * @example
+	 *    $params = Input::requireParams('id', 'email');
+	 *    echo $params->email;
 	 */
 	public static function requireParamsObj(string ...$requiredParameters): stdClass
 	{
@@ -701,13 +712,20 @@ class Request
 			return $_GET;
 		} else {
 			$contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? null;
-			$isJson = $contentType == 'application/json' && static::getRawData() !== '';
 
-			if ($method === 'POST') {
-				return $isJson ? static::getDataFromJSON() : $_POST;
+			if ($contentType == 'application/json' && static::getRawData() !== '') {
+				// parse raw content
+				return static::getDataFromJSON();
 			}
 
-			return $isJson ? static::getDataFromJSON() : static::getInputVars();
+			// otherwise:
+			if ($method === 'POST') {
+				// POST is already parsed by PHP, so return the global $_POST
+				return $_POST;
+			}
+
+			// otherwise, for PUT, PATCH and DELETE
+			return static::getMultipartContent();
 		}
 	}
 
@@ -903,4 +921,17 @@ class Request
 		return static::$uploadedFiles;
 	}
 
+	/**
+	 * Gets the multipart content from other request types, such as PATCH, PUT or DELETE
+	 *
+	 * @return array
+	 */
+	private static function getMultipartContent(): array
+	{
+		if (self::$parsedMultipartContent === null) {
+			self::$parsedMultipartContent = Util::parseMultipartContent(file_get_contents('php://input'), $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE']);
+		}
+
+		return self::$parsedMultipartContent;
+	}
 }
