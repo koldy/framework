@@ -544,12 +544,35 @@ class Application
 	}
 
     /**
-     * Is this CLI request?
+     * Check if current runtime is running as CLI script. To detect CLI, we should not rely only on php_sapi_name() or $argv.
+     * Solution is taken from StackOverflow.
+     *
+     * @link https://stackoverflow.com/a/25967493/21274421
      * @return bool
      */
     public static function isCli(): bool
     {
-        return static::$cliName !== null;
+	    if (defined('STDIN')) {
+		    return true;
+	    }
+
+	    if (php_sapi_name() === 'cli') {
+		    return true;
+	    }
+
+	    if (array_key_exists('SHELL', $_ENV)) {
+		    return true;
+	    }
+
+	    if (empty($_SERVER['REMOTE_ADDR']) and !isset($_SERVER['HTTP_USER_AGENT']) and count($_SERVER['argv']) > 0) {
+		    return true;
+	    }
+
+	    if (!array_key_exists('REQUEST_METHOD', $_SERVER)) {
+		    return true;
+	    }
+
+	    return false;
     }
 
     /**
