@@ -52,6 +52,25 @@ class UploadedFile
 	}
 
 	/**
+	 * Creates new instance of UploadedFile from a "single" file array
+	 *
+	 * @param string $name the name of a key in $_FILES array from which you want to create new instance of UploadedFile
+	 *
+	 * @return static|null
+	 * @throws SecurityException
+	 */
+	public static function createFromFilesArray(string $name): ?static
+	{
+		if (!isset($_FILES) || !array_key_exists($name, $_FILES)) {
+			return null;
+		}
+
+		['name' => $name, 'type' => $type, 'tmp_name' => $tmpName, 'error' => $error, 'size' => $size] = $_FILES[$name];
+
+		return new static($name, $type, $size, $tmpName, $error);
+	}
+
+	/**
 	 * Get file's original name
 	 *
 	 * @return string
