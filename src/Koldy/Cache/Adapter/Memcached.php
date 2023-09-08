@@ -4,6 +4,7 @@ namespace Koldy\Cache\Adapter;
 
 use Closure;
 use Exception;
+use Koldy\Adapter\Memcached\ResultCodeInfo;
 use Koldy\Config\Exception as ConfigException;
 use Memcached as NativeMemcached;
 use Koldy\Cache\Exception as CacheException;
@@ -83,25 +84,34 @@ class Memcached extends AbstractCacheAdapter
         return ($this->config['prefix'] ?? '') . $key;
     }
 
-    /**
-     * Get the value from cache by given key
-     *
-     * @param string $key
-     *
-     * @return mixed value or null if key doesn't exists or cache is disabled
-     * @throws ConfigException
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Get the value from cache by given key
+	 *
+	 * @param string $key
+	 *
+	 * @return mixed value or null if key doesn't exists or cache is disabled
+	 * @throws CacheException
+	 * @throws ConfigException
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function get(string $key): mixed
     {
         $key = $this->getKeyName($key);
         $value = $this->getInstance()->get($key);
 
-        if ($this->getInstance()->getResultCode() == NativeMemcached::RES_NOTFOUND) {
-            return null;
-        }
+		$code = $this->getInstance()->getResultCode();
 
-        return $value;
+		if ($code === NativeMemcached::RES_SUCCESS) {
+			return $value;
+		}
+
+		if ($code === NativeMemcached::RES_NOTFOUND) {
+			return null;
+		}
+
+	    $info = new ResultCodeInfo($code);
+		// otherwise, we're dealing with unknown error here, so we should throw an exception
+        throw new CacheException("Memcached error #{$code}: {$info->getDescription()}");
     }
 
     /**
@@ -128,7 +138,10 @@ class Memcached extends AbstractCacheAdapter
             $serverKeys[] = $this->getKeyName($key);
         }
 
-        $serverValues = $this->getInstance()->getMulti($serverKeys);
+        if (($serverValues = $this->getInstance()->getMulti($serverKeys)) === false) {
+	        $info = new ResultCodeInfo($this->getInstance()->getResultCode());
+	        throw new CacheException("Memcached error #{$info->getResultCode()}: getting multiple keys from cache failed with a reason: {$info->getDescription()}");
+        }
 
         foreach ($keys as $key) {
             $serverKey = $this->getKeyName($key);
@@ -146,12 +159,17 @@ class Memcached extends AbstractCacheAdapter
 	 * @param int|null $seconds [optional] if not set, default is used
 	 *
 	 * @throws ConfigException
+	 * @throws CacheException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
     public function set(string $key, mixed $value, int $seconds = null): void
     {
         $key = $this->getKeyName($key);
-        $this->getInstance()->set($key, $value, ($seconds ?? $this->defaultDuration));
+
+		if ($this->getInstance()->set($key, $value, ($seconds ?? $this->defaultDuration)) === false) {
+			$info = new ResultCodeInfo($this->getInstance()->getResultCode());
+			throw new CacheException("Memcached error #{$info->getResultCode()}: storing key [{$key}] failed with a reason: {$info->getDescription()}");
+		}
     }
 
 	/**
@@ -176,7 +194,10 @@ class Memcached extends AbstractCacheAdapter
             $serverKeyValuePairs[$this->getKeyName($key)] = $value;
         }
 
-        $this->getInstance()->setMulti($serverKeyValuePairs, ($seconds ?? $this->defaultDuration));
+        if ($this->getInstance()->setMulti($serverKeyValuePairs, ($seconds ?? $this->defaultDuration)) === false) {
+	        $info = new ResultCodeInfo($this->getInstance()->getResultCode());
+	        throw new CacheException("Memcached error #{$info->getResultCode()}: storing multiple keys failed with a reason: {$info->getDescription()}");
+        }
     }
 
     /**
@@ -322,5 +343,4 @@ class Memcached extends AbstractCacheAdapter
         $key = $this->getKeyName($key);
         return $this->getInstance()->decrement($key, $howMuch);
     }
-
 }

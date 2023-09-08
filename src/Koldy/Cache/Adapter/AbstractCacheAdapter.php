@@ -80,6 +80,7 @@ abstract class AbstractCacheAdapter
      *
      * @return mixed value or null if key doesn't exists or cache is disabled
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+     * @throws CacheException
      */
     abstract public function get(string $key): mixed;
 
@@ -197,9 +198,13 @@ abstract class AbstractCacheAdapter
     {
         $this->checkKey($key);
 
-        if (($value = $this->get($key)) !== null) {
-            return $value;
-        }
+		try {
+			if (($value = $this->get($key)) !== null) {
+				return $value;
+			}
+		} catch (CacheException) {
+			// if we caught an exception here, then we'll just ignore it and we'll act like we couldn't read a cache, so we'll say: nah, let's get the new value
+		}
 
 	    try {
 		    $value = call_user_func($functionOnSet);
