@@ -70,7 +70,10 @@ class Json extends AbstractResponse
 
         $this->flushHeaders();
 
-        print $content;
+		if ($statusCode !== 204) {
+			// print content ONLY if status code is not 204 (No Content)
+			print $content;
+		}
 
         $this->runAfterFlush();
     }
