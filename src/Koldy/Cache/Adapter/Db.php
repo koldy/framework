@@ -6,6 +6,8 @@ use Closure;
 use Exception;
 use Koldy\Db as DbAdapter;
 use Koldy\Db\Adapter\AbstractAdapter;
+use Koldy\Db\Exception as DbException;
+use Koldy\Log;
 use Koldy\Db\Query\{
   Select, Insert, Update, Delete
 };
@@ -85,7 +87,7 @@ class Db extends AbstractCacheAdapter
      * @param string $key
      * @param mixed $value
      * @param int|null $seconds
-     * @throws \Koldy\Db\Exception
+     *
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      * @throws \Koldy\Json\Exception
@@ -98,21 +100,25 @@ class Db extends AbstractCacheAdapter
             $seconds = $this->defaultDuration;
         }
 
-        $update = new Update($this->getTableName(), null, $this->getAdapterConnection());
-        $update->set('expires_at', time() + $seconds);
-        $update->set('data', serialize($value));
-        $update->where('id', $key);
-        $ok = $update->rowCount();
+		try {
+			$update = new Update($this->getTableName(), null, $this->getAdapterConnection());
+			$update->set('expires_at', time() + $seconds);
+			$update->set('data', serialize($value));
+			$update->where('id', $key);
+			$ok = $update->rowCount();
 
-        if ($ok === 0 && !$this->has($key)) {
-            $insert = new Insert($this->getTableName(), null, $this->getAdapterConnection());
-            $insert->add([
-              'id' => $key,
-              'expires_at' => time() + $seconds,
-              'data' => serialize($value)
-            ]);
-            $insert->exec();
-        }
+			if ($ok === 0 && !$this->has($key)) {
+				$insert = new Insert($this->getTableName(), null, $this->getAdapterConnection());
+				$insert->add([
+					'id' => $key,
+					'expires_at' => time() + $seconds,
+					'data' => serialize($value)
+				]);
+				$insert->exec();
+			}
+		} catch (DbException $e) {
+			throw new CacheException("Couldn't store value(s) to cache key \"{$key}\" because it failed on database level: {$e->getMessage()}", $e->getCode(), $e);
+		}
     }
 
     /**
@@ -140,9 +146,13 @@ class Db extends AbstractCacheAdapter
      */
     public function delete(string $key): void
     {
-        $key = $this->getKeyName($key);
-        $delete = new Delete($this->getTableName(), $this->getAdapterConnection());
-        $delete->where('id', $key)->exec();
+		try {
+			$key = $this->getKeyName($key);
+			$delete = new Delete($this->getTableName(), $this->getAdapterConnection());
+			$delete->where('id', $key)->exec();
+		} catch (DbException $e) {
+			throw new CacheException("Couldn't delete cache key \"{$key}\" because it failed on database level: {$e->getMessage()}", $e->getCode(), $e);
+		}
     }
 
     /**
@@ -153,8 +163,12 @@ class Db extends AbstractCacheAdapter
      */
     public function deleteAll(): void
     {
-        $delete = new Delete($this->getTableName(), $this->getAdapterConnection());
-        $delete->exec();
+	    try {
+	        $delete = new Delete($this->getTableName(), $this->getAdapterConnection());
+	        $delete->exec();
+	    } catch (DbException $e) {
+		    throw new CacheException("Couldn't delete all cache keys because it failed on database level: {$e->getMessage()}", $e->getCode(), $e);
+	    }
     }
 
     /**
@@ -168,8 +182,12 @@ class Db extends AbstractCacheAdapter
 			$olderThanSeconds = $this->defaultDuration ?? 3600;
 		}
 
-        $delete = new Delete($this->getTableName(), $this->getAdapterConnection());
-        $delete->where('expires_at', '<=', time() - $olderThanSeconds)->exec();
+		try {
+			$delete = new Delete($this->getTableName(), $this->getAdapterConnection());
+			$delete->where('expires_at', '<=', time() - $olderThanSeconds)->exec();
+		} catch (DbException $e) {
+			Log::warning('Couldn\'t delete old cache keys because it failed on database level', $e);
+		}
     }
 
 	/**
@@ -222,7 +240,7 @@ class Db extends AbstractCacheAdapter
      * @param int|null $seconds
      *
      * @throws CacheException
-     * @throws \Koldy\Db\Exception
+     * @throws DbException
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      * @throws \Koldy\Json\Exception
@@ -313,8 +331,13 @@ class Db extends AbstractCacheAdapter
      */
     public function deleteMulti(array $keys): void
     {
-        $delete = new Delete($this->getTableName(), $this->getAdapterConnection());
-        $delete->whereIn('id', $keys)->exec();
+		try {
+			$delete = new Delete($this->getTableName(), $this->getAdapterConnection());
+			$delete->whereIn('id', $keys)->exec();
+		} catch (DbException $e) {
+			$keys = implode(', ', $keys);
+			throw new CacheException("Couldn't delete multiple cache keys ({$keys}) because it failed on database level", $e->getCode(), $e);
+		}
     }
 
 }

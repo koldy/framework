@@ -6,6 +6,7 @@ use Closure;
 use Exception;
 use InvalidArgumentException;
 use Koldy\Cache\Exception as CacheException;
+use Koldy\Log;
 use Throwable;
 
 /**
@@ -80,6 +81,7 @@ abstract class AbstractCacheAdapter
      *
      * @return mixed value or null if key doesn't exists or cache is disabled
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+     *
      * @throws CacheException
      */
     abstract public function get(string $key): mixed;
@@ -102,6 +104,8 @@ abstract class AbstractCacheAdapter
      * @param int|null $seconds [optional] if not set, default is used
      *
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+     *
+     * @throws CacheException
      */
     abstract public function set(string $key, mixed $value, int $seconds = null): void;
 
@@ -124,17 +128,19 @@ abstract class AbstractCacheAdapter
      */
     abstract public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array;
 
-    /**
-     * Set the value under key and remember it forever! Okay, "forever" has its
-     * own duration and that is 15 years. So, is 15 years enough for you?
-     *
-     * @param string $key
-     * @param mixed $value
-     */
+	/**
+	 * Set the value under key and remember it forever! Okay, "forever" has its
+	 * own duration and that is 50 years. So, is 50 years enough for you?
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 *
+	 * @throws CacheException
+	 */
     public function setForever(string $key, mixed $value): void
     {
         $this->checkKey($key);
-        $this->set($key, $value, time() + 3600 * 24 * 365 * 15);
+        $this->set($key, $value, time() + 3600 * 24 * 365 * 50);
     }
 
     /**
@@ -152,6 +158,8 @@ abstract class AbstractCacheAdapter
      *
      * @param string $key
      *
+     * @throws CacheException
+     *
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function delete(string $key): void;
@@ -161,12 +169,16 @@ abstract class AbstractCacheAdapter
      *
      * @param array $keys
      *
+     * @throws CacheException
+     *
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
     abstract public function deleteMulti(array $keys): void;
 
     /**
      * Delete all cached items
+     *
+     * @throws CacheException
      */
     abstract public function deleteAll(): void;
 
@@ -203,28 +215,38 @@ abstract class AbstractCacheAdapter
 				return $value;
 			}
 		} catch (CacheException) {
-			// if we caught an exception here, then we'll just ignore it and we'll act like we couldn't read a cache, so we'll say: nah, let's get the new value
+			// if we caught an exception here, then we'll just ignore it and we'll act like we couldn't read a cache, so we'll say: nah, let's get the new value and let's try to store the value
 		}
 
 	    try {
 		    $value = call_user_func($functionOnSet);
 	    } catch (Exception | Throwable $e) {
+			// ^^ this is serious; a user callback function couldn't get the value we need - this is not cache exception and we should throw it
 		    throw new CacheException("Unable to cache value with key={$key} because of exception thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
 	    }
 
-	    $this->set($key, $value, $seconds);
+		try {
+			$this->set($key, $value, $seconds);
+		} catch (CacheException $e) {
+			// ok, if we couldn't write a cache value to cache storage, then it might be something wrong with a cache storage
+			// in this case, let's log the problem, but we'll return a value back so the system continues to work - it'll probably be slow/slower
+			// but it's better than not working at all
+			Log::warning("Couldn't store value(s) to cache key \"{$key}\" so it's possible that system will continue to use non-cached value on next use.", $e);
+		}
+
 	    return $value;
     }
 
-    /**
-     * Increment number value in cache. This will not work if item expired!
-     *
-     * @param string $key
-     * @param int $howMuch [optional] default 1
-     *
-     * @return int
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Increment number value in cache. This will not work if item expired!
+	 *
+	 * @param string $key
+	 * @param int $howMuch [optional] default 1
+	 *
+	 * @return int
+	 * @throws CacheException
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function increment(string $key, int $howMuch = 1): int
     {
         $this->checkKey($key);
@@ -240,15 +262,16 @@ abstract class AbstractCacheAdapter
         }
     }
 
-    /**
-     * Decrement number value in cache. This will not work if item expired!
-     *
-     * @param string $key
-     * @param int $howMuch
-     *
-     * @return int
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Decrement number value in cache. This will not work if item expired!
+	 *
+	 * @param string $key
+	 * @param int $howMuch
+	 *
+	 * @return int
+	 * @throws CacheException
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function decrement(string $key, int $howMuch = 1): int
     {
         $this->checkKey($key);

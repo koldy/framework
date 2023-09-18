@@ -259,18 +259,28 @@ class Memcached extends AbstractCacheAdapter
         return !($this->getInstance()->get($key) === false);
     }
 
-    /**
-     * Delete the item from cache
-     *
-     * @param string $key
-     *
-     * @throws ConfigException
-     * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
-     */
+	/**
+	 * Delete the item from cache
+	 *
+	 * @param string $key
+	 *
+	 * @throws CacheException
+	 * @throws ConfigException
+	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
+	 */
     public function delete(string $key): void
     {
         $key = $this->getKeyName($key);
-        $this->getInstance()->delete($key);
+
+		if ($this->getInstance()->delete($key) !== true) {
+			$code = $this->getInstance()->getResultCode();
+
+			if (!($code === NativeMemcached::RES_SUCCESS || $code === NativeMemcached::RES_NOTFOUND)) {
+				$info = new ResultCodeInfo($code);
+				// otherwise, we're dealing with unknown error here, so we should throw an exception
+				throw new CacheException("Couldn't delete cache key \"{$key}\" because Memcached returned #{$code}: {$info->getDescription()}");
+			}
+		}
     }
 
     /**
@@ -291,13 +301,19 @@ class Memcached extends AbstractCacheAdapter
         $this->getInstance()->deleteMulti($serverKeys);
     }
 
-    /**
-     * Delete all cached items
-     * @throws ConfigException
-     */
+	/**
+	 * Delete all cached items
+	 * @throws CacheException
+	 * @throws ConfigException
+	 */
     public function deleteAll(): void
     {
-        $this->getInstance()->flush();
+		if ($this->getInstance()->flush() === false) {
+			$code = $this->getInstance()->getResultCode();
+			$info = new ResultCodeInfo($code);
+			// otherwise, we're dealing with unknown error here, so we should throw an exception
+			throw new CacheException("Couldn't delete all cache keys because Memcached returned #{$code}: {$info->getDescription()}");
+		}
     }
 
 	/**

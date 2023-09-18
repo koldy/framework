@@ -7,6 +7,7 @@ use Exception;
 use Koldy\Application;
 use Koldy\Filesystem\Directory;
 use Koldy\Cache\Exception as CacheException;
+use Koldy\Filesystem\Exception as FilesystemException;
 use Koldy\Log;
 use stdClass;
 use Throwable;
@@ -207,7 +208,7 @@ class Files extends AbstractCacheAdapter
 	 *
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
-	 * @throws \Koldy\Filesystem\Exception
+	 * @throws FilesystemException
 	 */
     public function set(string $key, mixed $value, int $seconds = null): void
     {
@@ -245,13 +246,19 @@ class Files extends AbstractCacheAdapter
             $directory = dirname($object->path);
 
             if (!is_dir($directory)) {
-                Directory::mkdir($directory, 0755);
+				try {
+					Directory::mkdir($directory, 0755);
+				} catch (FilesystemException $e) {
+					throw new CacheException("Couldn't store value(s) to cache key \"{$key}\" because it failed on filesystem level: {$e->getMessage()}", $e->getCode(), $e);
+				}
             }
 
             $this->checkedFolder = true;
         }
 
-        file_put_contents($object->path, sprintf("%s;%d;%s\n%s", gmdate('r', $object->created), $object->seconds, $object->type, $data));
+        if (file_put_contents($object->path, sprintf("%s;%d;%s\n%s", gmdate('r', $object->created), $object->seconds, $object->type, $data)) === false) {
+	        throw new CacheException("Couldn't store value(s) to cache key \"{$key}\" because it failed on filesystem level: Couldn't write to path {$object->path}");
+        }
     }
 
 	/**
@@ -262,7 +269,7 @@ class Files extends AbstractCacheAdapter
 	 *
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
-	 * @throws \Koldy\Filesystem\Exception
+	 * @throws FilesystemException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
     public function setMulti(array $keyValuePairs, int $seconds = null): void
@@ -344,7 +351,7 @@ class Files extends AbstractCacheAdapter
     /**
      * Delete all files under cached folder
      *
-     * @throws \Koldy\Filesystem\Exception
+     * @throws FilesystemException
      */
     public function deleteAll(): void
     {
@@ -353,7 +360,8 @@ class Files extends AbstractCacheAdapter
 
     /**
      * @param int|null $olderThanSeconds
-     * @throws \Koldy\Filesystem\Exception
+     *
+     * @throws FilesystemException
      */
     public function deleteOld(int $olderThanSeconds = null): void
     {
