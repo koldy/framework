@@ -11,6 +11,7 @@ use Koldy\Db\Query\{
 };
 use Koldy\Json;
 use Stringable;
+use TypeError;
 
 /**
  * Model is abstract class that needs to be extended with your defined class.
@@ -303,7 +304,12 @@ abstract class Model implements Stringable
             if (is_string(static::$primaryKey) && isset($data[static::$primaryKey])) {
                 // there there, we already have it, let's do nothing
             } else {
-                $data[static::$primaryKey] = static::getLastInsertId();
+				try {
+					$data[static::$primaryKey] = static::getLastInsertId();
+				} catch (TypeError $e) {
+					$thisClass = get_called_class();
+					throw new Exception("Unable to get last insert ID; please check if {$thisClass} should have incrementable primary key", $e->getCode(), $e);
+				}
             }
         }
 
