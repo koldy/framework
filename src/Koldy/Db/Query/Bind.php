@@ -2,6 +2,7 @@
 
 namespace Koldy\Db\Query;
 
+use BackedEnum;
 use PDO;
 
 /**
@@ -15,7 +16,7 @@ class Bind
 
 	private string $parameter;
 
-	private int | float | bool | string | null $value;
+	private int | float | bool | string | BackedEnum | null $value;
 
 	private int | float | bool | string | null $type;
 
@@ -26,7 +27,7 @@ class Bind
 	 * @param mixed $value
 	 * @param int|null $typeConstant
 	 */
-	public function __construct(string $parameter, int | float | bool | string | null $value, int $typeConstant = null)
+	public function __construct(string $parameter, int | float | bool | string | BackedEnum | null $value, int $typeConstant = null)
 	{
 		$this->parameter = $parameter;
 		$this->value = $value;
@@ -57,6 +58,10 @@ class Bind
 
 	public function getValue(): int | float | bool | string | null
 	{
+		if ($this->value instanceof BackedEnum) {
+			return $this->value->value;
+		}
+
 		return $this->value;
 	}
 

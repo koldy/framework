@@ -2,6 +2,7 @@
 
 namespace Koldy\Db\Query;
 
+use BackedEnum;
 use Koldy\Db\Expr;
 
 /**
@@ -47,7 +48,7 @@ class Bindings
 		return static::$index++;
 	}
 
-	public function set(string $parameter, int | float | bool | string | null $value, int $typeConstant = null): string
+	public function set(string $parameter, int | float | bool | string | BackedEnum | null $value, int $typeConstant = null): string
 	{
 		$this->bindings[$parameter] = new Bind($parameter, $value, $typeConstant);
 		return $parameter;
