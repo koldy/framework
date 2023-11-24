@@ -63,14 +63,29 @@ class Json extends AbstractResponse
 	    $statusCode = $this->statusCode;
 	    $statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
 
-	    if (!$statusCodeIs1XX && $statusCode !== 204) {
-		    $size = mb_strlen($content, Application::getEncoding());
-		    $this->setHeader('Content-Length', $size);
-	    }
+	    if (!$statusCodeIs1XX) {
+			if ($statusCode === 204) {
+				// there is no content to output
+				$this->setHeader('Content-Length', 0);
+				$content = ''; // no matter if there's something in $content, we'll output nothing
+			} else {
+				// otherwise, there should be some content in application/json response
+				// PHP serializes empty array into "[]", so we'll return "{}" instead in that case
+
+				if (count($this->getData()) === 0) {
+					// if there is no data, then we'll output empty JSON object
+					$content = '{}';
+					$this->setHeader('Content-Length', 2);
+				} else {
+					$size = mb_strlen($content, Application::getEncoding());
+					$this->setHeader('Content-Length', $size);
+				}
+			}
+	    } // in case of 1XX status, you should handle specific headers by yourself
 
         $this->flushHeaders();
 
-		if ($statusCode !== 204) {
+		if ($content !== '') {
 			// print content ONLY if status code is not 204 (No Content)
 			print $content;
 		}
