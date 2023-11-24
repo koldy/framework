@@ -556,7 +556,7 @@ class Application
 		    return true;
 	    }
 
-	    if (php_sapi_name() === 'cli') {
+	    if (php_sapi_name() === 'cli' || php_sapi_name() === 'cli-server') {
 		    return true;
 	    }
 
