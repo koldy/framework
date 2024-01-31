@@ -3,9 +3,6 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
-use Exception;
-use Koldy\Cache\Exception as CacheException;
-use Throwable;
 
 /**
  * This cache adapter holds cached data only in request's scope (memory, or runtime). As soon as request/script ends, everything will
@@ -64,7 +61,6 @@ class Runtime extends AbstractCacheAdapter
 	 * @param int|null $seconds
 	 *
 	 * @return array
-	 * @throws CacheException
 	 */
     public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
     {
@@ -85,11 +81,11 @@ class Runtime extends AbstractCacheAdapter
         }
 
         if (count($missing) > 0) {
-	        try {
+//	        try {
 		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
-	        } catch (Exception | Throwable $e) {
-		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
-	        }
+//	        } catch (Exception | Throwable $e) {
+//		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
+//	        }
             $return = array_merge($return, $setValues);
         }
 

@@ -3,11 +3,9 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
-use Exception;
 use InvalidArgumentException;
 use Koldy\Cache\Exception as CacheException;
 use Koldy\Log;
-use Throwable;
 
 /**
  * Abstract class for making any kind of new cache adapter. If you want to create your own cache adapter, then extend this class.
@@ -218,12 +216,13 @@ abstract class AbstractCacheAdapter
 			// if we caught an exception here, then we'll just ignore it and we'll act like we couldn't read a cache, so we'll say: nah, let's get the new value and let's try to store the value
 		}
 
-	    try {
+//	    try {
 		    $value = call_user_func($functionOnSet);
-	    } catch (Exception | Throwable $e) {
+			// ^^ we will let the eventual exception to pass through so it can be caught by the caller
+//	    } catch (Exception | Throwable $e) {
 			// ^^ this is serious; a user callback function couldn't get the value we need - this is not cache exception and we should throw it
-		    throw new CacheException("Unable to cache value with key={$key} because of exception thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
-	    }
+//		    throw new CacheException("Unable to cache value with key={$key} because of exception thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
+//	    }
 
 		try {
 			$this->set($key, $value, $seconds);

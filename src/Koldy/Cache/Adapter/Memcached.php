@@ -3,12 +3,10 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
-use Exception;
 use Koldy\Adapter\Memcached\ResultCodeInfo;
 use Koldy\Config\Exception as ConfigException;
 use Memcached as NativeMemcached;
 use Koldy\Cache\Exception as CacheException;
-use Throwable;
 
 /**
  * The Memcached adapter defined in Koldy is using Memcached and not Memcache class. Notice the difference with "d" letter.
@@ -228,11 +226,11 @@ class Memcached extends AbstractCacheAdapter
         }
 
         if (count($missing) > 0) {
-	        try {
+//	        try {
 		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
-	        } catch (Exception | Throwable $e) {
-		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
-	        }
+//	        } catch (Exception | Throwable $e) {
+//		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
+//	        }
 
             if (!is_array($setValues)) {
                 throw new CacheException('Return value from function passed to getOrSetMulti must return array; got ' . gettype($setValues));

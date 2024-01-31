@@ -125,17 +125,16 @@ class DevNull extends AbstractCacheAdapter
 	 * @param int|null $seconds
 	 *
 	 * @return mixed
-	 * @throws CacheException
 	 */
     public function getOrSet(string $key, Closure $functionOnSet, int $seconds = null): mixed
     {
         $this->checkKey($key);
 
-	    try {
+//	    try {
 		    return call_user_func($functionOnSet, $key, $seconds);
-	    } catch (Exception | Throwable $e) {
-		    throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
-	    }
+//	    } catch (Exception | Throwable $e) {
+//		    throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
+//	    }
     }
 
 	/**

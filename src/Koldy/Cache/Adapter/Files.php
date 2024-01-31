@@ -3,14 +3,12 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
-use Exception;
 use Koldy\Application;
 use Koldy\Filesystem\Directory;
 use Koldy\Cache\Exception as CacheException;
 use Koldy\Filesystem\Exception as FilesystemException;
 use Koldy\Log;
 use stdClass;
-use Throwable;
 
 /**
  * This cache adapter will store all of your data into files somewhere on the server's filesystem. Every stored key represents one file on filesystem.
@@ -168,7 +166,6 @@ class Files extends AbstractCacheAdapter
 	 * @param int|null $seconds
 	 *
 	 * @return array
-	 * @throws CacheException
 	 */
     public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
     {
@@ -189,11 +186,11 @@ class Files extends AbstractCacheAdapter
         }
 
         if (count($missing) > 0) {
-	        try {
+//	        try {
 		        $setValues = call_user_func($functionOnMissingKeys, $found, $missing, $seconds);
-	        } catch (Exception | Throwable $e) {
-		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
-	        }
+//	        } catch (Exception | Throwable $e) {
+//		        throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
+//	        }
 
             $return = array_merge($return, $setValues);
         }
