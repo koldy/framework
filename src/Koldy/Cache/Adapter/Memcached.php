@@ -31,7 +31,7 @@ class Memcached extends AbstractCacheAdapter
      * @return NativeMemcached
      * @throws ConfigException
      */
-    protected function getInstance(): NativeMemcached
+    public function getInstance(): NativeMemcached
     {
         if ($this->memcached === null) {
             // first check if servers were defined
