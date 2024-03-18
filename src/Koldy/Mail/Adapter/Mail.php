@@ -158,8 +158,8 @@ class Mail extends CommonMailAdapter
 				$attachmentIds[$attachmentId] = true;
 
 				$body .= "--{$boundary}\r\n";
-				$body .= "Content-Type: {$fileType}; name={$attachedAsName}\r\n";
-				$body .= "Content-Disposition: attachment; filename={$attachedAsName}\r\n";
+				$body .= "Content-Type: {$fileType}; name=\"{$attachedAsName}\"\r\n";
+				$body .= "Content-Disposition: attachment; filename=\"{$attachedAsName}\"\r\n";
 				$body .= "Content-Transfer-Encoding: base64\r\n";
 				$body .= "X-Attachment-Id: {$attachmentId}\r\n\r\n";
 				$body .= $encodedFileContent;
