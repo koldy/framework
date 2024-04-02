@@ -30,7 +30,7 @@ class Runtime extends AbstractCacheAdapter
     public function get(string $key): mixed
     {
         if ($this->has($key)) {
-            return $this->data[$key]->data;
+            return $this->data[$key];
         }
 
         return null;
