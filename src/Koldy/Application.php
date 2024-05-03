@@ -584,8 +584,15 @@ class Application
     }
 
     /**
-     * Get the configs from any config file, fetched by config name. Config name is the name on file system,
-     * so you can fetch Koldy's config files or your own configs.
+     * Get the configs from any config file, fetched by config name. Config name is the name on file system or the key from
+     * configs key in index.php.
+     *
+     * There are three possible locations where configs can be stored (by priority and speed of access):
+     * 1. in application's config so it's immediately available (application config -> "configs" key) (in this case, it's not possible to reload config in runtime)
+     * 2. by saying/overriding the exact path of each config (application config -> "config" key and then the name of config as key in "config" key)
+     * 3. by putting config files in the folder defined in application config (paths -> config)
+     *
+     * If paths config (under 3.) is not defined, then it's in the application's folder by default.
      *
      * @param string $name
      * @param bool $isPointerConfig
@@ -595,30 +602,37 @@ class Application
      */
     public static function getConfig(string $name, bool $isPointerConfig = false): Config
     {
-        if (isset(static::$configs[$name])) {
-            return static::$configs[$name];
-        }
+	    if (isset(static::$configs[$name])) {
+		    return static::$configs[$name];
+	    }
 
-	    // otherwise, lookup for config on file system
 	    $applicationConfig = static::$configs['application'] ?? null;
-
 	    if ($applicationConfig === null) {
 		    throw new ConfigException('The main "application" config is NOT passed to the web app so framework can\'t load other configs because it doesn\'t know where they are');
 	    }
 
+	    $configs = $applicationConfig->get('configs') ?? [];
+
+	    if (is_array($configs) && array_key_exists($name, $configs) && is_array($configs[$name])) {
+		    $config = new Config($name, $isPointerConfig);
+		    $config->setData($configs[$name]);
+		    static::$configs[$name] = $config;
+		    return $config;
+	    }
+
 	    $configFiles = $applicationConfig->get('config') ?? [];
 
-        $config = new Config($name, $isPointerConfig);
+	    $config = new Config($name, $isPointerConfig);
 
-        if (array_key_exists($name, $configFiles)) {
-            $path = stream_resolve_include_path($configFiles[$name]);
-        } else {
-            $path = static::$configsPath . $name . '.php';
-        }
+	    if (array_key_exists($name, $configFiles)) {
+		    $path = stream_resolve_include_path($configFiles[$name]);
+	    } else {
+		    $path = static::$configsPath . $name . '.php';
+	    }
 
-        $config->loadFrom($path);
-        static::$configs[$name] = $config;
-        return $config;
+	    $config->loadFrom($path);
+	    static::$configs[$name] = $config;
+	    return $config;
     }
 
     /**
