@@ -45,7 +45,7 @@ class ContentDownload extends AbstractResponse
      *
      * @param string $asName
      *
-     * @return ContentDownload
+     * @return $this
      */
     public function setAsName(string $asName): ContentDownload
     {
@@ -58,7 +58,7 @@ class ContentDownload extends AbstractResponse
      *
      * @param string $contentType
      *
-     * @return ContentDownload
+     * @return $this
      */
     public function setContentType(string $contentType): ContentDownload
     {
@@ -73,7 +73,7 @@ class ContentDownload extends AbstractResponse
 	 * @param string $asName
 	 * @param string|null $contentType [optional]
 	 *
-	 * @return ContentDownload
+	 * @return $this
 	 */
     public static function create(string $content, string $asName, string $contentType = null): ContentDownload
     {

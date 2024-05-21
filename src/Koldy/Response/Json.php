@@ -31,7 +31,7 @@ class Json extends AbstractResponse
      *
      * @param array $data [optional]
      *
-     * @return Json
+     * @return $this
      * @link http://koldy.net/docs/json#usage
      */
     public static function create(array $data = []): Json

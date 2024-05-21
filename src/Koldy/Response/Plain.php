@@ -30,7 +30,7 @@ class Plain extends AbstractResponse
      *
      * @param string $text
      *
-     * @return Plain
+     * @return $this
      */
     public static function create(string $text = ''): Plain
     {
@@ -42,7 +42,7 @@ class Plain extends AbstractResponse
      *
      * @param string $content
      *
-     * @return Plain
+     * @return $this
      */
     public function setContent(string $content): Plain
     {
@@ -65,7 +65,7 @@ class Plain extends AbstractResponse
      *
      * @param string $content
      *
-     * @return Plain
+     * @return $this
      */
     public function append(string $content): Plain
     {
@@ -78,7 +78,7 @@ class Plain extends AbstractResponse
      *
      * @param string $content
      *
-     * @return Plain
+     * @return $this
      */
     public function prepend(string $content): Plain
     {

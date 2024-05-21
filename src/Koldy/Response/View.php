@@ -51,7 +51,7 @@ class View extends AbstractResponse
      *
      * @param string $view
      *
-     * @return View
+     * @return $this
      * @example View::create('base') will initialize /application/views/base.phtml
      * @link http://koldy.net/docs/view
      */
@@ -65,7 +65,7 @@ class View extends AbstractResponse
      *
      * @param string $view
      *
-     * @return View
+     * @return $this
      */
     public function setView(string $view): self
     {
@@ -100,7 +100,7 @@ class View extends AbstractResponse
      *
      * @param string $basePath
      *
-     * @return View
+     * @return $this
      */
     public function setViewPath(string $basePath): self
     {

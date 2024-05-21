@@ -3,6 +3,7 @@
 namespace Koldy\Response;
 
 use Koldy\Application;
+use Koldy\Exception;
 use Koldy\Route;
 
 /**
@@ -17,7 +18,7 @@ class Redirect extends AbstractResponse
      *
      * @param string $where
      *
-     * @return Redirect
+     * @return $this
      */
     public static function permanent(string $where): Redirect
     {
@@ -35,7 +36,7 @@ class Redirect extends AbstractResponse
      *
      * @param string $where
      *
-     * @return Redirect
+     * @return $this
      */
     public static function temporary(string $where): Redirect
     {
@@ -53,7 +54,7 @@ class Redirect extends AbstractResponse
      *
      * @param string $where
      *
-     * @return Redirect
+     * @return $this
      * @example http://www.google.com
      */
     public static function to(string $where): Redirect
@@ -61,11 +62,12 @@ class Redirect extends AbstractResponse
         return static::temporary($where);
     }
 
-    /**
-     * Redirect client (302) to home page
-     *
-     * @return Redirect
-     */
+	/**
+	 * Redirect client (302) to home page
+	 *
+	 * @return $this
+	 * @throws Exception
+	 */
     public static function home(): Redirect
     {
         return static::href();
@@ -78,7 +80,7 @@ class Redirect extends AbstractResponse
 	 * @param string|null $action
 	 * @param array|null $params
 	 *
-	 * @return Redirect
+	 * @return $this
 	 * @throws \Koldy\Exception
 	 */
     public static function href(string $controller = null, string $action = null, array $params = null): Redirect
@@ -92,7 +94,7 @@ class Redirect extends AbstractResponse
 	 * @param string $path
 	 * @param string|null $assetSite
 	 *
-	 * @return Redirect
+	 * @return $this
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 * @deprecated use asset() method instead of this mthod
@@ -108,7 +110,7 @@ class Redirect extends AbstractResponse
 	 * @param string $path
 	 * @param string|null $assetKey
 	 *
-	 * @return Redirect
+	 * @return $this
 	 * @throws Route\Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception

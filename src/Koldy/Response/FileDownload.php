@@ -49,7 +49,7 @@ class FileDownload extends AbstractResponse
      *
      * @param string $asName
      *
-     * @return FileDownload
+     * @return $this
      */
     public function setAsName(string $asName): FileDownload
     {
@@ -62,7 +62,7 @@ class FileDownload extends AbstractResponse
      *
      * @param string $contentType
      *
-     * @return FileDownload
+     * @return $this
      */
     public function setContentType(string $contentType): FileDownload
     {
@@ -77,7 +77,7 @@ class FileDownload extends AbstractResponse
 	 * @param string|null $asName [optional]
 	 * @param string|null $contentType [optional]
 	 *
-	 * @return FileDownload
+	 * @return $this
 	 */
     public static function create(string $path, string $asName = null, string $contentType = null): FileDownload
     {

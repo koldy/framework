@@ -97,7 +97,7 @@ abstract class AbstractResponse
      *
      * @param string $name
      *
-     * @return AbstractResponse
+     * @return $this
      */
     public function removeHeader(string $name): AbstractResponse
     {
@@ -132,7 +132,7 @@ abstract class AbstractResponse
     /**
      * Remove all headers
      *
-     * @return AbstractResponse
+     * @return $this
      */
     public function removeHeaders(): AbstractResponse
     {
@@ -164,7 +164,7 @@ abstract class AbstractResponse
      *
      * @param int $statusCode
      *
-     * @return AbstractResponse
+     * @return $this
      */
     public function statusCode(int $statusCode): AbstractResponse
     {
@@ -217,7 +217,7 @@ abstract class AbstractResponse
 	 * @param Closure $function
 	 * @param string|null $name
 	 *
-	 * @return \Koldy\Response\AbstractResponse
+	 * @return $this
 	 */
     public function before(Closure $function, string $name = null): AbstractResponse
     {
@@ -326,7 +326,7 @@ abstract class AbstractResponse
 	 * @param Closure $function
 	 * @param string|null $name
 	 *
-	 * @return \Koldy\Response\AbstractResponse
+	 * @return $this
 	 */
     public function after(Closure $function, string $name = null): AbstractResponse
     {
