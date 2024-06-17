@@ -264,17 +264,17 @@ abstract class AbstractResponse
     protected function runBeforeFlush(): void
     {
         foreach ($this->workBeforeResponse as $index => $fn) {
-	        try {
+//	        try {
 		        call_user_func($fn, $this);
-	        } catch (\Exception | \Throwable $e) {
-		        $name = $this->workBeforeIndex[$index] ?? null;
-
-		        if ($name === null) {
-			        throw new Exception("Failed to execute function before flush: {$e->getMessage()}", $e->getCode(), $e);
-		        } else {
-			        throw new Exception("Failed to execute function \"{$name}\" before flush: {$e->getMessage()}", $e->getCode(), $e);
-		        }
-	        }
+//	        } catch (\Exception | \Throwable $e) {
+//		        $name = $this->workBeforeIndex[$index] ?? null;
+//
+//		        if ($name === null) {
+//			        throw new Exception("Failed to execute function before flush: {$e->getMessage()}", $e->getCode(), $e);
+//		        } else {
+//			        throw new Exception("Failed to execute function \"{$name}\" before flush: {$e->getMessage()}", $e->getCode(), $e);
+//		        }
+//	        }
         }
     }
 
@@ -305,17 +305,17 @@ abstract class AbstractResponse
         }
 
         foreach ($this->workAfterResponse as $index => $fn) {
-	        try {
+//	        try {
 		        call_user_func($fn, $this);
-	        } catch (\Exception | \Throwable $e) {
-				$name = $this->workAfterIndex[$index] ?? null;
-
-				if ($name === null) {
-					throw new Exception("Failed to execute function after flush: {$e->getMessage()}", $e->getCode(), $e);
-				} else {
-					throw new Exception("Failed to execute function \"{$name}\" after flush: {$e->getMessage()}", $e->getCode(), $e);
-				}
-	        }
+//	        } catch (\Exception | \Throwable $e) {
+//				$name = $this->workAfterIndex[$index] ?? null;
+//
+//				if ($name === null) {
+//					throw new Exception("Failed to execute function after flush: {$e->getMessage()}", $e->getCode(), $e);
+//				} else {
+//					throw new Exception("Failed to execute function \"{$name}\" after flush: {$e->getMessage()}", $e->getCode(), $e);
+//				}
+//	        }
         }
     }
 
