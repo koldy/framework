@@ -107,27 +107,18 @@ abstract class Model implements Stringable
      * @return mixed|null
      * @throws Exception
      */
-    final public function __get(string $property): mixed
+    public function __get(string $property): mixed
     {
-        if ($this->data === null) {
-            $class = get_class($this);
-            throw new Exception("Can not use __get() on {$class} because data wasn't set yet");
-        }
-
-        return $this->data[$property] ?? null;
+        return $this->get($property);
     }
 
     /**
      * @param string $property
      * @param mixed $value
      */
-    final public function __set(string $property, mixed $value): void
+    public function __set(string $property, mixed $value): void
     {
-        if ($this->data === null) {
-            $this->data = [];
-        }
-
-        $this->data[$property] = $value;
+        $this->set($property, $value);
     }
 
     /**
@@ -137,13 +128,11 @@ abstract class Model implements Stringable
      *
      * @return static
      */
-    final public function setData(array $values): static
+    public function setData(array $values): static
     {
-        if (!is_array($this->data)) {
-            $this->data = $values;
-        } else {
-            $this->data = array_merge($this->data, $values);
-        }
+		foreach ($values as $property => $value) {
+			$this->set($property, $value);
+		}
 
         return $this;
     }
@@ -153,7 +142,7 @@ abstract class Model implements Stringable
      * @return array
      * @throws Exception
      */
-    final public function getData(): array
+    public function getData(): array
     {
         if ($this->data === null) {
             $class = get_class($this);
@@ -163,16 +152,51 @@ abstract class Model implements Stringable
         return $this->data;
     }
 
+	/**
+	 * Gets the property value
+	 *
+	 * @param string $property
+	 *
+	 * @return mixed
+	 * @throws Exception
+	 */
+	protected function get(string $property): mixed
+	{
+		if ($this->data === null) {
+			$class = get_class($this);
+			throw new Exception("Can not use getPropertyValue() on {$class} because data wasn't set or loaded");
+		}
+
+		return array_key_exists($property, $this->data) ? $this->data[$property] : null;
+	}
+
+	/**
+	 * Sets the property value
+	 *
+	 * @param string $property
+	 * @param mixed $value
+	 *
+	 * @return void
+	 */
+	protected function set(string $property, mixed $value): void
+	{
+		if ($this->data === null) {
+			$this->data = [];
+		}
+
+		$this->data[$property] = $value;
+	}
+
     /**
-     * Does this object has a field?
+     * Does this object has a property with requested name?
      *
      * @param string $field
      *
      * @return bool
      */
-    final public function has(string $field): bool
+    public function has(string $field): bool
     {
-        return array_key_exists($field, $this->data);
+        return array_key_exists($field, $this->data ?? []);
     }
 
     /**
