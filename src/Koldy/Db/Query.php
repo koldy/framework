@@ -313,6 +313,26 @@ class Query implements Stringable
     }
 
     /**
+     * Fetch all results from this query and get array of arrays using Generator
+     *
+     * @return Generator
+     * @throws QueryException
+     * @throws \Koldy\Exception
+     */
+    public function fetchAllGenerator(): Generator
+    {
+        if (!$this->wasExecuted()) {
+            $this->exec();
+        }
+
+        $statement = $this->getAdapter()->getStatement();
+
+	    while ($record = $statement->fetch(PDO::FETCH_ASSOC)) {
+		    yield $record;
+	    }
+    }
+
+    /**
      * Get next key index
      *
      * @return int
