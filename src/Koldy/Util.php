@@ -490,6 +490,10 @@ class Util
 	 */
 	public static function parseMultipartContent(string $input, string $contentType): array
 	{
+		if ($input === '') {
+			return [];
+		}
+
 		$data = [];
 
 		// grab multipart boundary from content type header

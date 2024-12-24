@@ -929,7 +929,10 @@ class Request
 	private static function getMultipartContent(): array
 	{
 		if (self::$parsedMultipartContent === null) {
-			self::$parsedMultipartContent = Util::parseMultipartContent(file_get_contents('php://input'), $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE']);
+			$contentType = array_key_exists('CONTENT_TYPE', $_SERVER) ? $_SERVER['CONTENT_TYPE'] : null;
+			$httpContentType = array_key_exists('HTTP_CONTENT_TYPE', $_SERVER) ? $_SERVER['HTTP_CONTENT_TYPE'] : null;
+			$default = 'application/x-www-form-urlencoded';
+			self::$parsedMultipartContent = Util::parseMultipartContent(file_get_contents('php://input'), $contentType ?? $httpContentType ?? $default);
 		}
 
 		return self::$parsedMultipartContent;
