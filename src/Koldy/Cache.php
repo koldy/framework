@@ -40,7 +40,7 @@ class Cache
      * @return \Koldy\Cache\Adapter\AbstractCacheAdapter
      * @throws \Koldy\Exception
      */
-    public static function getAdapter(string $adapter = null): AbstractCacheAdapter
+    public static function getAdapter(string|null $adapter = null): AbstractCacheAdapter
     {
         $key = $adapter ?? static::getConfig()->getFirstKey();
 
@@ -113,7 +113,7 @@ class Cache
      * @throws Exception
      * @link http://koldy.net/docs/cache#set
      */
-    public static function set(string $key, mixed $value, int $seconds = null): void
+    public static function set(string $key, mixed $value, int|null $seconds = null): void
     {
         static::getAdapter()->set($key, $value, $seconds);
     }
@@ -127,7 +127,7 @@ class Cache
      * @throws Exception
      * @link http://koldy.net/docs/cache#set-multi
      */
-    public static function setMulti(array $keyValuePairs, int $seconds = null): void
+    public static function setMulti(array $keyValuePairs, int|null $seconds = null): void
     {
         static::getAdapter()->setMulti($keyValuePairs, $seconds);
     }
@@ -184,7 +184,7 @@ class Cache
 	 * @throws Exception
 	 * @link http://koldy.net/docs/cache#get-or-set
 	 */
-    public static function getOrSet(string $key, Closure $functionOnSet, int $seconds = null): mixed
+    public static function getOrSet(string $key, Closure $functionOnSet, int|null $seconds = null): mixed
     {
         return static::getAdapter()->getOrSet($key, $functionOnSet, $seconds);
     }
@@ -243,7 +243,7 @@ class Cache
 	 * @return boolean
 	 * @throws Exception
 	 */
-    public static function isEnabled(string $adapter = null): bool
+    public static function isEnabled(string|null $adapter = null): bool
     {
         return !(static::getAdapter($adapter) instanceof Cache\Adapter\DevNull);
     }

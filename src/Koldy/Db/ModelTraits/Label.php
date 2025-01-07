@@ -6,8 +6,11 @@ namespace Koldy\Db\ModelTraits;
  * Trait Label - very common in database tables, usually used for naming records.
  * @package Koldy\Db\ModelTraits
  *
- * @property string|null label
+ * @property string|null $label
+ *
+ * @deprecated This trait is deprecated and will be removed in next major version.
  */
+// @phpstan-ignore-next-line
 trait Label
 {
 

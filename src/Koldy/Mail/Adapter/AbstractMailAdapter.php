@@ -42,7 +42,7 @@ abstract class AbstractMailAdapter
 	 * @return AbstractMailAdapter
 	 * @link http://koldy.net/docs/mail#example
 	 */
-    abstract public function from(string $email, string $name = null): AbstractMailAdapter;
+    abstract public function from(string $email, string|null $name = null): AbstractMailAdapter;
 
 	/**
 	 * Set "Reply-To"
@@ -50,10 +50,10 @@ abstract class AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 * @link http://koldy.net/docs/mail#example
 	 */
-    abstract public function replyTo(string $email, string $name = null): AbstractMailAdapter;
+    abstract public function replyTo(string $email, string|null $name = null): AbstractMailAdapter;
 
 	/**
 	 * Send mail to this e-mail
@@ -61,10 +61,10 @@ abstract class AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 * @link http://koldy.net/docs/mail#example
 	 */
-    abstract public function to(string $email, string $name = null): AbstractMailAdapter;
+    abstract public function to(string $email, string|null $name = null): AbstractMailAdapter;
 
 	/**
 	 * Send mail carbon copy
@@ -72,10 +72,10 @@ abstract class AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 * @link http://koldy.net/docs/mail#example
 	 */
-    abstract public function cc(string $email, string $name = null): AbstractMailAdapter;
+    abstract public function cc(string $email, string|null $name = null): AbstractMailAdapter;
 
 	/**
 	 * Send mail blind carbon copy
@@ -83,17 +83,17 @@ abstract class AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 * @link http://koldy.net/docs/mail#example
 	 */
-    abstract public function bcc(string $email, string $name = null): AbstractMailAdapter;
+    abstract public function bcc(string $email, string|null $name = null): AbstractMailAdapter;
 
     /**
      * Set the e-mail subject
      *
      * @param string $subject
      *
-     * @return $this
+     * @return static
      * @link http://koldy.net/docs/mail#example
      */
     abstract public function subject(string $subject): AbstractMailAdapter;
@@ -105,10 +105,10 @@ abstract class AbstractMailAdapter
 	 * @param boolean $isHTML
 	 * @param string|null $alternativeText The plain text
 	 *
-	 * @return $this
+	 * @return static
 	 * @link http://koldy.net/docs/mail#example
 	 */
-    abstract public function body(string $body, bool $isHTML = false, string $alternativeText = null): AbstractMailAdapter;
+    abstract public function body(string $body, bool $isHTML = false, string|null $alternativeText = null): AbstractMailAdapter;
 
 	/**
 	 * Attach file into this e-mail
@@ -116,10 +116,10 @@ abstract class AbstractMailAdapter
 	 * @param string $fullFilePath
 	 * @param string|null $attachedAsName
 	 *
-	 * @return $this
+	 * @return static
 	 * @link http://koldy.net/docs/mail#header-and-files
 	 */
-    abstract public function attachFile(string $fullFilePath, string $attachedAsName = null): AbstractMailAdapter;
+    abstract public function attachFile(string $fullFilePath, string|null $attachedAsName = null): AbstractMailAdapter;
 
     /**
      * Actually sends an e-mail
@@ -135,7 +135,7 @@ abstract class AbstractMailAdapter
      * @param string $name
      * @param string $value
      *
-     * @return $this
+     * @return static
      * @link http://koldy.net/docs/mail#header-and-files
      */
     public function setHeader(string $name, string $value): AbstractMailAdapter
@@ -161,7 +161,7 @@ abstract class AbstractMailAdapter
      *
      * @param string $name
      *
-     * @return $this
+     * @return static
      */
     public function removeHeader(string $name): AbstractMailAdapter
     {
@@ -177,7 +177,7 @@ abstract class AbstractMailAdapter
      *
      * @param string $name
      *
-     * @return mixed|null
+     * @return string|null
      */
     public function getHeader(string $name): ?string
     {
@@ -216,7 +216,7 @@ abstract class AbstractMailAdapter
      *
      * @return string
      */
-    protected function getAddressValue(string $email, string $name = null): string
+    protected function getAddressValue(string $email, string|null $name = null): string
     {
         if ($name === null || $name === '') {
             return $email;

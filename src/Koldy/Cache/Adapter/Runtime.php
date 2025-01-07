@@ -62,7 +62,7 @@ class Runtime extends AbstractCacheAdapter
 	 *
 	 * @return array
 	 */
-    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int|null $seconds = null): array
     {
         $found = [];
         $missing = [];
@@ -99,7 +99,7 @@ class Runtime extends AbstractCacheAdapter
 	 * @param string $value
 	 * @param int|null $seconds
 	 */
-    public function set(string $key, $value, int $seconds = null): void
+    public function set(string $key, $value, int|null $seconds = null): void
     {
         $this->data[$key] = $value;
         // TODO: Respect time limit
@@ -113,7 +113,7 @@ class Runtime extends AbstractCacheAdapter
 	 *
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
-    public function setMulti(array $keyValuePairs, int $seconds = null): void
+    public function setMulti(array $keyValuePairs, int|null $seconds = null): void
     {
         foreach ($keyValuePairs as $key => $value) {
             $this->set($key, $value, $seconds);
@@ -159,7 +159,7 @@ class Runtime extends AbstractCacheAdapter
         $this->data = [];
     }
 
-    public function deleteOld(int $olderThanSeconds = null): void
+    public function deleteOld(int|null $olderThanSeconds = null): void
     {
         // nothing to do
     }

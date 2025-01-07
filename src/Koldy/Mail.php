@@ -94,7 +94,7 @@ class Mail
      * @throws Exception
      * @link http://koldy.net/docs/mail#create
      */
-    public static function create(string $adapter = null): AbstractMailAdapter
+    public static function create(string|null $adapter = null): AbstractMailAdapter
     {
         return static::getAdapter($adapter);
     }

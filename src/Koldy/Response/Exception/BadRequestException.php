@@ -7,7 +7,7 @@ use Koldy\Response\Exception as ResponseException;
 class BadRequestException extends ResponseException
 {
 
-    public function __construct($message = 'Bad request', $code = 0, \Exception $previous = null)
+    public function __construct(string $message = 'Bad request', int $code = 0, \Exception|null $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

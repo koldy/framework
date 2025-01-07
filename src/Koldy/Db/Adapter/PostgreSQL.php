@@ -82,8 +82,6 @@ class PostgreSQL extends AbstractAdapter
 
     /**
      * Close connection to database if it was opened
-     *
-     * @throws Exception
      */
     public function close(): void
     {
@@ -91,11 +89,6 @@ class PostgreSQL extends AbstractAdapter
 	        $this->stmt?->closeCursor();
             $this->stmt = null;
             $this->pdo = null;
-
-        } else if ($this->pdo === null) {
-            // to nothing
-        } else {
-            throw new AdapterException('Unable to close database connection when PDO handler is not an instance of PDO');
         }
     }
 

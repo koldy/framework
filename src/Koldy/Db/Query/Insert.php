@@ -58,7 +58,7 @@ class Insert
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/query-builder#insert
 	 */
-    public function __construct(string $table = null, array $rowValues = null, string $adapter = null)
+    public function __construct(string|null $table = null, array|null $rowValues = null, string|null $adapter = null)
     {
         if ($table !== null) {
             $this->into($table);
@@ -223,6 +223,7 @@ class Insert
         }
 
         if ($this->select !== null) {
+	        // @phpstan-ignore-next-line
             if ($this->select instanceof Select || $this->select instanceof Query) {
                 $query .= "\n(\n\t" . str_replace("\n", "\n\t", $this->select->__toString()) . "\n)";
                 $bindings->addBindingsFromInstance($this->select->getBindings());

@@ -63,7 +63,7 @@ abstract class AbstractResponse
      *
      * @return AbstractResponse
      */
-    public function setHeader(string $name, string | int | float $value = null): AbstractResponse
+    public function setHeader(string $name, string | int | float | null $value = null): AbstractResponse
     {
         $this->headers[] = [
           'one-line' => ($value === null),
@@ -97,7 +97,7 @@ abstract class AbstractResponse
      *
      * @param string $name
      *
-     * @return $this
+     * @return static
      */
     public function removeHeader(string $name): AbstractResponse
     {
@@ -132,7 +132,7 @@ abstract class AbstractResponse
     /**
      * Remove all headers
      *
-     * @return $this
+     * @return static
      */
     public function removeHeaders(): AbstractResponse
     {
@@ -164,7 +164,7 @@ abstract class AbstractResponse
      *
      * @param int $statusCode
      *
-     * @return $this
+     * @return static
      */
     public function statusCode(int $statusCode): AbstractResponse
     {
@@ -217,9 +217,9 @@ abstract class AbstractResponse
 	 * @param Closure $function
 	 * @param string|null $name
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function before(Closure $function, string $name = null): AbstractResponse
+    public function before(Closure $function, string|null $name = null): AbstractResponse
     {
         $this->workBeforeResponse[] = $function;
         $this->workBeforeIndex[] = $name;
@@ -245,7 +245,7 @@ abstract class AbstractResponse
 	 *
 	 * @return int
 	 */
-    public function countBeforeFunctions(string $withName = null): int
+    public function countBeforeFunctions(string|null $withName = null): int
     {
     	$counter = 0;
 
@@ -326,9 +326,9 @@ abstract class AbstractResponse
 	 * @param Closure $function
 	 * @param string|null $name
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function after(Closure $function, string $name = null): AbstractResponse
+    public function after(Closure $function, string|null $name = null): AbstractResponse
     {
         $this->workAfterResponse[] = $function;
 	    $this->workAfterIndex[] = $name;
@@ -354,7 +354,7 @@ abstract class AbstractResponse
 	 *
 	 * @return int
 	 */
-	public function countAfterFunctions(string $withName = null): int
+	public function countAfterFunctions(string|null $withName = null): int
 	{
 		$counter = 0;
 

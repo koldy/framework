@@ -8,6 +8,9 @@ use Koldy\Validator\{
     ConfigException, Exception as InvalidDataException, ConfigException as ValidatorConfigException, Message, Validate
 };
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class Validator
 {
 
@@ -63,7 +66,7 @@ class Validator
      * @throws Exception
      * @see Request::getAllParameters()
      */
-    public function __construct(array $rules, array $data = null)
+    public function __construct(array $rules, array|null $data = null)
     {
         if ($data === null) {
             $this->data = Request::getAllParameters();
@@ -89,7 +92,7 @@ class Validator
      * @throws Exception
      * @throws InvalidDataException
      */
-    public static function create(array $rules, array $data = null, bool $validateAndThrowException = true): Validator
+    public static function create(array $rules, array|null $data = null, bool $validateAndThrowException = true): Validator
     {
         $validator = new static($rules, $data);
 
@@ -115,7 +118,7 @@ class Validator
      * @throws Exception
      * @throws InvalidDataException
      */
-    public static function only(array $rules, array $data = null, bool $validateAndThrowException = true): Validator
+    public static function only(array $rules, array|null $data = null, bool $validateAndThrowException = true): Validator
     {
         $validator = new static($rules, $data);
         $validator->limitDataToRules(true);
@@ -191,7 +194,7 @@ class Validator
      * @throws Config\Exception
      * @throws Exception
      */
-    public function getData(bool $trimStrings = null): array
+    public function getData(bool|null $trimStrings = null): array
     {
         $trimStrings = $trimStrings === null || $trimStrings;
         $data = $this->data;
@@ -256,7 +259,7 @@ class Validator
      * @throws Config\Exception
      * @throws Exception
      */
-    public function getDataObj(bool $trimStrings = null): \stdClass
+    public function getDataObj(bool|null $trimStrings = null): \stdClass
     {
         $obj = new \stdClass();
         foreach ($this->getData($trimStrings ?? true) as $key => $value) {
@@ -410,6 +413,7 @@ class Validator
                         }
                     }
 
+	                // @phpstan-ignore-next-line
                 } else if (is_integer($param) || (is_string($param) && strlen($param) > 0)) {
                     // this means that explicit array's value position is defined for validation
 
@@ -568,7 +572,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'present' - will fail if 'param' is not within validation data
 	 */
-    protected function validatePresent(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validatePresent(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (!array_key_exists($parameter, $context)) {
             return Message::getMessage(Message::PRESENT, [
@@ -594,7 +598,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'required'
 	 */
-    protected function validateRequired(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateRequired(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -653,7 +657,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'min:5' - will fail if value is not at least 5
 	 */
-    protected function validateMin(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateMin(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException('Validator \'min\' has to have defined minimum value');
@@ -733,7 +737,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'max:5' - will fail if value is not at least 5
 	 */
-    protected function validateMax(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateMax(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException('Validator \'max\' has to have defined maximum value');
@@ -813,7 +817,7 @@ class Validator
 	 * @example 'param' => 'minLength:5'
 	 * @deprecated due to ability to use $rules
 	 */
-    protected function validateMinLength(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateMinLength(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException('Validator \'minLength\' has to have defined minimum value');
@@ -874,7 +878,7 @@ class Validator
 	 * @example 'param' => 'maxLength:5'
 	 * @deprecated due to ability to use $rules
 	 */
-    protected function validateMaxLength(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateMaxLength(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException('Validator \'maxLength\' has to have defined maximum value');
@@ -933,7 +937,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'length:5'
 	 */
-    protected function validateLength(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateLength(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException('Validator \'length\' has to have defined maximum value');
@@ -992,7 +996,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'integer' - passed value must contain 0-9 digits only
 	 */
-    protected function validateInteger(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateInteger(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1047,7 +1051,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'bool' - passed value must be boolean
 	 */
-    protected function validateBool(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateBool(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1089,7 +1093,7 @@ class Validator
 	 * @example 'param' => 'boolean' - passed value must be boolean
 	 * @see validateBool()
 	 */
-    protected function validateBoolean(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateBoolean(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         return $this->validateBool($value, $parameter, $args);
     }
@@ -1108,7 +1112,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'numeric'
 	 */
-    protected function validateNumeric(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateNumeric(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1152,7 +1156,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'alphaNum'
 	 */
-    protected function validateAlphaNum(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateAlphaNum(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1196,7 +1200,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'hex'
 	 */
-    protected function validateHex(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateHex(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1244,7 +1248,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'alpha'
 	 */
-    protected function validateAlpha(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateAlpha(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1288,7 +1292,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'email'
 	 */
-    protected function validateEmail(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateEmail(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1332,7 +1336,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'slug'
 	 */
-    protected function validateSlug(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateSlug(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1362,7 +1366,7 @@ class Validator
         return null;
     }
 
-    protected function validateUuid(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateUuid(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1407,7 +1411,7 @@ class Validator
 	 * @example 'param' => 'is:yes'
 	 * @example 'param' => 'is:500'
 	 */
-    protected function validateIs(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateIs(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException("Validator 'is' must have argument in validator list for parameter {$parameter}");
@@ -1455,7 +1459,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'decimal:2'
 	 */
-    protected function validateDecimal(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateDecimal(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException("Validator 'decimal' must have argument in validator list for parameter {$parameter}");
@@ -1531,7 +1535,7 @@ class Validator
 	 *  'param1' => 'required',
 	 *  'param2' => 'same:param1'
 	 */
-    protected function validateSame(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateSame(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException("Validator 'same' must have argument in validator list for parameter {$parameter}");
@@ -1596,7 +1600,7 @@ class Validator
 	 *  'param1' => 'required',
 	 *  'param2' => 'different:param1'
 	 */
-    protected function validateDifferent(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateDifferent(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException("Validator 'different' must have argument in validator list for parameter {$parameter}");
@@ -1660,7 +1664,7 @@ class Validator
 	 * @example 'param' => 'date'
 	 * @example 'param' => 'date:Y-m-d'
 	 */
-    protected function validateDate(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateDate(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         $format = $args[0] ?? null;
 
@@ -1722,7 +1726,7 @@ class Validator
 	 * @example 'param' => 'anyOf:one,two,3,four'
 	 * @example 'param' => 'anyOf:one,two%2C maybe three' // if comma needs to be used, then urlencode it
 	 */
-    protected function validateAnyOf(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateAnyOf(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException("Validator 'anyOf' must have at least one defined value; parameter={$parameter}");
@@ -1784,7 +1788,7 @@ class Validator
 	 * 'id' => 'required|integer|min:1',
 	 * 'email' => 'email|unique:\Db\User,email,field:id,id' // check if email exists in \Db\User model, but exclude ID with value from param 'id'
 	 */
-    protected function validateUnique(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateUnique(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) < 2) {
             throw new ValidatorConfigException("Validator 'unique' must have at least two defined arguments; parameter={$parameter}");
@@ -1866,7 +1870,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'user_id' => 'required|integer|exists:\Db\User,id' // e.g. user_id = 5, so this will check if there is record in \Db\User model under id=5
 	 */
-    protected function validateExists(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateExists(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) < 2) {
             throw new ValidatorConfigException("Validator 'exists' must have at least two defined arguments; parameter={$parameter}");
@@ -1927,7 +1931,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'csrf_token' => 'csrf'
 	 */
-    protected function validateCsrf(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateCsrf(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         //$value = $this->getValue($parameter);
 
@@ -1971,7 +1975,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'startsWith:098'
 	 */
-    protected function validateStartsWith(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateStartsWith(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException("Validator 'startsWith' must have argument in validator list for parameter {$parameter}");
@@ -2027,7 +2031,7 @@ class Validator
 	 * @throws ValidatorConfigException
 	 * @example 'param' => 'endsWith:dd1'
 	 */
-    protected function validateEndsWith(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateEndsWith(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         if (count($args) == 0) {
             throw new ValidatorConfigException("Validator 'endsWith' must have argument in validator list for parameter {$parameter}");
@@ -2083,7 +2087,7 @@ class Validator
 	 * @example 'param' => 'array'
 	 * @example 'param' => 'array:5'
 	 */
-    protected function validateArray(mixed $value, string $parameter, array $args = [], array $rules = null, array $context = null): ?string
+    protected function validateArray(mixed $value, string $parameter, array $args = [], array|null $rules = null, array|null $context = null): ?string
     {
         $count = $args[0] ?? null;
 

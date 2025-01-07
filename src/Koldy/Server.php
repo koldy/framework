@@ -40,20 +40,6 @@ class Server
                 } else {
                     throw new Exception('Unable to get server load');
                 }
-            } else if (class_exists('COM')) {
-                $wmi = new \COM("WinMgmts:\\\\.");
-                $CPUs = $wmi->InstancesOf('Win32_Processor');
-
-                $cpuLoad = 0;
-                $i = 0;
-
-                while ($cpu = $CPUs->Next()) {
-                    $cpuLoad += $cpu->LoadPercentage;
-                    $i++;
-                }
-
-                $cpuLoad = round($cpuLoad / $i, 2);
-                return $cpuLoad . '%';
             }
         }
 
@@ -124,7 +110,12 @@ class Server
         $memory = memory_get_usage();
         $peak = memory_get_peak_usage();
         $allocatedMemory = memory_get_peak_usage(true);
-        $memoryLimit = ini_get('memory_limit') ?? -1;
+        $memoryLimit = ini_get('memory_limit');
+
+		// @phpstan-ignore-next-line
+		if (is_bool($memoryLimit) && !$memoryLimit) {
+			$memoryLimit = '0B';
+		}
 
         $memoryKb = round($memory / 1024, 2);
         $peakKb = round($peak / 1024, 2);
@@ -133,7 +124,7 @@ class Server
         $limit = '';
         $peakSpent = '';
 
-        if ($memoryLimit > 0) {
+        if ($memoryLimit !== '0B') {
             $limitInt = Convert::stringToBytes($memoryLimit);
             $limit = ", limit: {$memoryLimit}";
 

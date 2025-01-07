@@ -15,23 +15,18 @@ class Csrf
     /**
      * @deprecated
      */
-    private const ENABLED = 'enabled';
+	protected const ENABLED = 'enabled';
 
-    private const PARAMETER_NAME = 'parameter_name';
-    private const COOKIE_NAME = 'cookie_name';
-    private const SESSION_KEY_NAME = 'session_key_name';
+	protected const PARAMETER_NAME = 'parameter_name';
+	protected const COOKIE_NAME = 'cookie_name';
+	protected const SESSION_KEY_NAME = 'session_key_name';
 
-    /**
-     * @var Token
-     */
-    private static $token = null;
+    protected static Token|null $token = null;
 
     /**
      * Initialized CSRF config will be stored here
-     *
-     * @var array
      */
-    private static $config = null;
+    protected static array|null $config = null;
 
     /**
      * Initialize CSRF config
@@ -42,7 +37,7 @@ class Csrf
      * @throws ConfigException
      * @throws \Koldy\Exception
      */
-    public static function init(array $config = null, bool $reInit = false)
+    public static function init(array|null $config = null, bool $reInit = false): void
     {
         if (static::$config === null || $reInit) {
             if ($config === null) {
@@ -111,7 +106,7 @@ class Csrf
      * @throws Session\Exception
      * @throws \Koldy\Exception
      */
-    public static function generate(string $token = null, int $length = null): Token
+    public static function generate(string|null $token = null, int|null $length = null): Token
     {
         if ($token == null) {
             if ($length == null) {

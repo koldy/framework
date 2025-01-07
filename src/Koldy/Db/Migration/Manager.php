@@ -57,7 +57,7 @@ class Manager
      * @return string
      * @throws Exception
      */
-    private static function getMigrationClass(): string
+    protected static function getMigrationClass(): string
     {
         if (is_file('KoldyMigration.php')) {
             require_once 'KoldyMigration.php';
@@ -71,6 +71,7 @@ class Manager
             $class = KoldyMigration::class;
         }
 
+	    // @phpstan-ignore-next-line
         $instance = new $class();
         if (!($instance instanceof Model)) {
             $theClass = get_class($instance);
@@ -100,6 +101,7 @@ class Manager
             Log::info("There are no migrations to execute in {$migrationsPath}");
         } else {
             /** @var KoldyMigration $class */
+	        // @phpstan-ignore-next-line
             $class = static::getMigrationClass();
             $tableName = $class::getTableName();
             $adapter = $class::getAdapter();
@@ -160,8 +162,8 @@ class Manager
 
             $files = array_flip($files);
 
-            if (count($files) == 0) {
-
+	        // @phpstan-ignore-next-line
+            if (count($files) === 0) {
                 Log::info('Nothing to migrate; no PHP files in migrations folder');
 
             } else {
@@ -313,6 +315,7 @@ class Manager
         }
 
         /** @var KoldyMigration $class */
+	    // @phpstan-ignore-next-line
         $class = static::getMigrationClass();
 
         Log::debug("Will do {$stepsDown} step(s) rollback");

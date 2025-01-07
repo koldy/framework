@@ -18,16 +18,16 @@ class Bind
 
 	private int | float | bool | string | BackedEnum | null $value;
 
-	private int | float | bool | string | null $type;
+	private int $type;
 
 	/**
 	 * Bind constructor.
 	 *
 	 * @param string $parameter
-	 * @param mixed $value
+	 * @param int|float|bool|string|BackedEnum|null $value
 	 * @param int|null $typeConstant
 	 */
-	public function __construct(string $parameter, int | float | bool | string | BackedEnum | null $value, int $typeConstant = null)
+	public function __construct(string $parameter, int | float | bool | string | BackedEnum | null $value, int|null $typeConstant = null)
 	{
 		$this->parameter = $parameter;
 		$this->value = $value;

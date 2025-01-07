@@ -6,8 +6,11 @@ namespace Koldy\Db\ModelTraits;
  * Trait for models that has the "id" column which is integer. Suitable for primary keys in DB tables.
  * @package Koldy\Db\ModelTraits
  *
- * @property int|null id
+ * @property int|null $id
+ *
+ * @deprecated This trait is deprecated and will be removed in next major version.
  */
+// @phpstan-ignore-next-line
 trait Id
 {
 

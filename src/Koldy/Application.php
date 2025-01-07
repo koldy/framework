@@ -21,9 +21,9 @@ use Throwable;
 class Application
 {
 
-    const DEVELOPMENT = 0;
-    const PRODUCTION = 1;
-    const TEST = 2;
+    public const DEVELOPMENT = 0;
+    public const PRODUCTION = 1;
+    public const TEST = 2;
 
     /**
      * All loaded configs in one place so feel free to call
@@ -45,14 +45,14 @@ class Application
      *
      * @var array
      */
-    private static array $registeredModules = [];
+	protected static array $registeredModules = [];
 
     /**
      * Current running module, if any
      *
      * @var string|null
      */
-    private static string | null $currentModule = null;
+	protected static string | null $currentModule = null;
 
     /**
      * The application environment mode
@@ -85,7 +85,7 @@ class Application
     /**
      * @var Url|null
      */
-    private static Url | null $currentUrl = null;
+	protected static Url | null $currentUrl = null;
 
     /**
      * The requested URI. Basically $_SERVER['REQUEST_URI'], but not if you pass your own
@@ -114,63 +114,63 @@ class Application
      * @var string|null
      * @example website
      */
-    protected static string | null $appName = null;
+	protected static string | null $appName = null;
 
     /**
      * Current domain on which we're running
      *
      * @var string|null
      */
-    protected static string | null $domain = null;
+	protected static string | null $domain = null;
 
     /**
      * Are we behind SSL?
      *
      * @var bool
      */
-    protected static bool $isSSL = false;
+	protected static bool $isSSL = false;
 
     /**
      * Path to application folder, with ending SLASH
      *
      * @var string|null
      */
-    private static string | null $applicationPath = null;
+	protected static string | null $applicationPath = null;
 
     /**
      * Path to module folder, with ending SLASH
      *
      * @var string|null
      */
-    private static string | null $modulePath = null;
+	protected static string | null $modulePath = null;
 
     /**
      * Path to storage folder, with ending SLASH
      *
      * @var string|null
      */
-    private static string | null $storagePath = null;
+	protected static string | null $storagePath = null;
 
     /**
      * Path to view folder, with ending SLASH
      *
      * @var string|null
      */
-    private static string | null $viewPath = null;
+	protected static string | null $viewPath = null;
 
     /**
      * Path to scripts folder, with ending SLASH
      *
      * @var string|null
      */
-    private static string | null $scriptsPath = null;
+	protected static string | null $scriptsPath = null;
 
     /**
      * Path to public folder, with ending SLASH
      *
      * @var string|null
      */
-    private static string | null $publicPath = null;
+    protected static string | null $publicPath = null;
 
     /**
      * Terminate execution immediately - use it when there's no other way of recovering from error, usually
@@ -223,6 +223,7 @@ class Application
     {
 		// argument accepts everything, so we can print better error message
 
+	    // @phpstan-ignore-next-line
 	    if (!is_string($data) && !is_array($data)) {
 		    static::terminateWithError('Can not start application, argument 1 in Application::useConfig() is expected to be array or string (a path to config file); got ' . gettype($data) . ' instead');
 	    }
@@ -270,6 +271,7 @@ class Application
                 static::$isSSL = str_starts_with($siteUrl[0], 'https:');
 
             } else if (is_array($siteUrl)) {
+	            // @phpstan-ignore-next-line
                 if (count($siteUrl) === 0) {
                     throw new ConfigException('If site_url is defined as array, then it must be non-empty array; please check the config received through; please check the config received through Application::useConfig()');
                 }
@@ -450,7 +452,7 @@ class Application
 	 * @return string
 	 * @example /var/www/your.site/com/application/
 	 */
-    public static function getApplicationPath(string $append = null): string
+    public static function getApplicationPath(string|null $append = null): string
     {
         if ($append === null) {
             return static::$applicationPath;
@@ -467,7 +469,7 @@ class Application
 	 * @return string
 	 * @example /var/www/your.site/com/storage/
 	 */
-    public static function getStoragePath(string $append = null): string
+    public static function getStoragePath(string|null $append = null): string
     {
         if ($append === null) {
             return static::$storagePath;
@@ -484,7 +486,7 @@ class Application
 	 * @return string
 	 * @example /var/www/your.site/com/public/
 	 */
-    public static function getPublicPath(string $append = null): string
+    public static function getPublicPath(string|null $append = null): string
     {
         if ($append === null) {
             return static::$publicPath;
@@ -500,7 +502,7 @@ class Application
      *
      * @return string
      */
-    public static function getViewPath(string $append = null): string
+    public static function getViewPath(string|null $append = null): string
     {
         if ($append === null) {
             return static::$viewPath;
@@ -972,7 +974,7 @@ class Application
      * @throws ConfigException
      * @throws Exception
      */
-    public static function init(string $uri = null): void
+    public static function init(string|null $uri = null): void
     {
     	static::$uri = $uri;
 
@@ -1091,11 +1093,13 @@ class Application
 	 * @throws ConfigException
 	 * @throws Exception
 	 */
-    public static function run(string $uri = null): void
+    public static function run(string|null $uri = null): void
     {
         static::init($uri);
 
-        if (!KOLDY_CLI) {
+		$koldyCli = defined('KOLDY_CLI') && KOLDY_CLI === true;
+
+        if (!$koldyCli) {
             // this is normal HTTP request that came from Web Server, so we'll handle it
 
             $uri = $uri ?? $_SERVER['REQUEST_URI'] ?? null;

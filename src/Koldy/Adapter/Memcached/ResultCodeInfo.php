@@ -120,7 +120,8 @@ class ResultCodeInfo implements Stringable
 			45 => 'The method that was requested has been deprecated.',
 			46 => 'Operation is still in progress.',
 			47 => 'Server is temporarily disabled.',
-			49 => 'This in an internal only state.'
+			49 => 'This in an internal only state.',
+			default => "Unknown result code: {$this->resultCode}"
 		};
 	}
 

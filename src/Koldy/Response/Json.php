@@ -9,6 +9,7 @@ use Koldy\Data;
  * The JSON class. Feel free to override it if you need to make it work different.
  *
  * @link http://koldy.net/docs/json
+ * @phpstan-consistent-constructor
  */
 class Json extends AbstractResponse
 {
@@ -31,7 +32,7 @@ class Json extends AbstractResponse
      *
      * @param array $data [optional]
      *
-     * @return $this
+     * @return static
      * @link http://koldy.net/docs/json#usage
      */
     public static function create(array $data = []): Json

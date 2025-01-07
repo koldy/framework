@@ -25,28 +25,28 @@ class Request
 	 *
 	 * @var string|null
 	 */
-	private static string|null $realIp = null;
+	protected static string|null $realIp = null;
 
 	/**
 	 * The raw data of the request
 	 *
 	 * @var string|null
 	 */
-	private static string|null $rawData = null;
+	protected static string|null $rawData = null;
 
 	/**
 	 * The variables in case of PUT, DELETE or some other request type
 	 *
 	 * @var array|null
 	 */
-	private static array|null $vars = null;
+	protected static array|null $vars = null;
 
 	/**
 	 * Local "cache" of requested hosts
 	 *
 	 * @var array|null
 	 */
-	private static array|null $hosts = [];
+	protected static array|null $hosts = [];
 
 	/**
 	 * The once-initialized array of UploadedFile instances; will be empty if there's no files uploaded
@@ -60,7 +60,7 @@ class Request
 	 *
 	 * @var array|null
 	 */
-	private static array|null $parsedMultipartContent = null;
+	protected static array|null $parsedMultipartContent = null;
 
 	/**
 	 * Get the real IP address of remote user. If you're looking for server's IP, please refer to Server::ip()
@@ -99,7 +99,7 @@ class Request
 			}
 		}
 
-		if (KOLDY_CLI) {
+		if (defined('KOLDY_CLI') && KOLDY_CLI === true) {
 			static::$realIp = '127.0.0.1';
 		} else if (isset($_SERVER['REMOTE_ADDR'])) {
 			static::$realIp = $_SERVER['REMOTE_ADDR'];
@@ -381,7 +381,7 @@ class Request
 	 * @return array
 	 * @throws RequestException
 	 */
-	private static function getInputVars(): array
+	protected static function getInputVars(): array
 	{
 		if (static::$vars === null) {
 			// take those vars only once
@@ -413,10 +413,11 @@ class Request
 	 * @return string|null
 	 * @throws RequestException
 	 */
-	private static function get(string $resourceName, string $name): ?string
+	protected static function get(string $resourceName, string $name): ?string
 	{
 		switch ($resourceName) {
 			case 'GET':
+				/** @phpstan-ignore-next-line */
 				if (!isset($_GET)) {
 					return null;
 				}
@@ -425,6 +426,7 @@ class Request
 				break;
 
 			case 'POST':
+				/** @phpstan-ignore-next-line */
 				if (!isset($_POST)) {
 					return null;
 				}
@@ -477,6 +479,7 @@ class Request
 	 */
 	public static function hasGetParameter(string $name): bool
 	{
+		/** @phpstan-ignore-next-line */
 		return isset($_GET) && is_array($_GET) && array_key_exists($name, $_GET);
 	}
 
@@ -501,6 +504,7 @@ class Request
 	 */
 	public static function getAllGetParameters(): array
 	{
+		/** @phpstan-ignore-next-line */
 		return isset($_GET) && is_array($_GET) ? $_GET : [];
 	}
 
@@ -514,6 +518,7 @@ class Request
 	 */
 	public static function hasPostParameter(string $name): bool
 	{
+		/** @phpstan-ignore-next-line */
 		return isset($_POST) && is_array($_POST) && array_key_exists($name, $_POST);
 	}
 
@@ -538,6 +543,7 @@ class Request
 	 */
 	public static function getAllPostParameters(): array
 	{
+		/** @phpstan-ignore-next-line */
 		return isset($_POST) && is_array($_POST) ? $_POST : [];
 	}
 
@@ -631,7 +637,7 @@ class Request
 	 */
 	public static function requireParams(string ...$requiredParameters): array
 	{
-		if (KOLDY_CLI) {
+		if (defined('KOLDY_CLI') && KOLDY_CLI === true) {
 			throw new ApplicationException('Unable to require parameters in CLI mode. Check \Koldy\Cli for that');
 		}
 
@@ -807,6 +813,7 @@ class Request
 	 */
 	public static function doesntContainParams(...$params): bool
 	{
+		/** @phpstan-ignore-next-line */
 		if (is_array($params[0])) {
 			$params = $params[0];
 		}
@@ -828,7 +835,7 @@ class Request
 	 * @param string $property
 	 * @param array $data
 	 */
-	private static function digFile(array &$uploadedFiles, string $property, array $data): void
+	protected static function digFile(array &$uploadedFiles, string $property, array $data): void
 	{
 		foreach ($data as $key => $value) {
 			if (is_array($value)) {
@@ -851,7 +858,7 @@ class Request
 	 *
 	 * @throws Security\Exception
 	 */
-	private static function initUploadedFile(&$uploadedFiles): void
+	protected static function initUploadedFile(&$uploadedFiles): void
 	{
 		// check segments of given parameter
 		$name = $uploadedFiles['name'] ?? null;
@@ -885,6 +892,7 @@ class Request
 
 		$uploadedFiles = [];
 
+		/** @phpstan-ignore-next-line */
 		if (isset($_FILES)) {
 			// parse all
 			foreach ($_FILES as $field => $file) {
@@ -926,7 +934,7 @@ class Request
 	 *
 	 * @return array
 	 */
-	private static function getMultipartContent(): array
+	protected static function getMultipartContent(): array
 	{
 		if (self::$parsedMultipartContent === null) {
 			$contentType = array_key_exists('CONTENT_TYPE', $_SERVER) ? $_SERVER['CONTENT_TYPE'] : null;

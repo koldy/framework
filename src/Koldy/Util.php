@@ -177,7 +177,7 @@ class Util
 	 *
 	 * @return string
 	 */
-	public static function a(string $text, string $target = null): string
+	public static function a(string $text, string|null $target = null): string
     {
         return preg_replace('@((https?://)?([-\w]+\.[-\w\.]+)+\w(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)*)@',
           "<a href=\"\$1\"" . ($target != null ? " target=\"{$target}\"" : '') . ">$1</a>", $text);
@@ -205,7 +205,7 @@ class Util
      * @return bool
      * @throws Exception
      */
-	public static function startsWith(string $yourString, string $startsWith, string $encoding = null): bool
+	public static function startsWith(string $yourString, string $startsWith, string|null $encoding = null): bool
     {
         return mb_substr($yourString, 0, mb_strlen($startsWith, $encoding ?? Application::getEncoding()), $encoding ?? Application::getEncoding()) === $startsWith;
     }
@@ -220,7 +220,7 @@ class Util
      * @return bool
      * @throws Exception
      */
-	public static function endsWith(string $yourString, string $endsWith, string $encoding = null): bool
+	public static function endsWith(string $yourString, string $endsWith, string|null $encoding = null): bool
     {
         return mb_substr($yourString, 0 - mb_strlen($endsWith, $encoding ?? Application::getEncoding()), null, $encoding ?? Application::getEncoding()) === $endsWith;
     }
@@ -383,7 +383,7 @@ class Util
      *
      * @return string
      */
-    public static function camelCase(string $string, array $noStrip = null, bool $lowerCaseFirstLetter = null): string
+    public static function camelCase(string $string, array|null $noStrip = null, bool|null $lowerCaseFirstLetter = null): string
     {
         // non-alpha and non-numeric characters become spaces
         $string = preg_replace('/[^a-z0-9' . implode('', $noStrip ?? []) . ']+/i', ' ', $string);
@@ -474,7 +474,7 @@ class Util
 	 * @return string
 	 * @throws Exception
 	 */
-	public static function now(string $format = null, string $timezone = null): string
+	public static function now(string|null $format = null, string|null $timezone = null): string
 	{
 		return (new DateTime('now', new DateTimeZone($timezone ?? 'UTC')))->format($format ?? 'Y-m-d H:i:s.u');
 	}

@@ -8,7 +8,7 @@ use Koldy\Response\Exception as ResponseException;
 
 /**
  * Force file download to output buffer.
- *
+ * @phpstan-consistent-constructor
  */
 class FileDownload extends AbstractResponse
 {
@@ -49,7 +49,7 @@ class FileDownload extends AbstractResponse
      *
      * @param string $asName
      *
-     * @return $this
+     * @return static
      */
     public function setAsName(string $asName): FileDownload
     {
@@ -62,7 +62,7 @@ class FileDownload extends AbstractResponse
      *
      * @param string $contentType
      *
-     * @return $this
+     * @return static
      */
     public function setContentType(string $contentType): FileDownload
     {
@@ -77,9 +77,9 @@ class FileDownload extends AbstractResponse
 	 * @param string|null $asName [optional]
 	 * @param string|null $contentType [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public static function create(string $path, string $asName = null, string $contentType = null): FileDownload
+    public static function create(string $path, string|null $asName = null, string|null $contentType = null): FileDownload
     {
         $self = new static(new File($path));
 

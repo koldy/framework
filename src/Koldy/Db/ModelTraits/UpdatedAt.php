@@ -10,8 +10,11 @@ use Koldy\Exception;
  * Trait UpdatedAt
  * @package Koldy\Db\ModelTraits
  *
- * @property string|null updated_at
+ * @property string|null $updated_at
+ *
+ * @deprecated This trait is deprecated and will be removed in next major version.
  */
+// @phpstan-ignore-next-line
 trait UpdatedAt
 {
 

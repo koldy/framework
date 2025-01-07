@@ -2,3 +2,7 @@
 .php_cs.cache
 .DS_Store
 Thumbs.db
+vendor
+composer.phar
+composer.lock
+bin

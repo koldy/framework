@@ -17,6 +17,7 @@ use Koldy\Response\Exception as ResponseException;
  * or data fetching. Try to keep your code clean and in MVC style.
  *
  * @link http://koldy.net/docs/view
+ * @phpstan-consistent-constructor
  */
 class View extends AbstractResponse
 {
@@ -51,7 +52,7 @@ class View extends AbstractResponse
      *
      * @param string $view
      *
-     * @return $this
+     * @return static
      * @example View::create('base') will initialize /application/views/base.phtml
      * @link http://koldy.net/docs/view
      */
@@ -65,7 +66,7 @@ class View extends AbstractResponse
      *
      * @param string $view
      *
-     * @return $this
+     * @return static
      */
     public function setView(string $view): self
     {
@@ -82,7 +83,8 @@ class View extends AbstractResponse
      */
     protected function getViewPath(string $view): string
     {
-        if (DS != '/') {
+		// @phpstan-ignore-next-line
+        if (DS !== '/') {
             $view = str_replace('/', DS, $view);
         }
 
@@ -100,7 +102,7 @@ class View extends AbstractResponse
      *
      * @param string $basePath
      *
-     * @return $this
+     * @return static
      */
     public function setViewPath(string $basePath): self
     {
@@ -143,7 +145,7 @@ class View extends AbstractResponse
 	 * @return string
 	 * @throws Exception
 	 */
-    public function render(string $view, array $with = null): string
+    public function render(string $view, array|null $with = null): string
     {
         $path = $this->getViewPath($view);
 
@@ -177,7 +179,7 @@ class View extends AbstractResponse
 	 * @return string
 	 * @throws Exception
 	 */
-    public function renderViewIf(string $view, array $with = null): string
+    public function renderViewIf(string $view, array|null $with = null): string
     {
         if ($this->exists($view)) {
             return $this->render($view, $with);
@@ -195,7 +197,7 @@ class View extends AbstractResponse
 	 * @return string
 	 * @throws Exception
 	 */
-    public function renderViewInKeyIf(string $key, array $with = null): string
+    public function renderViewInKeyIf(string $key, array|null $with = null): string
     {
         if (!$this->has($key)) {
             return '';

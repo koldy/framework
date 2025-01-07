@@ -90,7 +90,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Exception
      * @throws \Koldy\Json\Exception
      */
-    public function set(string $key, mixed $value, int $seconds = null): void
+    public function set(string $key, mixed $value, int|null $seconds = null): void
     {
         $key = $this->getKeyName($key);
 
@@ -174,7 +174,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      */
-    public function deleteOld(int $olderThanSeconds = null): void
+    public function deleteOld(int|null $olderThanSeconds = null): void
     {
 		if ($olderThanSeconds === null) {
 			$olderThanSeconds = $this->defaultDuration ?? 3600;
@@ -244,7 +244,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Json\Exception
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
-    public function setMulti(array $keyValuePairs, int $seconds = null): void
+    public function setMulti(array $keyValuePairs, int|null $seconds = null): void
     {
         if (count($keyValuePairs) == 0) {
             throw new CacheException('Can not use setMulti on empty array');
@@ -283,7 +283,7 @@ class Db extends AbstractCacheAdapter
      * @throws \Koldy\Db\Query\Exception
      * @throws \Koldy\Exception
      */
-    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int|null $seconds = null): array
     {
         $found = $this->getMulti($keys);
         $missing = [];

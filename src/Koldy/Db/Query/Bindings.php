@@ -48,7 +48,7 @@ class Bindings
 		return static::$index++;
 	}
 
-	public function set(string $parameter, int | float | bool | string | BackedEnum | null $value, int $typeConstant = null): string
+	public function set(string $parameter, int | float | bool | string | BackedEnum | null $value, int | null $typeConstant = null): string
 	{
 		$this->bindings[$parameter] = new Bind($parameter, $value, $typeConstant);
 		return $parameter;
@@ -95,7 +95,7 @@ class Bindings
 	 *
 	 * @return string
 	 */
-	public function makeAndSet(string | Expr $parameter, $value, int $typeConstant = null): string
+	public function makeAndSet(string | Expr $parameter, $value, int|null $typeConstant = null): string
 	{
 		if ($parameter instanceof Expr) {
 			// something complex in the field name, so create generic name instead of trying to create human-friendly-readable name

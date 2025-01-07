@@ -37,22 +37,17 @@ class Log
 
     /**
      * The array of only enabled writer instances for this request
-     *
-     * @var array
      */
-    private static $adapters = null;
+    protected static array|null $adapters = null;
 
     /**
      * The array of enabled log levels, combined for all loggers
      *
      * @var array of level => true, possible levels are: emergency, alert, critical, error, warning, notice, info, debug and sql
      */
-    private static $enabledLevels = [];
+    protected static array $enabledLevels = [];
 
-    /**
-     * @var string
-     */
-    private static $who = null;
+    protected static string|null $who = null;
 
 	/**
 	 * Random number generated only once per script (either HTTP or CLI), so if you reset the "who", random number
@@ -61,14 +56,14 @@ class Log
 	 *
 	 * @var null|int
 	 */
-    private static $randomNumber = null;
+    protected static int|null $randomNumber = null;
 
     /**
      * The array of enabled classes, stored as class name string
      *
      * @var array of className => true
      */
-    private static $enabledAdapters = [];
+    protected static array $enabledAdapters = [];
 
     /**
      * Flag if writing to log is temporary disabled or not. Set this to true for internal use, in cases like:
@@ -76,7 +71,7 @@ class Log
      *
      * @var bool|array
      */
-    private static $temporaryDisabled = false;
+    protected static bool|array $temporaryDisabled = false;
 
     protected function __construct()
     {
@@ -225,6 +220,7 @@ class Log
 
         if (is_array($levels)) {
             $disable = $levels;
+	        // @phpstan-ignore-next-line
         } else if (is_string($levels)) {
             $disable = [$levels];
         }

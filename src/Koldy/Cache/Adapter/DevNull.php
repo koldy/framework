@@ -3,7 +3,6 @@
 namespace Koldy\Cache\Adapter;
 
 use Closure;
-use Exception;
 use Koldy\Cache\Exception as CacheException;
 use Throwable;
 
@@ -50,7 +49,7 @@ class DevNull extends AbstractCacheAdapter
 	 * @param mixed $value
 	 * @param int|null $seconds
 	 */
-    public function set(string $key, mixed $value, int $seconds = null): void
+    public function set(string $key, mixed $value, int|null $seconds = null): void
     {
         $this->checkKey($key);
     }
@@ -63,7 +62,7 @@ class DevNull extends AbstractCacheAdapter
      *
      * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
      */
-    public function setMulti(array $keyValuePairs, int $seconds = null): void
+    public function setMulti(array $keyValuePairs, int|null $seconds = null): void
     {
         foreach (array_keys($keyValuePairs) as $key) {
             $this->checkKey($key);
@@ -114,7 +113,7 @@ class DevNull extends AbstractCacheAdapter
     /**
      * @param int|null $olderThanSeconds
      */
-    public function deleteOld(int $olderThanSeconds = null): void
+    public function deleteOld(int|null $olderThanSeconds = null): void
     {
         // nothing to delete
     }
@@ -126,15 +125,10 @@ class DevNull extends AbstractCacheAdapter
 	 *
 	 * @return mixed
 	 */
-    public function getOrSet(string $key, Closure $functionOnSet, int $seconds = null): mixed
+    public function getOrSet(string $key, Closure $functionOnSet, int|null $seconds = null): mixed
     {
         $this->checkKey($key);
-
-//	    try {
-		    return call_user_func($functionOnSet, $key, $seconds);
-//	    } catch (Exception | Throwable $e) {
-//		    throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
-//	    }
+	    return call_user_func($functionOnSet, $key, $seconds);
     }
 
 	/**
@@ -145,7 +139,7 @@ class DevNull extends AbstractCacheAdapter
 	 * @return array
 	 * @throws CacheException
 	 */
-    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int|null $seconds = null): array
     {
         foreach ($keys as $key) {
             $this->checkKey($key);
@@ -153,7 +147,7 @@ class DevNull extends AbstractCacheAdapter
 
 	    try {
 		    $values = call_user_func($functionOnMissingKeys, [], $keys, $seconds); // calling function, read keys, missing keys, seconds
-	    } catch (Exception | Throwable $e) {
+	    } catch (Throwable $e) {
 		    throw new CacheException("Unable to cache set of values because exception was thrown in setter function on missing keys: {$e->getMessage()}", $e->getCode(), $e);
 	    }
 

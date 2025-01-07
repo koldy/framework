@@ -23,45 +23,45 @@ class File extends AbstractLogAdapter
     /**
      * The file pointer
      *
-     * @var resource
+     * @var resource|null
      */
-    private mixed $fp = null;
+    protected mixed $fp = null;
 
     /**
      * The last file pointer file name for log
      *
      * @var string|null
      */
-    private string | null $fpFile = null;
+	protected string | null $fpFile = null;
 
     /**
      * @var string|null
      */
-    private string | null $generatedFileName = null;
+	protected string | null $generatedFileName = null;
 
     /**
      * Get message function handler
      *
      * @var Closure|null
      */
-    private Closure|null $getMessageFunction = null;
+	protected Closure|null $getMessageFunction = null;
 
     /**
      * Function for getting the file name
      *
      * @var Closure|null
      */
-    private Closure|null $fileNameFn = null;
+	protected Closure|null $fileNameFn = null;
 
     /**
      * @var int|null
      */
-    private int | null $mode = null;
+	protected int | null $mode = null;
 
 	/**
 	 * @var int|null
 	 */
-	private int | null $fileMode = null;
+	protected int | null $fileMode = null;
 
 	/**
 	 * Construct the handler to log to files. The config array will be check
@@ -215,6 +215,7 @@ class File extends AbstractLogAdapter
                 }
             }
 
+	        // @phpstan-ignore-next-line
             if ($this->fp === false || $this->fp === null) {
                 if ($this->config['path'] === null) {
                     $path = Application::getStoragePath('log' . DS . $fpFile);

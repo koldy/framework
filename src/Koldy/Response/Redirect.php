@@ -8,7 +8,6 @@ use Koldy\Route;
 
 /**
  * Response Redirection client to another Location.
- *
  */
 class Redirect extends AbstractResponse
 {
@@ -18,10 +17,11 @@ class Redirect extends AbstractResponse
      *
      * @param string $where
      *
-     * @return $this
+     * @return static
      */
     public static function permanent(string $where): Redirect
     {
+		// @phpstan-ignore-next-line due to @phpstan-consistent-constructor
         $self = new static();
         $self->statusCode(301)
           ->setHeader('Location', $where)
@@ -36,10 +36,11 @@ class Redirect extends AbstractResponse
      *
      * @param string $where
      *
-     * @return $this
+     * @return static
      */
     public static function temporary(string $where): Redirect
     {
+	    // @phpstan-ignore-next-line due to @phpstan-consistent-constructor
         $self = new static();
         $self->statusCode(302)
           ->setHeader('Location', $where)
@@ -54,7 +55,7 @@ class Redirect extends AbstractResponse
      *
      * @param string $where
      *
-     * @return $this
+     * @return static
      * @example http://www.google.com
      */
     public static function to(string $where): Redirect
@@ -65,7 +66,7 @@ class Redirect extends AbstractResponse
 	/**
 	 * Redirect client (302) to home page
 	 *
-	 * @return $this
+	 * @return static
 	 * @throws Exception
 	 */
     public static function home(): Redirect
@@ -80,10 +81,10 @@ class Redirect extends AbstractResponse
 	 * @param string|null $action
 	 * @param array|null $params
 	 *
-	 * @return $this
+	 * @return static
 	 * @throws \Koldy\Exception
 	 */
-    public static function href(string $controller = null, string $action = null, array $params = null): Redirect
+    public static function href(string|null $controller = null, string|null $action = null, array|null $params = null): Redirect
     {
         return static::temporary(Application::route()->href($controller, $action, $params));
     }
@@ -94,12 +95,12 @@ class Redirect extends AbstractResponse
 	 * @param string $path
 	 * @param string|null $assetSite
 	 *
-	 * @return $this
+	 * @return static
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
-	 * @deprecated use asset() method instead of this mthod
+	 * @deprecated use asset() method instead of this method
 	 */
-    public static function link(string $path, string $assetSite = null): Redirect
+    public static function link(string $path, string|null $assetSite = null): Redirect
     {
         return self::temporary(Application::route()->asset($path, $assetSite));
     }
@@ -110,12 +111,12 @@ class Redirect extends AbstractResponse
 	 * @param string $path
 	 * @param string|null $assetKey
 	 *
-	 * @return $this
+	 * @return static
 	 * @throws Route\Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function asset(string $path, string $assetKey = null): Redirect
+    public static function asset(string $path, string|null $assetKey = null): Redirect
     {
         return self::temporary(Route::asset($path, $assetKey));
     }

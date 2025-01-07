@@ -78,9 +78,9 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function from(string $email, string $name = null): CommonMailAdapter
+    public function from(string $email, string|null $name = null): CommonMailAdapter
     {
         $this->fromEmail = $email;
         $this->fromName = $name;
@@ -94,9 +94,9 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function replyTo(string $email, string $name = null): CommonMailAdapter
+    public function replyTo(string $email, string|null $name = null): CommonMailAdapter
     {
         $this->replyTo = $this->getAddressValue($email, $name);
         return $this;
@@ -108,9 +108,9 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function to(string $email, string $name = null): CommonMailAdapter
+    public function to(string $email, string|null $name = null): CommonMailAdapter
     {
         $this->to[] = [
           'email' => $email,
@@ -126,9 +126,9 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function cc(string $email, string $name = null): CommonMailAdapter
+    public function cc(string $email, string|null $name = null): CommonMailAdapter
     {
         $this->cc[] = [
           'email' => $email,
@@ -144,9 +144,9 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 * @param string $email
 	 * @param string|null $name [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function bcc(string $email, string $name = null): CommonMailAdapter
+    public function bcc(string $email, string|null $name = null): CommonMailAdapter
     {
         $this->bcc[] = [
           'email' => $email,
@@ -161,7 +161,7 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
      *
      * @param string $subject
      *
-     * @return $this
+     * @return static
      */
     public function subject(string $subject): CommonMailAdapter
     {
@@ -176,9 +176,9 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 * @param boolean $isHTML
 	 * @param string|null $alternativeText
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function body(string $body, bool $isHTML = false, string $alternativeText = null): CommonMailAdapter
+    public function body(string $body, bool $isHTML = false, string|null $alternativeText = null): CommonMailAdapter
     {
         $this->body = $body;
         $this->isHTML = $isHTML;
@@ -192,9 +192,9 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 * @param string $fullFilePath
 	 * @param string|null $attachedAsName [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public function attachFile(string $fullFilePath, string $attachedAsName = null): CommonMailAdapter
+    public function attachFile(string $fullFilePath, string|null $attachedAsName = null): CommonMailAdapter
     {
     	if (strlen($fullFilePath) == 0) {
     		throw new InvalidArgumentException('Attached file path can not be empty string');

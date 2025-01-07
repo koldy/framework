@@ -3,9 +3,10 @@
 namespace Koldy;
 
 use Koldy\Session\Exception as SessionException;
+use Throwable;
 
 /**
- * The session class. Its easy to use, just make sure that your configuration
+ * The session class. It's easy to use, just make sure that your configuration
  * is valid. Everything else will be just straight forward.
  *
  */
@@ -40,7 +41,7 @@ class Session
      *
      * @throws Exception
      */
-    private static function init(string $sessionId = null): void
+    protected static function init(string|null $sessionId = null): void
     {
         if (!static::$initialized) {
             $config = Application::getConfig('session');
@@ -216,7 +217,7 @@ class Session
 
 	        try {
 		        $_SESSION[$key] = call_user_func($functionOnSet);
-	        } catch (\Exception | \Throwable $e) {
+	        } catch (Throwable $e) {
 		        throw new SessionException("Unable to set session value because exception was thrown in setter function: {$e->getMessage()}", $e->getCode(), $e);
 	        }
         }
@@ -261,7 +262,7 @@ class Session
      * @param string|null $sessionId
      * @throws Exception
      */
-    public static function start(string $sessionId = null): void
+    public static function start(string|null $sessionId = null): void
     {
         static::init($sessionId);
     }

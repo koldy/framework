@@ -17,22 +17,22 @@ class Autoloader
     /**
      * @var string|null
      */
-    private static string | null $directory = null;
+    protected static string | null $directory = null;
 
     /**
      * @var string|null
      */
-    private static string | null $prefix = null;
+	protected static string | null $prefix = null;
 
     /**
      * @var int|null
      */
-    private static int | null $prefixLength = null;
+	protected static int | null $prefixLength = null;
 
 	/**
 	 * @param string|null $baseDirectory Base directory where the source files are located.
 	 */
-    public static function init(string $baseDirectory = null)
+    public static function init(string|null $baseDirectory = null): void
     {
         if (static::$directory === null || $baseDirectory !== null) {
 	        static::$directory = $baseDirectory ?? __DIR__;

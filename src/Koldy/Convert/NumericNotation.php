@@ -89,7 +89,7 @@ class NumericNotation
 	/**
 	 * @throws ExtensionException
 	 */
-    private static function checkExtensionOrFail(): void
+    protected static function checkExtensionOrFail(): void
     {
     	if (!extension_loaded('bcmath')) {
     		throw new ExtensionException('BCMath extension is not loaded. Visit https://www.php.net/manual/en/bc.installation.php for more info');
