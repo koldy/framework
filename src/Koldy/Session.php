@@ -83,13 +83,17 @@ class Session
                 static::$sessionId = $sessionId;
             }
 
+	        $options = [];
+
+	        if (version_compare(PHP_VERSION, '8.4', '<')) {
+		        $options['sid_length'] = $config->get('sid_length') ?? 40;
+		        $options['sid_bits_per_character'] = $config->get('sid_bits_per_character') ?? 6;
+	        }
+
 	        /*========================================*/
 	        /******************************************/
 
-	        session_start([
-		        'sid_length' => $config->get('sid_length') ?? 40,
-		        'sid_bits_per_character' => $config->get('sid_bits_per_character') ?? 6
-	        ]);
+	        session_start($options);
 
 	        /******************************************/
 	        /*========================================*/
