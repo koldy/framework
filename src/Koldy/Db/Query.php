@@ -35,7 +35,7 @@ class Query implements Stringable
      * @param Bindings|array|null $bindings
      * @param string|null $adapter
      */
-    public function __construct(string | object | null $query = null, Bindings | array | null $bindings = null, string $adapter = null)
+    public function __construct(string | object | null $query = null, Bindings | array | null $bindings = null, string|null $adapter = null)
     {
         $this->query = $query;
         $this->adapter = $adapter;
@@ -47,11 +47,8 @@ class Query implements Stringable
 	        $this->bindings = new Bindings();
 	        $this->bindings->setFromArray($bindings);
 
-        } else if ($bindings instanceof Bindings) {
-        	$this->bindings = $bindings;
-
         } else {
-        	throw new \InvalidArgumentException('Invalid second argument provided, expected null, array or instance of Bindings');
+        	$this->bindings = $bindings;
         }
     }
 
@@ -74,11 +71,8 @@ class Query implements Stringable
 		    $this->bindings = new Bindings();
 		    $this->bindings->setFromArray($bindings);
 
-	    } else if ($bindings instanceof Bindings) {
-		    $this->bindings = $bindings;
-
 	    } else {
-		    throw new \InvalidArgumentException('Invalid second argument provided, expected null, array or instance of Bindings');
+		    $this->bindings = $bindings;
 	    }
 
         return $this;
@@ -165,11 +159,8 @@ class Query implements Stringable
 		    $this->bindings = new Bindings();
 		    $this->bindings->setFromArray($bindings);
 
-	    } else if ($bindings instanceof Bindings) {
-		    $this->bindings = $bindings;
-
 	    } else {
-		    throw new \InvalidArgumentException('Invalid second argument provided, expected null, array or instance of Bindings');
+		    $this->bindings = $bindings;
 	    }
 
         return $this;
@@ -265,7 +256,7 @@ class Query implements Stringable
      * @throws QueryException
      * @throws \Koldy\Exception
      */
-    public function fetchAllObj(string $class = null): array
+    public function fetchAllObj(string|null $class = null): array
     {
         if (!$this->wasExecuted()) {
             $this->exec();
@@ -293,7 +284,7 @@ class Query implements Stringable
      * @throws QueryException
      * @throws \Koldy\Exception
      */
-    public function fetchAllObjGenerator(string $class = null): Generator
+    public function fetchAllObjGenerator(string|null $class = null): Generator
     {
         if (!$this->wasExecuted()) {
             $this->exec();

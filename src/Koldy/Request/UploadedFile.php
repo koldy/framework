@@ -5,6 +5,9 @@ namespace Koldy\Request;
 use Koldy\Convert;
 use Koldy\Security\Exception as SecurityException;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class UploadedFile
 {
 
@@ -61,6 +64,7 @@ class UploadedFile
 	 */
 	public static function createFromFilesArray(string $name): ?static
 	{
+		/** @phpstan-ignore isset.variable */
 		if (!isset($_FILES) || !array_key_exists($name, $_FILES)) {
 			return null;
 		}

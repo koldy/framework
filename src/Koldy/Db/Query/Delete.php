@@ -33,7 +33,7 @@ class Delete extends Where
 	 *
 	 * @link http://koldy.net/docs/database/query-builder#delete
 	 */
-    public function __construct(string $table = null, string $adapter = null)
+    public function __construct(string|null $table = null, string|null $adapter = null)
     {
         $this->table = $table;
         $this->adapter = $adapter;

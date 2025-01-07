@@ -201,7 +201,6 @@ class Db implements SessionHandlerInterface
 	    $shouldInsert = false;
 
 	    try {
-		    /** @var \Koldy\Db\Query\Statement $koldyStmt */
 		    $koldyStmt = $adapter->update($this->getTableName(), $data)->where('id', $id)->exec();
 		    $pdoStmt = $koldyStmt->getLastQuery()->getStatement();
 		    $shouldInsert = $pdoStmt->rowCount() === 0;
@@ -229,7 +228,6 @@ class Db implements SessionHandlerInterface
 			    // therefore, we'll try to update this one more time before throwing an exception
 
 			    try {
-				    /** @var \Koldy\Db\Query\Statement $koldyStmt */
 				    $adapter->update($this->getTableName(), $data)->where('id', $id)->exec();
 			    } catch (DbException $e2) {
 				    // something went wrong with database

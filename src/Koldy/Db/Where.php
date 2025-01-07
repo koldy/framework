@@ -51,7 +51,7 @@ class Where
      * @param mixed $value
      * @param string $operator
      *
-     * @return $this
+     * @return static
      */
     private function addCondition(string $link, mixed $field, mixed $value, string $operator): static
     {
@@ -147,7 +147,7 @@ class Where
      *
      * @param string $field
      *
-     * @return $this
+     * @return static
      */
     public function orWhereNotNull(string $field): static
     {
@@ -363,7 +363,7 @@ class Where
 	 * @return string
 	 * @throws Exception
 	 */
-    public function getWhereSql(array $whereArray = null, int $cnt = 0): string
+    public function getWhereSql(array|null $whereArray = null, int $cnt = 0): string
     {
     	if ($this->bindings === null) {
     		$this->bindings = new Bindings();
@@ -470,7 +470,8 @@ class Where
      */
     public static function init(): static
     {
-        return new self();
+		// @phpstan-ignore-next-line due to @phpstan-consistent-constructor
+        return new static();
     }
 
 }

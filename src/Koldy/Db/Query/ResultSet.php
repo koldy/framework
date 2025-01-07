@@ -282,7 +282,7 @@ class ResultSet extends Select
 	 * @throws Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function fetchAllObj(string $class = null): array
+    public function fetchAllObj(string|null $class = null): array
     {
         if ($class == null && $this->modelClass !== null) {
             return parent::fetchAllObj($this->modelClass);
@@ -300,7 +300,7 @@ class ResultSet extends Select
 	 * @throws Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function fetchFirstObj(string $class = null): ?object
+    public function fetchFirstObj(string|null $class = null): ?object
     {
         if ($class == null && $this->modelClass !== null) {
             return parent::fetchFirstObj($this->modelClass);

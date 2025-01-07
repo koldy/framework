@@ -36,7 +36,7 @@ class Crypt
      * @throws CryptException
      * @throws Exception
      */
-    final public static function encrypt(string $plainText, string $key = null, string $method = null): string
+    final public static function encrypt(string $plainText, string|null $key = null, string|null $method = null): string
     {
         if ($method === null) {
             $method = static::getMethod();
@@ -75,7 +75,7 @@ class Crypt
      * @throws Exception
      * @throws MalformedException
      */
-    final public static function decrypt(string $encryptedText, string $key = null, string $method = null): string
+    final public static function decrypt(string $encryptedText, string|null $key = null, string|null $method = null): string
     {
         if ($method === null) {
             $method = static::getMethod();

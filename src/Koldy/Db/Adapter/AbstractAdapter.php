@@ -35,7 +35,7 @@ abstract class AbstractAdapter
      * @param array $config
      * @param string|null $configKey
      */
-    public function __construct(array $config = [], string $configKey = null)
+    public function __construct(array $config = [], string|null $configKey = null)
     {
         $this->config = $config;
         $this->configKey = $configKey;
@@ -215,7 +215,7 @@ abstract class AbstractAdapter
      *
      * @return Query
      */
-    public function query(string $query, array $bindings = null): Query
+    public function query(string $query, array|null $bindings = null): Query
     {
         $this->lastQuery = new Query($query, $bindings, $this->configKey);
         return $this->lastQuery;
@@ -229,7 +229,7 @@ abstract class AbstractAdapter
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function select(string $table = null, string $tableAlias = null): Query\Select
+    public function select(string|null $table = null, string|null $tableAlias = null): Query\Select
     {
         $select = new Query\Select($table, $tableAlias);
         $select->setAdapter($this->getConfigKey());
@@ -246,7 +246,7 @@ abstract class AbstractAdapter
 	 * @throws \Koldy\Exception
 	 * @throws \Koldy\Json\Exception
 	 */
-    public function insert(string $table = null, array $rowValues = null): Query\Insert
+    public function insert(string|null $table = null, array|null $rowValues = null): Query\Insert
     {
         return new Query\Insert($table, $rowValues, $this->getConfigKey());
     }
@@ -259,7 +259,7 @@ abstract class AbstractAdapter
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function update(string $table = null, array $values = null): Query\Update
+    public function update(string|null $table = null, array|null $values = null): Query\Update
     {
         return new Query\Update($table, $values, $this->getConfigKey());
     }
@@ -269,7 +269,7 @@ abstract class AbstractAdapter
      *
      * @return Query\Delete
      */
-    public function delete(string $table = null): Query\Delete
+    public function delete(string|null $table = null): Query\Delete
     {
         return new Query\Delete($table, $this->getConfigKey());
     }
@@ -281,7 +281,7 @@ abstract class AbstractAdapter
 	 * @throws Exception
 	 * @throws QueryException
 	 */
-	public function getLastInsertId(string $keyName = null): string
+	public function getLastInsertId(string|null $keyName = null): string
 	{
 		try {
 			$id = $this->getPDO()->lastInsertId($keyName);

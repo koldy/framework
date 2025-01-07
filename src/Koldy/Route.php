@@ -113,7 +113,7 @@ class Route
 	 * @return bool
 	 * @throws Exception
 	 */
-    public static function isModule(string $module, string $controller = null, string $action = null): bool
+    public static function isModule(string $module, string|null $controller = null, string|null $action = null): bool
     {
         $route = Application::route();
         if ($module === $route->getModuleUrl()) {
@@ -139,14 +139,14 @@ class Route
 	/**
 	 * Generate the link suitable for <a> tags. Generating links depends about the routing class you're using.
 	 *
-	 * @param null $controller
+	 * @param string|null $controller
 	 * @param string|null $action
 	 * @param array|null $params
 	 *
 	 * @return string
 	 * @throws Exception
 	 */
-    public static function href($controller = null, string $action = null, array $params = null): string
+    public static function href(string|null $controller = null, string|null $action = null, array|null $params = null): string
     {
         return Application::route()->href($controller, $action, $params);
     }
@@ -163,7 +163,7 @@ class Route
 	 * @return string
 	 * @throws Exception
 	 */
-    public static function siteHref(string $site, string $controller = null, string $action = null, array $params = null): string
+    public static function siteHref(string|null $site, string|null $controller = null, string|null $action = null, array|null $params = null): string
     {
         return Application::route()->siteHref($site, $controller, $action, $params);
     }
@@ -177,7 +177,7 @@ class Route
      * @return string
      * @throws Exception
      */
-    public static function site(string $site, string $uri = null): string
+    public static function site(string $site, string|null $uri = null): string
     {
         $otherSite = Application::getConfig('sites')->get($site);
 
@@ -219,7 +219,7 @@ class Route
 	 * @throws Exception
 	 * @throws RouteException
 	 */
-    public static function asset(string $path, string $server = null): string
+    public static function asset(string $path, string|null $server = null): string
     {
         $route = Application::route();
         return $route->asset($path, $server);

@@ -22,7 +22,7 @@ class Directory
 	 * @throws Exception
 	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
 	 */
-    public static function read(string $path, string $filter = null): array
+    public static function read(string $path, string|null $filter = null): array
     {
         if (is_dir($path) && $handle = opendir($path)) {
             $files = [];
@@ -61,7 +61,7 @@ class Directory
 	 * @throws Exception
 	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
 	 */
-    public static function readFiles(string $path, string $filter = null): array
+    public static function readFiles(string $path, string|null $filter = null): array
     {
         if (is_dir($path) && $handle = opendir($path)) {
             $files = [];
@@ -101,7 +101,7 @@ class Directory
 	 * @throws Exception
 	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
 	 */
-    public static function readFilesRecursive(string $path, string $filter = null): array
+    public static function readFilesRecursive(string $path, string|null $filter = null): array
     {
         if (is_dir($path) && $handle = opendir($path)) {
             $files = [];
@@ -140,7 +140,7 @@ class Directory
      * Create the target directory recursively if needed
      *
      * @param string $path
-     * @param int $chmod default 0644
+     * @param int|null $chmod default 0644
      *
      * @return void
      * @throws Exception
@@ -148,7 +148,7 @@ class Directory
      * @throws \Koldy\Exception
      * @example $chmod 0777, 0755, 0700
      */
-    public static function mkdir(string $path, $chmod = null): void
+    public static function mkdir(string $path, int|null $chmod = null): void
     {
         if (!is_dir($path)) {
             if ($chmod === null) {

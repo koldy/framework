@@ -27,7 +27,7 @@ class Token
      * @param string $token
      * @param string|null $cookieToken
      */
-    public function __construct(string $token, string $cookieToken = null)
+    public function __construct(string $token, string|null $cookieToken = null)
     {
         $this->token = $token;
         $this->cookieToken = $cookieToken;

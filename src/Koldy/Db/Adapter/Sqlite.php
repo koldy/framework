@@ -37,6 +37,7 @@ class Sqlite extends AbstractAdapter
     {
         try {
             $this->tryConnect();
+	        // @phpstan-ignore-next-line
         } catch (\PDOException $firstException) {
             $this->pdo = null;
 
@@ -97,8 +98,6 @@ class Sqlite extends AbstractAdapter
 
     /**
      * Close connection to database if it was opened
-     *
-     * @throws Exception
      */
     public function close(): void
     {
@@ -111,10 +110,6 @@ class Sqlite extends AbstractAdapter
             $this->stmt = null;
             $this->pdo = null;
 
-        } else if ($this->pdo === null) {
-            // to nothing
-        } else {
-            throw new AdapterException('Unable to close database connection when PDO handler is not an instance of PDO');
         }
     }
 

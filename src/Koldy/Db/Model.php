@@ -19,6 +19,7 @@ use TypeError;
  * simply define the table name you need. Check out the docs in link for more examples.
  *
  * @link http://koldy.net/docs/database/models
+ * @phpstan-consistent-constructor
  */
 abstract class Model implements Stringable
 {
@@ -77,7 +78,7 @@ abstract class Model implements Stringable
      *
      * @param array|null $data
      */
-    public function __construct(array $data = null)
+    public function __construct(array|null $data = null)
     {
         if ($data !== null) {
             // let's detect if $data contains primary keys, if it does, then $setOriginalData should be true
@@ -411,13 +412,14 @@ abstract class Model implements Stringable
 	 * @throws Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
+	 * @throws TypeError
 	 * @example
 	 *
 	 *    if (User::create(array('first_name' => 'John', 'last_name' => 'Doe'))) {
 	 *      echo User::getLastInsertId();
 	 *    }
 	 */
-    public static function getLastInsertId(string $keyName = null): string
+    public static function getLastInsertId(string|null $keyName = null): string
     {
         if (static::$autoIncrement) {
             if (is_string(static::$autoIncrement)) {
@@ -464,6 +466,7 @@ abstract class Model implements Stringable
                 foreach ($where as $field => $value) {
                     $update->where($field, $value);
                 }
+				// @phpstan-ignore-next-line
             } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
                 $update->where(static::$primaryKey, $where);
             }
@@ -526,6 +529,7 @@ abstract class Model implements Stringable
                     // we have pk value, so lets update
                     $update = new Update(static::getTableName(), $toUpdate, static::getAdapterConnection());
 
+	                // @phpstan-ignore-next-line
                     if (!is_array(static::$primaryKey)) {
                         $update->where(static::$primaryKey, $data[static::$primaryKey]);
                     } else {
@@ -598,6 +602,7 @@ abstract class Model implements Stringable
             foreach ($where as $field => $value) {
                 $update->where($field, $value);
             }
+	        // @phpstan-ignore-next-line
         } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
             $update->where(static::$primaryKey, $where);
         } else {
@@ -634,6 +639,7 @@ abstract class Model implements Stringable
             foreach ($where as $field => $value) {
                 $delete->where($field, $value);
             }
+	        // @phpstan-ignore-next-line
         } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
             $delete->where(static::$primaryKey, $where);
         }
@@ -691,7 +697,7 @@ abstract class Model implements Stringable
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/models#fetchOne
 	 */
-    public static function fetchOne(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): ?static
+    public static function fetchOne(int | float | string | array | Where $field, int | float | string | null $value = null, array|null $fields = null): ?static
     {
         $select = static::select();
 
@@ -745,7 +751,7 @@ abstract class Model implements Stringable
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/models#fetchOne
 	 */
-    public static function fetchOneOrFail(int | float | string | array | Where $field, int | float | string | null $value = null, array $fields = null): static
+    public static function fetchOneOrFail(int | float | string | array | Where $field, int | float | string | null $value = null, array|null $fields = null): static
     {
         $record = static::fetchOne($field, $value, $fields);
 
@@ -775,11 +781,11 @@ abstract class Model implements Stringable
 	 */
     public static function fetch(
 		int | float | string | array | Where $where,
-		array $fields = null,
-		string $orderField = null,
-		string $orderDirection = null,
-		int $limit = null,
-		int $start = null
+		array|null $fields = null,
+		string|null $orderField = null,
+		string|null $orderDirection = null,
+		int|null $limit = null,
+		int|null $start = null
     ): array {
         $select = static::select();
 
@@ -793,6 +799,7 @@ abstract class Model implements Stringable
             foreach ($where as $field => $value) {
                 $select->where($field, $value);
             }
+	        // @phpstan-ignore-next-line
         } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
             $select->where(static::$primaryKey, $where);
         }
@@ -834,11 +841,11 @@ abstract class Model implements Stringable
     public static function fetchWithKey(
         string $key,
 	    int | float | string | array | Where $where,
-        array $fields = null,
-        string $orderField = null,
-        string $orderDirection = null,
-        int $limit = null,
-        int $start = null
+        array|null $fields = null,
+        string|null $orderField = null,
+        string|null $orderDirection = null,
+        int|null $limit = null,
+        int|null $start = null
     ): array {
         $data = [];
 
@@ -860,7 +867,7 @@ abstract class Model implements Stringable
 	 * @throws \Koldy\Exception
 	 * @link http://www.php.net/manual/en/pdo.constants.php
 	 */
-    public static function all(string $orderField = null, string $orderDirection = null): array
+    public static function all(string|null $orderField = null, string|null $orderDirection = null): array
     {
         $select = static::select();
 
@@ -897,10 +904,10 @@ abstract class Model implements Stringable
 		string $keyField,
 		string $valueField,
 		int | float | string | array | Where | null $where = null,
-		string $orderField = null,
-		string $orderDirection = null,
-		int $limit = null,
-		int $start = null
+		string|null $orderField = null,
+		string|null $orderDirection = null,
+		int|null $limit = null,
+		int|null $start = null
     ): array {
         $select = static::select()->field($keyField, 'key_field')->field($valueField, 'value_field');
 
@@ -911,6 +918,7 @@ abstract class Model implements Stringable
                 foreach ($where as $field => $value) {
                     $select->where($field, $value);
                 }
+	            // @phpstan-ignore-next-line
             } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
                 $select->where(static::$primaryKey, $where);
             }
@@ -952,10 +960,10 @@ abstract class Model implements Stringable
     public static function fetchArrayOf(
 		string $field,
 		int | float | string | array | Where | null $where = null,
-		string $orderField = null,
-		string $orderDirection = null,
-		int $limit = null,
-		int $start = null
+		string|null $orderField = null,
+		string|null $orderDirection = null,
+		int|null $limit = null,
+		int|null $start = null
     ): array {
         $select = static::select()->field($field, 'key_field');
 
@@ -966,6 +974,7 @@ abstract class Model implements Stringable
                 foreach ($where as $field => $value) {
                     $select->where($field, $value);
                 }
+	            // @phpstan-ignore-next-line
             } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
                 $select->where(static::$primaryKey, $where);
             }
@@ -999,7 +1008,7 @@ abstract class Model implements Stringable
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function fetchOneValue(string $field, int | float | string | array | Where | null $where = null, string $orderField = null, string $orderDirection = null): mixed
+    public static function fetchOneValue(string $field, int | float | string | array | Where | null $where = null, string|null $orderField = null, string|null $orderDirection = null): mixed
     {
         $select = static::select()->field($field, 'key_field')->limit(0, 1);
 
@@ -1010,6 +1019,7 @@ abstract class Model implements Stringable
                 foreach ($where as $field => $value) {
                     $select->where($field, $value);
                 }
+	            // @phpstan-ignore-next-line
             } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
                 $select->where(static::$primaryKey, $where);
             }
@@ -1040,7 +1050,7 @@ abstract class Model implements Stringable
 	 * @throws Query\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function fetchOneValueOrFail(string $field, int | float | string | array | Where | null $where = null, string $orderField = null, string $orderDirection = null): mixed
+    public static function fetchOneValueOrFail(string $field, int | float | string | array | Where | null $where = null, string|null $orderField = null, string|null $orderDirection = null): mixed
     {
         $value = static::fetchOneValue($field, $where, $orderField, $orderDirection);
 
@@ -1079,8 +1089,8 @@ abstract class Model implements Stringable
     public static function isUnique(
       string $field,
       int | float | string $value,
-      int | float | string $exceptionValue = null,
-      string $exceptionField = null
+      int | float | string | null $exceptionValue = null,
+      string|null $exceptionField = null
     ): bool {
         $select = static::select();
         $select->field('COUNT(*)', 'total')->where($field, $value);
@@ -1127,6 +1137,7 @@ abstract class Model implements Stringable
                     $select->where($field, $value);
                 }
 
+	            // @phpstan-ignore-next-line
             } else if (!is_array(static::$primaryKey) && (is_numeric($where) || is_string($where))) {
                 $select->field('COUNT(' . static::$primaryKey . ')', 'total');
                 $select->where(static::$primaryKey, $where);
@@ -1160,7 +1171,7 @@ abstract class Model implements Stringable
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function resultSet(string $tableAlias = null): ResultSet
+    public static function resultSet(string|null $tableAlias = null): ResultSet
     {
         $rs = new ResultSet(static::getTableName(), $tableAlias);
         $rs->setModelClass(get_called_class())->setAdapter(static::getAdapterConnection());
@@ -1176,7 +1187,7 @@ abstract class Model implements Stringable
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function select(string $tableAlias = null): Select
+    public static function select(string|null $tableAlias = null): Select
     {
         $select = new Select(static::getTableName(), $tableAlias);
         $select->setAdapter(static::getAdapterConnection());
@@ -1194,7 +1205,7 @@ abstract class Model implements Stringable
 	 * @throws \Koldy\Db\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function insert(array $rawValues = null): Insert
+    public static function insert(array|null $rawValues = null): Insert
     {
         return new Insert(static::getTableName(), $rawValues, static::getAdapterConnection());
     }

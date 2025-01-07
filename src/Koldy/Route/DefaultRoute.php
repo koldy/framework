@@ -365,7 +365,7 @@ class DefaultRoute extends AbstractRoute
 	 * @return string
 	 * @throws \Koldy\Exception
 	 */
-    public function href(string $controller = null, string $action = null, array $params = null, string $lang = null): string
+    public function href(string|null $controller = null, string|null $action = null, array|null $params = null, string|null $lang = null): string
     {
         return $this->siteHref('', $controller, $action, $params, $lang);
     }
@@ -380,7 +380,7 @@ class DefaultRoute extends AbstractRoute
      * @return string
      * @throws \Koldy\Exception
      */
-    public function siteHref(string $site, string $controller = null, string $action = null, array $params = null, string $lang = null): string
+    public function siteHref(string $site, string|null $controller = null, string|null $action = null, array|null $params = null, string|null $lang = null): string
     {
         if ($controller !== null && str_contains($controller, '/')) {
             throw new \InvalidArgumentException('Slash is not allowed in controller name');
@@ -501,9 +501,11 @@ class DefaultRoute extends AbstractRoute
 
         if (is_file($exceptionHandlerPath)) {
             require_once $exceptionHandlerPath;
+			// @phpstan-ignore-next-line
             $exceptionHandler = new \ExceptionHandler($e); // it will exist once the $exceptionHandlerPath file is included
 
             if ($exceptionHandler instanceof ResponseExceptionHandler) {
+	            // @phpstan-ignore-next-line
                 $exceptionHandler->exec();
             } else {
                 $routeException = new ServerException('Your ExceptionHandler is not instance of ResponseExceptionHandler, can not continue');

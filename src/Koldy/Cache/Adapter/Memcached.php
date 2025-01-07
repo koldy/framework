@@ -160,7 +160,7 @@ class Memcached extends AbstractCacheAdapter
 	 * @throws CacheException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
-    public function set(string $key, mixed $value, int $seconds = null): void
+    public function set(string $key, mixed $value, int|null $seconds = null): void
     {
         $key = $this->getKeyName($key);
 
@@ -180,7 +180,7 @@ class Memcached extends AbstractCacheAdapter
 	 * @throws ConfigException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
-    public function setMulti(array $keyValuePairs, int $seconds = null): void
+    public function setMulti(array $keyValuePairs, int|null $seconds = null): void
     {
         if (count($keyValuePairs) == 0) {
             throw new CacheException('Can not use setMulti on empty array');
@@ -207,7 +207,7 @@ class Memcached extends AbstractCacheAdapter
      * @throws CacheException
      * @throws ConfigException
      */
-    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int|null $seconds = null): array
     {
         $found = $this->getMulti($keys);
         $missing = [];
@@ -319,7 +319,7 @@ class Memcached extends AbstractCacheAdapter
 	 *
 	 * @param int|null $olderThanSeconds [optional] if not set, then default duration is used
 	 */
-    public function deleteOld(int $olderThanSeconds = null): void
+    public function deleteOld(int|null $olderThanSeconds = null): void
     {
         // Note1: won't be implemented - you might potentially have a lot of keys stored and you really don't want to
         // accidentally iterate through it

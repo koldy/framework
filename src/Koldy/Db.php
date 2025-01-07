@@ -58,7 +58,7 @@ class Db
 	 * @throws ConfigException
 	 * @throws Exception
 	 */
-    public static function getAdapter(string $configKey = null): AbstractAdapter
+    public static function getAdapter(string|null $configKey = null): AbstractAdapter
     {
         $key = $configKey ?? static::getDefaultAdapterKey();
 
@@ -82,7 +82,7 @@ class Db
 	 * @return AbstractAdapter
 	 * @throws ConfigException
 	 */
-    private static function resolve(array $config): AbstractAdapter
+    protected static function resolve(array $config): AbstractAdapter
     {
         if (!isset($config['type'])) {
             throw new ConfigException('Can not resolve database config when there\'s no "type" key');
@@ -138,6 +138,7 @@ class Db
      */
     public static function hasAdapter(string $name): bool
     {
+	    // @phpstan-ignore-next-line
         return isset(static::$adapters[$name]) && static::$adapters[$name] instanceof AbstractAdapter;
     }
 
@@ -232,7 +233,7 @@ class Db
      * @throws DbException
      * @throws Exception
      */
-    public static function select(string $table = null, string $tableAlias = null): Query\Select
+    public static function select(string|null $table = null, string|null $tableAlias = null): Query\Select
     {
         return static::getAdapter()->select($table, $tableAlias);
     }
@@ -249,7 +250,7 @@ class Db
      * @throws Exception
      * @throws Json\Exception
      */
-    public static function insert(string $table = null, array $rowValues = null): Query\Insert
+    public static function insert(string|null $table = null, array|null $rowValues = null): Query\Insert
     {
         return static::getAdapter()->insert($table, $rowValues);
     }
@@ -265,7 +266,7 @@ class Db
      * @throws DbException
      * @throws Exception
      */
-    public static function update(string $table = null, array $values = null): Query\Update
+    public static function update(string|null $table = null, array|null $values = null): Query\Update
     {
         return static::getAdapter()->update($table, $values);
     }
@@ -280,7 +281,7 @@ class Db
      * @throws DbException
      * @throws Exception
      */
-    public static function delete(string $table = null)
+    public static function delete(string|null $table = null)
     {
         return static::getAdapter()->delete($table);
     }

@@ -132,7 +132,7 @@ abstract class AbstractRoute
      *
      * @return string
      */
-    abstract public function href(string $controller = null, string $action = null, array $params = null, string $lang = null): string;
+    abstract public function href(string|null $controller = null, string|null $action = null, array|null $params = null, string|null $lang = null): string;
 
     /**
      * Generate link to another page on another server
@@ -145,7 +145,7 @@ abstract class AbstractRoute
      *
      * @return string
      */
-    abstract public function siteHref(string $site, string $controller = null, string $action = null, array $params = null, string $lang = null): string;
+    abstract public function siteHref(string $site, string|null $controller = null, string|null $action = null, array|null $params = null, string|null $lang = null): string;
 
 	/**
 	 * Make URL
@@ -155,7 +155,7 @@ abstract class AbstractRoute
 	 * @return string
 	 * @throws \Koldy\Exception
 	 */
-    public static function makeUrl(string $append = null): string
+    public static function makeUrl(string|null $append = null): string
     {
         if ($append == null) {
             return 'http' . (Application::isSSL() ? 's' : '') . '://' . Application::getDomain();
@@ -177,7 +177,7 @@ abstract class AbstractRoute
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function asset(string $path, string $assetSite = null): string
+    public function asset(string $path, string|null $assetSite = null): string
     {
         if (strlen($path) == 0) {
             throw new \InvalidArgumentException('Expected non-empty string');

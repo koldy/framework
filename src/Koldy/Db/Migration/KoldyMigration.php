@@ -4,7 +4,6 @@ namespace Koldy\Db\Migration;
 
 use Koldy\Db;
 use Koldy\Db\Model;
-use Koldy\Db\ModelTraits\Id;
 
 /**
  * Class KoldyMigration
@@ -14,11 +13,11 @@ use Koldy\Db\ModelTraits\Id;
  *
  * @package Koldy\Db\Migration
  *
- * @property int id
- * @property string script
- * @property int script_timestamp
- * @property string script_executed_at
- * @property int script_execution_duration
+ * @property int $id
+ * @property string $script
+ * @property int $script_timestamp
+ * @property string $script_executed_at
+ * @property int $script_execution_duration
  */
 class KoldyMigration extends Model
 {
@@ -36,7 +35,39 @@ class KoldyMigration extends Model
         return Db::getConfig()->has('koldy_migration') ? 'koldy_migration' : null;
     }
 
-    use Id;
+	/**
+	 * Get the ID or null.
+	 *
+	 * @return int|null
+	 */
+	public function getId(): ?int
+	{
+		if ($this->id === null) {
+			return null;
+		}
+
+		return (int)$this->id;
+	}
+
+	/**
+	 * Is ID set or not
+	 *
+	 * @return bool
+	 */
+	public function hasId(): bool
+	{
+		return $this->id !== null;
+	}
+
+	/**
+	 * Set the ID
+	 *
+	 * @param int|null $id
+	 */
+	public function setId(?int $id): void
+	{
+		$this->id = $id;
+	}
 
     /**
      * Get the script (and class) name

@@ -117,7 +117,7 @@ class Message
 	 * @throws ConfigException
 	 * @throws Exception
 	 */
-    public static function getMessage(int $constant, array $data = null): string
+    public static function getMessage(int $constant, array|null $data = null): string
     {
         if (!static::isInitialized()) {
             static::init();
@@ -132,7 +132,7 @@ class Message
         if ($msg instanceof Closure) {
 	        try {
 		        $return = call_user_func($msg, $data);
-	        } catch (\Exception | Throwable $e) {
+	        } catch (Throwable $e) {
 		        throw new Exception("Failed to execute custom validator function: {$e->getMessage()}", $e->getCode(), $e);
 	        }
 

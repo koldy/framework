@@ -22,6 +22,7 @@ class Cookie
 	 */
     public static function get(string $key): ?string
     {
+	    /** @phpstan-ignore isset.variable */
         if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
             return Crypt::decrypt($_COOKIE[$key]);
         }
@@ -38,6 +39,7 @@ class Cookie
      */
     public static function rawGet(string $key): ?string
     {
+	    /** @phpstan-ignore isset.variable */
         if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
             return $_COOKIE[$key];
         }
@@ -128,6 +130,7 @@ class Cookie
      */
     public static function has(string $name): bool
     {
+	    /** @phpstan-ignore isset.variable */
         return isset($_COOKIE) && array_key_exists($name, $_COOKIE);
     }
 

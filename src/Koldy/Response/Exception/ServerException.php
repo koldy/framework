@@ -7,7 +7,7 @@ use Koldy\Response\Exception as ResponseException;
 class ServerException extends ResponseException
 {
 
-    public function __construct($message = 'Internal Server Error', $code = 0, \Exception $previous = null)
+    public function __construct(string $message = 'Internal Server Error', int $code = 0, \Exception|null $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

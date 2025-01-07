@@ -10,8 +10,11 @@ use Koldy\Exception;
  * Trait DeletedAt
  * @package Koldy\Db\ModelTraits
  *
- * @property string|null deleted_at
+ * @property string|null $deleted_at
+ *
+ * @deprecated This trait is deprecated and will be removed in next major version.
  */
+// @phpstan-ignore-next-line
 trait DeletedAt
 {
 

@@ -8,6 +8,7 @@ use Koldy\Application;
  * Class for printing plain text as response to HTTP request.
  *
  * @link http://koldy.net/docs/plain
+ * @phpstan-consistent-constructor
  */
 class Plain extends AbstractResponse
 {
@@ -30,7 +31,7 @@ class Plain extends AbstractResponse
      *
      * @param string $text
      *
-     * @return $this
+     * @return static
      */
     public static function create(string $text = ''): Plain
     {
@@ -42,7 +43,7 @@ class Plain extends AbstractResponse
      *
      * @param string $content
      *
-     * @return $this
+     * @return static
      */
     public function setContent(string $content): Plain
     {
@@ -65,7 +66,7 @@ class Plain extends AbstractResponse
      *
      * @param string $content
      *
-     * @return $this
+     * @return static
      */
     public function append(string $content): Plain
     {
@@ -78,7 +79,7 @@ class Plain extends AbstractResponse
      *
      * @param string $content
      *
-     * @return $this
+     * @return static
      */
     public function prepend(string $content): Plain
     {

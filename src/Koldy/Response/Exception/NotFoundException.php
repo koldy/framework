@@ -7,7 +7,7 @@ use Koldy\Response\Exception as ResponseException;
 class NotFoundException extends ResponseException
 {
 
-    public function __construct($message = 'Not found', $code = 0, \Exception $previous = null)
+    public function __construct(string $message = 'Not found', int $code = 0, \Exception|null $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

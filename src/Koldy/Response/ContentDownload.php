@@ -4,7 +4,7 @@ namespace Koldy\Response;
 
 /**
  * Force content download to output buffer, so it'll be downloaded same as file.
- *
+ * @phpstan-consistent-constructor
  */
 class ContentDownload extends AbstractResponse
 {
@@ -45,7 +45,7 @@ class ContentDownload extends AbstractResponse
      *
      * @param string $asName
      *
-     * @return $this
+     * @return static
      */
     public function setAsName(string $asName): ContentDownload
     {
@@ -58,7 +58,7 @@ class ContentDownload extends AbstractResponse
      *
      * @param string $contentType
      *
-     * @return $this
+     * @return static
      */
     public function setContentType(string $contentType): ContentDownload
     {
@@ -73,9 +73,9 @@ class ContentDownload extends AbstractResponse
 	 * @param string $asName
 	 * @param string|null $contentType [optional]
 	 *
-	 * @return $this
+	 * @return static
 	 */
-    public static function create(string $content, string $asName, string $contentType = null): ContentDownload
+    public static function create(string $content, string $asName, string|null $contentType = null): ContentDownload
     {
         $self = new static($content);
         $self->setAsName($asName);

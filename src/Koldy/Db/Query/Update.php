@@ -42,7 +42,7 @@ class Update extends Where
 	 * @throws \Koldy\Exception
 	 * @link http://koldy.net/docs/database/query-builder#update
 	 */
-    public function __construct(string $table = null, array $values = null, string $adapter = null)
+    public function __construct(string|null $table = null, array|null $values = null, string|null $adapter = null)
     {
         $this->table = $table;
         $this->setAdapter($adapter);
@@ -55,7 +55,7 @@ class Update extends Where
     /**
      * @param string $table
      *
-     * @return Update
+     * @return static
      */
     public function table(string $table): static
     {
@@ -99,7 +99,7 @@ class Update extends Where
 	 * @return static
 	 * @throws Exception
 	 */
-    public function orderBy(string $field, string $direction = null): static
+    public function orderBy(string $field, string|null $direction = null): static
     {
         if ($direction === null) {
             $direction = 'ASC';

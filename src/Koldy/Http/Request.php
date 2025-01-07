@@ -10,7 +10,6 @@ use Koldy\Util;
 /**
  * Make HTTP request to any given URL.
  * This class requires PHP CURL extension!
- *
  */
 class Request
 {
@@ -57,7 +56,7 @@ class Request
      *
      * @param string $url
      *
-     * @return Request
+     * @return static
      */
     public function setUrl(string $url): static
     {
@@ -92,7 +91,7 @@ class Request
     /**
      * @param string $method
      *
-     * @return Request
+     * @return static
      */
     public function setMethod(string $method): static
     {
@@ -114,7 +113,7 @@ class Request
 	 * @param string $name
 	 * @param mixed $value
 	 *
-	 * @return Request
+	 * @return static
 	 */
     public function setParam(string $name, mixed $value): static
     {
@@ -127,7 +126,7 @@ class Request
      *
      * @param array $params
      *
-     * @return Request
+     * @return static
      */
     public function setParams(array $params): static
     {
@@ -172,7 +171,7 @@ class Request
 	 * @param string $name
 	 * @param string|int|float $value
 	 *
-	 * @return Request
+	 * @return static
 	 */
     public function setHeader(string $name, string | int | float $value): static
     {
@@ -185,7 +184,7 @@ class Request
      *
      * @param array $headers
      *
-     * @return Request
+     * @return static
      */
     public function setHeaders(array $headers): static
     {
@@ -227,7 +226,7 @@ class Request
     /**
      * @param string $name
      *
-     * @return Request
+     * @return static
      */
     public function removeHeader(string $name): static
     {
@@ -242,7 +241,7 @@ class Request
      *
      * @param array $curlOptions
      *
-     * @return Request
+     * @return static
      * @link http://php.net/manual/en/function.curl-setopt.php
      */
     public function setOptions(array $curlOptions): static
@@ -257,7 +256,7 @@ class Request
      * @param int $name
      * @param mixed $value
      *
-     * @return Request
+     * @return static
      * @link http://php.net/manual/en/function.curl-setopt.php
      */
     public function setOption(int $name, mixed $value): static
@@ -301,7 +300,7 @@ class Request
     /**
      * @param int $option
      *
-     * @return Request
+     * @return static
      */
     public function removeOption(int $option): static
     {
@@ -446,8 +445,9 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    protected static function quickRequest(string $url, string $method, array $params = null, array $headers = null): Response
+    protected static function quickRequest(string $url, string $method, array|null $params = null, array|null $headers = null): Response
     {
+	    // @phpstan-ignore-next-line due to @phpstan-consistent-constructor
         $self = new static();
         $self->setUrl($url)->setMethod($method);
 
@@ -477,7 +477,7 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function get(string $url, array $params = null, array $headers = null): Response
+    public static function get(string $url, array|null $params = null, array|null $headers = null): Response
     {
         return static::quickRequest($url, self::GET, $params, $headers);
     }
@@ -494,7 +494,7 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function post(string $url, array $params = null, array $headers = null): Response
+    public static function post(string $url, array|null$params = null, array|null $headers = null): Response
     {
         return static::quickRequest($url, self::POST, $params, $headers);
     }
@@ -511,7 +511,7 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function put(string $url, array $params = null, array $headers = null): Response
+    public static function put(string $url, array|null $params = null, array|null $headers = null): Response
     {
         return static::quickRequest($url, self::PUT, $params, $headers);
     }
@@ -528,7 +528,7 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function delete(string $url, array $params = null, array $headers = null): Response
+    public static function delete(string $url, array|null $params = null, array|null $headers = null): Response
     {
         return static::quickRequest($url, self::DELETE, $params, $headers);
     }
@@ -545,7 +545,7 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function patch(string $url, array $params = null, array $headers = null): Response
+    public static function patch(string $url, array|null $params = null, array|null $headers = null): Response
     {
         return static::quickRequest($url, self::PATCH, $params, $headers);
     }
@@ -562,7 +562,7 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function options(string $url, array $params = null, array $headers = null): Response
+    public static function options(string $url, array|null $params = null, array|null $headers = null): Response
     {
         return static::quickRequest($url, self::OPTIONS, $params, $headers);
     }
@@ -579,7 +579,7 @@ class Request
 	 * @throws Json\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public static function head(string $url, array $params = null, array $headers = null): Response
+    public static function head(string $url, array|null $params = null, array|null $headers = null): Response
     {
         return static::quickRequest($url, self::HEAD, $params, $headers);
     }

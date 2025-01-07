@@ -48,7 +48,7 @@ trait Statement
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function setAdapter(string $adapter = null): static
+    public function setAdapter(string|null $adapter = null): static
     {
         $this->adapter = $adapter ?? Db::getDefaultAdapterKey();
         return $this;
@@ -89,11 +89,11 @@ trait Statement
      *
      * @param string|null $adapter
      *
-     * @return $this
+     * @return static
      * @throws Exception
      * @throws \Koldy\Exception
      */
-    public function exec(string $adapter = null): static
+    public function exec(string|null $adapter = null): static
     {
         $this->lastQuery = $this->getQuery();
 

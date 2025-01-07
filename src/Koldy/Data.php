@@ -29,7 +29,7 @@ trait Data
 	 *
 	 * @param array $data
 	 *
-	 * @return Data
+	 * @return static
 	 */
     final public function setData(array $data): static
     {
@@ -42,7 +42,7 @@ trait Data
 	 *
 	 * @param array $data
 	 *
-	 * @return Data
+	 * @return static
 	 */
     final public function addData(array $data): static
     {
@@ -56,7 +56,7 @@ trait Data
 	 * @param string $key
 	 * @param mixed $value
 	 *
-	 * @return Data
+	 * @return static
 	 * @link http://koldy.net/docs/json#usage
 	 */
     final public function set(string $key, mixed $value): static
@@ -83,7 +83,7 @@ trait Data
 	 *
 	 * @param string $key
 	 *
-	 * @return Data
+	 * @return static
 	 * @link http://koldy.net/docs/json#usage
 	 */
     final public function delete(string $key): static

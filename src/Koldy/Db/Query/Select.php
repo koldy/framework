@@ -40,7 +40,7 @@ class Select extends Where
      *
      * @link http://koldy.net/docs/database/query-builder#select
      */
-    public function __construct(string | self $table = null, string $tableAlias = null)
+    public function __construct(string | self | null $table = null, string|null $tableAlias = null)
     {
         if ($table !== null) {
             $this->from($table, $tableAlias);
@@ -56,7 +56,7 @@ class Select extends Where
      *
      * @return static
      */
-    public function from(string | self $table, string $alias = null, string | array | null $field = null): static
+    public function from(string | self $table, string|null $alias = null, string | array | null $field = null): static
     {
         $this->from[] = [
           'table' => $table,
@@ -87,7 +87,7 @@ class Select extends Where
 	 * @return static
 	 * @example innerJoin('user u', 'u.id', '=', 'r.user_role_id')
 	 */
-    public function innerJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
+    public function innerJoin(string $table, string | array $firstTableField, string|null $operator = null, string|null $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'INNER JOIN',
@@ -114,7 +114,7 @@ class Select extends Where
 	 *   ['u.group_id', '=', 2]
 	 * ])
 	 */
-    public function leftJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
+    public function leftJoin(string $table, string | array $firstTableField, string|null $operator = null, string|null $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'LEFT JOIN',
@@ -137,7 +137,7 @@ class Select extends Where
 	 * @return static
 	 * @example rightJoin('user u', 'u.id', '=', 'r.user_role_id')
 	 */
-    public function rightJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
+    public function rightJoin(string $table, string | array $firstTableField, string|null $operator = null, string|null $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'RIGHT JOIN',
@@ -159,7 +159,7 @@ class Select extends Where
 	 *
 	 * @return static
 	 */
-    public function fullJoin(string $table, string | array $firstTableField, string $operator = null, string $secondTableField = null): static
+    public function fullJoin(string $table, string | array $firstTableField, string|null $operator = null, string|null $secondTableField = null): static
     {
         $this->joins[] = [
           'type' => 'FULL JOIN',
@@ -196,7 +196,7 @@ class Select extends Where
 	 *
 	 * @return static
 	 */
-    public function field(string $field, string $as = null): static
+    public function field(string $field, string|null $as = null): static
     {
         $this->fields[] = [
           'name' => $field,
@@ -214,7 +214,7 @@ class Select extends Where
 	 *
 	 * @return static
 	 */
-	public function removeField(string $field = null, string $as = null): static
+	public function removeField(string|null $field = null, string|null $as = null): static
 	{
 		if ($field === null && $as === null) {
 			throw new InvalidArgumentException('Received null for parameter 1 and 2; removeField() method must be called with at least one parameter or both');
@@ -231,6 +231,7 @@ class Select extends Where
 				if ($this->fields[$i]['name'] === $field) {
 					$index = $i;
 				}
+				// @phpstan-ignore-next-line
 			} else if ($field === null && $as !== null) {
 				if ($this->fields[$i]['as'] === $as) {
 					$index = $i;
@@ -254,7 +255,7 @@ class Select extends Where
      *
      * @return static
      */
-    public function fields(array $fields, string $alias = null): static
+    public function fields(array $fields, string|null $alias = null): static
     {
         $alias = ($alias === null) ? '' : "{$alias}.";
 
@@ -347,7 +348,7 @@ class Select extends Where
      *
      * @return static
      */
-    public function having(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): static
+    public function having(string | Expr $field, string|null $operator = null, int | float | string | bool | Expr | null $value = null): static
     {
         $this->having[] = [
           'link' => 'AND',
@@ -368,7 +369,7 @@ class Select extends Where
      *
      * @return static
      */
-    public function orHaving(string | Expr $field, string $operator = null, int | float | string | bool | Expr | null $value = null): static
+    public function orHaving(string | Expr $field, string|null $operator = null, int | float | string | bool | Expr | null $value = null): static
     {
         $this->having[] = [
           'link' => 'OR',
@@ -398,7 +399,7 @@ class Select extends Where
 	 *
 	 * @return static
 	 */
-    public function orderBy(string $field, string $direction = null): static
+    public function orderBy(string $field, string|null $direction = null): static
     {
         if ($direction === null) {
             $direction = 'ASC';
@@ -523,8 +524,7 @@ class Select extends Where
 
         $query .= "\nFROM";
         foreach ($this->from as $from) {
-            if ($from['table'] instanceof self || $from['table'] instanceof static) {
-                /* @var self|static $subSelect */
+            if ($from['table'] instanceof static) {
                 $subSelect = $from['table'];
                 $subSql = $subSelect->getSQL();
                 $subSql = str_replace("\n", "\n\t", $subSql);
@@ -680,7 +680,7 @@ class Select extends Where
      * @throws Exception
      * @throws \Koldy\Exception
      */
-    public function fetchAllObj(string $class = null): array
+    public function fetchAllObj(string|null $class = null): array
     {
         if (!$this->wasExecuted()) {
             $this->exec();
@@ -707,7 +707,7 @@ class Select extends Where
      * @throws Exception
      * @throws \Koldy\Exception
      */
-    public function fetchAllObjGenerator(string $class = null): Generator
+    public function fetchAllObjGenerator(string|null $class = null): Generator
     {
         if (!$this->wasExecuted()) {
             $this->exec();
@@ -789,7 +789,7 @@ class Select extends Where
 	 * @throws Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function fetchFirstObj(string $class = null): ?object
+    public function fetchFirstObj(string|null $class = null): ?object
     {
         if (!$this->wasExecuted()) {
             $this->exec();

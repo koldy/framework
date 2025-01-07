@@ -17,11 +17,11 @@ class Json
 	 * @param int|null $flags
 	 * @param int|null $depth
 	 *
-	 * @return mixed in JSON format
+	 * @return string in JSON format
 	 * @throws Exception
 	 * @link https://koldy.net/framework/docs/2.0/json.md
 	 */
-    public static function encode(mixed $data, int $flags = null, int $depth = null): string
+    public static function encode(mixed $data, int|null $flags = null, int|null $depth = null): string
     {
         $json = json_encode($data, $flags ?? 0, $depth ?? 512);
 
@@ -46,7 +46,7 @@ class Json
      * @throws Exception
      * @link https://koldy.net/framework/docs/2.0/json.md
      */
-    public static function decode(string $stringData, int $flags = null, int $depth = null): array
+    public static function decode(string $stringData, int|null $flags = null, int|null $depth = null): array
     {
         $decoded = json_decode($stringData, true, $depth ?? 512, $flags ?? 0);
 
@@ -71,7 +71,7 @@ class Json
 	 * @throws Exception
 	 * @link https://koldy.net/framework/docs/2.0/json.md
 	 */
-    public static function decodeToObj(string $stringData, int $flags = null, int $depth = null): \stdClass
+    public static function decodeToObj(string $stringData, int|null $flags = null, int|null $depth = null): \stdClass
     {
         $decoded = json_decode($stringData, false, $depth ?? 512, $flags ?? 0);
 

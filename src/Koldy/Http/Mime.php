@@ -17,7 +17,7 @@ class Mime
 	 * @var array
 	 * @link http://pastie.org/5668002
 	 */
-	private static array $types = [
+	protected static array $types = [
 		'123' => 'application/vnd.lotus-1-2-3',
 		'3dml' => 'text/vnd.in3d.3dml',
 		'3ds' => 'image/x-3ds',

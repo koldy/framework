@@ -10,8 +10,11 @@ use Koldy\Exception;
  * Trait CreatedAt
  * @package Koldy\Db\ModelTraits
  *
- * @property string|null created_at
+ * @property string|null $created_at
+ *
+ * @deprecated This trait is deprecated and will be removed in next major version.
  */
+// @phpstan-ignore-next-line
 trait CreatedAt
 {
 

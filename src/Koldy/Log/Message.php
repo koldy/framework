@@ -45,7 +45,7 @@ class Message
      * @param string $level
      * @param string|null $message
      */
-    public function __construct(string $level, string $message = null)
+    public function __construct(string $level, string|null $message = null)
     {
         $this->level = $level;
         $this->time = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)));

@@ -167,7 +167,7 @@ class Files extends AbstractCacheAdapter
 	 *
 	 * @return array
 	 */
-    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int $seconds = null): array
+    public function getOrSetMulti(array $keys, Closure $functionOnMissingKeys, int|null $seconds = null): array
     {
         $found = [];
         $missing = [];
@@ -207,7 +207,7 @@ class Files extends AbstractCacheAdapter
 	 * @throws \Koldy\Exception
 	 * @throws FilesystemException
 	 */
-    public function set(string $key, mixed $value, int $seconds = null): void
+    public function set(string $key, mixed $value, int|null $seconds = null): void
     {
         $this->checkKey($key);
 
@@ -269,7 +269,7 @@ class Files extends AbstractCacheAdapter
 	 * @throws FilesystemException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
-    public function setMulti(array $keyValuePairs, int $seconds = null): void
+    public function setMulti(array $keyValuePairs, int|null $seconds = null): void
     {
         foreach ($keyValuePairs as $key => $value) {
             $this->set($key, $value, $seconds);
@@ -296,7 +296,13 @@ class Files extends AbstractCacheAdapter
             $object = $this->data[$key];
         }
 
-        $ok = $object->created + $object->seconds > time();
+		/** @var int $created */
+		$created = $object->created;
+
+		/** @var int $seconds */
+		$seconds = $object->seconds;
+
+        $ok = $created + $seconds > time();
         if (!$ok) {
             unlink($object->path);
         }
@@ -360,7 +366,7 @@ class Files extends AbstractCacheAdapter
      *
      * @throws FilesystemException
      */
-    public function deleteOld(int $olderThanSeconds = null): void
+    public function deleteOld(int|null $olderThanSeconds = null): void
     {
         if ($olderThanSeconds === null) {
 	        $olderThanSeconds = $this->defaultDuration;
