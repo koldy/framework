@@ -554,4 +554,42 @@ class Util
 			mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
 		);
 	}
+
+	/**
+	 * Pick the value from array by key. If key doesn't exist, return default value. If key exists, but value is null, return default value.
+	 *
+	 * @param string $key name of the key to pick from the input array
+	 * @param array $input the input array to go through
+	 * @param string|int|float|bool|null $default default value to return if key doesn't exist or value is null; default is null
+	 * @param array|null $allowedValues if set, then only values from this array are allowed; if value is not in this array, then default value is returned; values will be strictly compared
+	 *
+	 * @return mixed
+	 */
+	public static function pick(string $key, array $input, string|int|float|bool|null $default = null, array|null $allowedValues = null): mixed
+	{
+		if (!array_key_exists($key, $input)) {
+			// there's no key, return default
+			return $default;
+		}
+
+		// otherwise, key is found
+		$value = $input[$key]; // this could still be null
+
+		if ($value === null) {
+			// treat as not found and return default
+			return $default;
+		}
+
+		// now, the $value is not null
+
+		if ($allowedValues !== null) {
+			if (in_array($value, $allowedValues, true)) {
+				return $value;
+			}
+
+			return $default;
+		}
+
+		return $value;
+	}
 }
