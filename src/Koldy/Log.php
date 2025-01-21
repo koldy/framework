@@ -212,15 +212,14 @@ class Log
     /**
      * Temporary disable all logging
      *
-     * @param array|null ...$levels
+     * @param array|string|null ...$levels
      */
-    public static function temporaryDisable($levels = null): void
+    public static function temporaryDisable(array|string|null $levels = null): void
     {
         $disable = true;
 
         if (is_array($levels)) {
             $disable = $levels;
-	        // @phpstan-ignore-next-line
         } else if (is_string($levels)) {
             $disable = [$levels];
         }
@@ -254,7 +253,7 @@ class Log
     /**
      * Write EMERGENCY message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -275,7 +274,7 @@ class Log
     /**
      * Write ALERT message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -296,7 +295,7 @@ class Log
     /**
      * Write CRITICAL message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -317,7 +316,7 @@ class Log
     /**
      * Write DEBUG message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -338,7 +337,7 @@ class Log
     /**
      * Write NOTICE message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -359,7 +358,7 @@ class Log
     /**
      * Write INFO message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -380,7 +379,7 @@ class Log
     /**
      * Write WARNING message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -401,7 +400,7 @@ class Log
     /**
      * Write ERROR message to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */
@@ -422,7 +421,7 @@ class Log
     /**
      * Write SQL query to log
      *
-     * @param array|string ...$messages
+     * @param mixed ...$messages
      *
      * @link http://koldy.net/docs/log#usage
      */

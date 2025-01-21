@@ -127,7 +127,7 @@ abstract class AbstractRoute
      *
      * @param string|null $controller
      * @param string|null $action
-     * @param array|null $params
+     * @param array<string, string>|null $params
      * @param string|null $lang
      *
      * @return string
@@ -140,7 +140,7 @@ abstract class AbstractRoute
      * @param string $site
      * @param string|null $controller
      * @param string|null $action
-     * @param array|null $params
+     * @param array<string, string>|null $params
      * @param string|null $lang
      *
      * @return string
