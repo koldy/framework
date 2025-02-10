@@ -5,6 +5,7 @@ namespace Koldy\Log\Adapter;
 use Koldy\Application;
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Convert;
+use Koldy\Log;
 use Koldy\Log\Message;
 
 /**
@@ -186,7 +187,7 @@ abstract class AbstractLogAdapter
     {
         $dump = $this->config['dump'] ?? [];
 
-        if (is_array($dump) && count($dump) > 0) {
+        if (is_array($dump) && count($dump) > 0 && !Log::isTemporaryDisabled('notice')) {
             // 'speed', 'included_files', 'include_path', 'whitespace'
             $dump = array_flip($dump);
 
@@ -205,9 +206,9 @@ abstract class AbstractLogAdapter
                 $memoryLimit = ini_get('memory_limit');
 
 	            // @phpstan-ignore-next-line
-				if (is_bool($memoryLimit) && !$memoryLimit) {
-					$memoryLimit = '0B';
-				}
+                if (is_bool($memoryLimit) && !$memoryLimit) {
+                    $memoryLimit = '0B';
+                }
 
                 $memoryKb = round($memory / 1024, 2);
                 $peakKb = round($peak / 1024, 2);

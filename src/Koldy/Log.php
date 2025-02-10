@@ -210,7 +210,8 @@ class Log
     }
 
     /**
-     * Temporary disable all logging
+     * Temporary disable all logging for the requested levels. Each call of this method will overwrite previous call, so if
+     * need to disable multiple levels, pass them all in one call by passing an array of message types you'd like to disable
      *
      * @param array|string|null ...$levels
      */
@@ -250,13 +251,13 @@ class Log
         static::$temporaryDisabled = false;
     }
 
-    /**
-     * Write EMERGENCY message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
+	/**
+	 * Write EMERGENCY message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
     public static function emergency(...$messages): void
     {
         static::init();

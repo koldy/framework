@@ -103,16 +103,18 @@ class Session
 				$options['sid_bits_per_character'] = $config->get('sid_bits_per_character') ?? 6;
 			}
 
-			/*========================================*/
 			/******************************************/
-
 			session_start($options);
-
 			/******************************************/
-			/*========================================*/
 
 			if ($sessionId === null) {
-				static::$sessionId = session_id();
+				$sessId = session_id();
+
+				if ($sessId === false) {
+					throw new SessionException('Something went wrong, PHP session_id() function returned false instead of string');
+				}
+
+				static::$sessionId = $sessId;
 			}
 
 			if ($transport === 'header') {
