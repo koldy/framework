@@ -1034,7 +1034,6 @@ class Application
 	            default:
 	            case E_USER_WARNING:
 	            case E_DEPRECATED:
-	            case E_STRICT:
 		            $logMessage = new \Koldy\Log\Message('warning');
 		            $logMessage->addPHPErrorMessage($errorMessage, $errorFile, $errorNumber, $errorLine);
 		            Log::message($logMessage);
