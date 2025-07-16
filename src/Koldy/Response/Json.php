@@ -4,6 +4,7 @@ namespace Koldy\Response;
 
 use Koldy\Application;
 use Koldy\Data;
+use Koldy\Json as KoldyJson;
 
 /**
  * The JSON class. Feel free to override it if you need to make it work different.
@@ -50,7 +51,12 @@ class Json extends AbstractResponse
         return json_encode($this->getData());
     }
 
-    /**
+	public function getOutput(): mixed
+	{
+		return json_encode($this->getData());
+	}
+
+	/**
      * @link http://koldy.net/docs/json#usage
      * @throws \Koldy\Exception
      */
@@ -59,7 +65,7 @@ class Json extends AbstractResponse
         $this->prepareFlush();
         $this->runBeforeFlush();
 
-        $content = json_encode($this->getData());
+        $content = KoldyJson::encode($this->getData());
 
 	    $statusCode = $this->statusCode;
 	    $statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;

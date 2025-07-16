@@ -87,6 +87,13 @@ class ContentDownload extends AbstractResponse
         return $self;
     }
 
+	public function getOutput(): mixed
+	{
+		// when having a content download (which is basically a file), then we won't "remember" the output because it
+		// can be potentially huge, so remembering an output could become a memory problem
+		return null;
+	}
+
 	/**
 	 * @throws Exception
 	 * @throws \Koldy\Exception

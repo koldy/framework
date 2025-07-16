@@ -283,6 +283,8 @@ abstract class AbstractResponse
 	{
 	}
 
+	abstract public function getOutput(): mixed;
+
 	/**
 	 * Flush the content to output buffer
 	 */

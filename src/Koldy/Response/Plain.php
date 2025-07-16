@@ -87,6 +87,11 @@ class Plain extends AbstractResponse
         return $this;
     }
 
+	public function getOutput(): mixed
+	{
+		return $this->content;
+	}
+
     /**
      * @link http://koldy.net/docs/plain#usage
      * @throws \Koldy\Exception

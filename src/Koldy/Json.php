@@ -31,6 +31,11 @@ class Json
             throw new Exception("Unable to encode data to JSON, error ({$errNo}): {$msg}", $errNo);
         }
 
+        // Check if result is a primitive JSON value (not an object or array)
+        if ($json[0] !== '{' && $json[0] !== '[') {
+            throw new Exception('JSON encoding resulted in primitive value, structured JSON required');
+        }
+
         return $json;
     }
 

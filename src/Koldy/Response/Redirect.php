@@ -121,7 +121,13 @@ class Redirect extends AbstractResponse
         return self::temporary(Route::asset($path, $assetKey));
     }
 
-    /**
+	public function getOutput(): mixed
+	{
+		// the Redirect response does not have any output
+		return null;
+	}
+
+	/**
      * Run Redirect
      */
     public function flush(): void
