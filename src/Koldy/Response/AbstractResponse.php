@@ -56,6 +56,12 @@ abstract class AbstractResponse
 	protected int $statusCode = 200;
 
 	/**
+	 * The HTTP status code that was outputted to client; if you call flush() multiple times (which you shouldn't), then
+	 * this value will be overridden
+	 */
+	static protected AbstractResponse|null $output = null;
+
+	/**
 	 * Set response header
 	 *
 	 * @param string $name

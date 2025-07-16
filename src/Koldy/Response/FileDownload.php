@@ -137,7 +137,6 @@ class FileDownload extends AbstractResponse
           ->setHeader('Content-Disposition', "attachment; filename=\"{$asName}\";")
           ->setHeader('Content-Transfer-Encoding', 'binary');
 
-		@ob_start();
         set_time_limit(0);
         $this->flushHeaders();
 
@@ -148,7 +147,6 @@ class FileDownload extends AbstractResponse
         }
 
         @fclose($file);
-        @ob_flush();
         flush();
 
         $this->runAfterFlush();

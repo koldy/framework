@@ -121,9 +121,7 @@ class ContentDownload extends AbstractResponse
         set_time_limit(0);
         $this->flushHeaders();
 
-	    @ob_start();
         file_put_contents('php://output', $this->content);
-        @ob_flush();
 
         flush();
 

@@ -2,6 +2,7 @@
 
 namespace Koldy;
 
+use Closure;
 use Koldy\Application\Exception as ApplicationException;
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Cli\Exception as CliException;
@@ -172,6 +173,29 @@ class Application
      */
     protected static string | null $publicPath = null;
 
+	/**
+	 * The overall response from the application
+	 *
+	 * @var mixed|null
+	 */
+	protected static mixed $response = null;
+
+	/**
+	 * The array of functions that will be executed after any response is sent to client. First argument is the response object
+	 * or any other possible response from the application (such as simple string)
+	 *
+	 * @var Closure[]
+	 */
+	protected static array $afterAnyResponseFunction = [];
+
+	/**
+	 * The array of function names that will be executed after any response is sent to client - when registering a function,
+	 * you can register it under a name, so you can check if it's already registered
+	 *
+	 * @var string[]
+	 */
+	protected static array $afterAnyResponseFunctionIndex = [];
+
     /**
      * Terminate execution immediately - use it when there's no other way of recovering from error, usually
      * in boot procedure, when exceptions are not loaded yet and etc.
@@ -182,13 +206,76 @@ class Application
      * @param string $message
      * @param int $errorCode
      */
-    public static function terminateWithError(string $message, int $errorCode = 503): void
+    public static function terminateWithError(string $message, int $errorCode = 503): never
     {
         http_response_code($errorCode);
         header('Retry-After: 300'); // 300 seconds / 5 minutes
         print $message;
         exit(1);
     }
+
+	/**
+	 * Register function that will be executed after any response is sent to client
+	 *
+	 * @param callable $function
+	 * @param string|null $name
+	 *
+	 * @return void
+	 */
+	public static function afterAnyResponse(callable $function, string|null $name = null): void
+	{
+		static::$afterAnyResponseFunction[] = $function;
+		static::$afterAnyResponseFunctionIndex[] = $name;
+	}
+
+	/**
+	 * Checks if function is already registered
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	public static function isAfterAnyResponseFunctionRegistered(string $name): bool
+	{
+		return in_array($name, static::$afterAnyResponseFunctionIndex);
+	}
+
+	/**
+	 * Remove function from the list of functions that will be executed after any response is sent to client
+	 *
+	 * @param string $name
+	 *
+	 * @return void
+	 */
+	public static function removeAfterAnyResponseFunction(string $name): void
+	{
+		$index = array_search($name, static::$afterAnyResponseFunctionIndex);
+		if ($index !== false) {
+			unset(static::$afterAnyResponseFunction[$index], static::$afterAnyResponseFunctionIndex[$index]);
+		}
+	}
+
+	/**
+	 * Set the response from the application
+	 *
+	 * @param mixed $response
+	 *
+	 * @return void
+	 */
+	protected static function setResponse(mixed $response): void
+	{
+		static::$response = $response;
+	}
+
+	/**
+	 * Get the response from the application
+	 *
+	 * @return AbstractResponse|mixed
+	 */
+	public static function getResponse(): mixed
+	{
+		return static::$response;
+	}
 
     /**
      * Calling Koldy\Autoloader::register() will just register framework itself to be used as library. Calling this
@@ -1103,7 +1190,7 @@ class Application
 
             $uri = $uri ?? $_SERVER['REQUEST_URI'] ?? null;
             if ($uri == null) {
-                static::terminateWithError('Something went wrong, $uri is not set');
+                static::terminateWithError('Something went wrong, $uri is not set in this HTTP request');
             }
 
             static::$uri = $uri;
@@ -1123,10 +1210,15 @@ class Application
 
                 if ($response instanceof AbstractResponse) {
                     $response->flush();
-
+	                static::$response = &$response;
                 } else {
                     print $response;
+	                static::$response = $response;
                 }
+
+				foreach (static::$afterAnyResponseFunction as $function) {
+					call_user_func($function, $response);
+				}
 
             } catch (Throwable $e) { // something threw up
 
