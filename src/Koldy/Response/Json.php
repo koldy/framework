@@ -86,10 +86,12 @@ class Json extends AbstractResponse
 
         $this->flushHeaders();
 
+		@ob_start();
 		if ($content !== '') {
 			// print content ONLY if status code is not 204 (No Content)
 			print $content;
 		}
+		@ob_flush();
 
         $this->runAfterFlush();
     }

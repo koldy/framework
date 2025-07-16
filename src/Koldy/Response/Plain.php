@@ -107,7 +107,9 @@ class Plain extends AbstractResponse
         $this->flushHeaders();
 
         // print the text stored in this object
+	    @ob_start();
         print $this->content;
+		@ob_flush();
 
         $this->runAfterFlush();
     }

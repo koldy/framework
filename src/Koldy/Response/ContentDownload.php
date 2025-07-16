@@ -107,11 +107,8 @@ class ContentDownload extends AbstractResponse
             $contentType = $this->contentType;
         }
 
-//        if ($contentType === null) {
-//            $contentType = 'application/force-download';
-//        }
-
-        $this->setHeader('Connection', 'close')
+        $this
+	        ->setHeader('Connection', 'close')
             ->setHeader('Pragma', 'public')
             ->setHeader('Expires', 0)
             ->setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0')
@@ -124,9 +121,10 @@ class ContentDownload extends AbstractResponse
         set_time_limit(0);
         $this->flushHeaders();
 
+	    @ob_start();
         file_put_contents('php://output', $this->content);
-
         @ob_flush();
+
         flush();
 
         $this->runAfterFlush();
