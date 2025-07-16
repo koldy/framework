@@ -53,6 +53,10 @@ class Json extends AbstractResponse
 
 	public function getOutput(): mixed
 	{
+		if ($this->statusCode === 204) {
+			return '';
+		}
+
 		return json_encode($this->getData());
 	}
 
@@ -98,6 +102,7 @@ class Json extends AbstractResponse
 		}
 
         $this->runAfterFlush();
+	    Application::setResponse($this);
     }
 
 }

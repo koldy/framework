@@ -70,7 +70,9 @@ class ResponseExceptionHandler
 
         }
 
-        print Json::encode($data);
+        $response = Json::encode($data);
+		print $response;
+	    Application::setResponse($response);
     }
 
 	/**
@@ -105,6 +107,7 @@ class ResponseExceptionHandler
 
             $view->set('e', $e);
             $view->flush();
+	        Application::setResponse($view);
         } else {
             // we don't have a view for exception handling, let's return something
 
@@ -127,11 +130,14 @@ class ResponseExceptionHandler
 
             }
 
+			ob_start();
             if (!Application::isLive()) {
                 echo "<strong>{$e->getMessage()}</strong><pre>{$e->getTraceAsString()}</pre>";
             } else {
                 echo "<h1>Error</h1><p>Something went wrong. Please try again later!</p>";
             }
+			$output = ob_get_flush();
+			Application::setResponse($output);
         }
     }
 

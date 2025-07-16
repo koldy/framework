@@ -115,6 +115,7 @@ class Plain extends AbstractResponse
         print $this->content;
 
         $this->runAfterFlush();
+	    Application::setResponse($this);
     }
 
 }

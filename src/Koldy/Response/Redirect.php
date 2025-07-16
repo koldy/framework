@@ -140,6 +140,7 @@ class Redirect extends AbstractResponse
         flush();
 
         $this->runAfterFlush();
+	    Application::setResponse($this);
     }
 
 }

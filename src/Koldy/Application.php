@@ -256,13 +256,14 @@ class Application
 	}
 
 	/**
-	 * Set the response from the application
+	 * Set the response from the application. It is used by internal classes, so you should never call this method unless
+	 * you know what you're doing.
 	 *
 	 * @param mixed $response
 	 *
 	 * @return void
 	 */
-	protected static function setResponse(mixed $response): void
+	public static function setResponse(mixed $response): void
 	{
 		static::$response = $response;
 	}
@@ -1209,8 +1210,7 @@ class Application
                 $response = $route->exec();
 
                 if ($response instanceof AbstractResponse) {
-                    $response->flush();
-	                static::$response = &$response;
+                    $response->flush(); // flush sets the response to Application, so we're all good
                 } else {
                     print $response;
 	                static::$response = $response;

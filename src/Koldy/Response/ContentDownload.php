@@ -2,6 +2,8 @@
 
 namespace Koldy\Response;
 
+use Koldy\Application;
+
 /**
  * Force content download to output buffer, so it'll be downloaded same as file.
  * @phpstan-consistent-constructor
@@ -133,6 +135,8 @@ class ContentDownload extends AbstractResponse
         flush();
 
         $this->runAfterFlush();
+
+		Application::setResponse($this);
     }
 
 }
