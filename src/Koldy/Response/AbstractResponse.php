@@ -189,6 +189,14 @@ abstract class AbstractResponse
 	}
 
 	/**
+	 * Returns an actual output from the response. Sometimes output won't be accessible if it poses a potential problem,
+	 * such as returning a content of a large file.
+	 *
+	 * @return mixed
+	 */
+	abstract public function getOutput(): mixed;
+
+	/**
 	 * Flush the headers
 	 */
 	public function flushHeaders(): void
