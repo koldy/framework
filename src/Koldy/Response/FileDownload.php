@@ -2,7 +2,6 @@
 
 namespace Koldy\Response;
 
-use Koldy\Application;
 use Koldy\Filesystem\File;
 use Koldy\Http\Mime;
 use Koldy\Response\Exception as ResponseException;
@@ -158,7 +157,6 @@ class FileDownload extends AbstractResponse
         flush();
 
         $this->runAfterFlush();
-	    Application::setResponse($this);
     }
 
 }

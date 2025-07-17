@@ -2,8 +2,6 @@
 
 namespace Koldy\Response;
 
-use Koldy\Application;
-
 /**
  * Force content download to output buffer, so it'll be downloaded same as file.
  * @phpstan-consistent-constructor
@@ -91,9 +89,7 @@ class ContentDownload extends AbstractResponse
 
 	public function getOutput(): mixed
 	{
-		// when having a content download (which is basically a file), then we won't "remember" the output because it
-		// can be potentially huge, so remembering an output could become a memory problem
-		return null;
+		return $this->content;
 	}
 
 	/**
@@ -135,8 +131,6 @@ class ContentDownload extends AbstractResponse
         flush();
 
         $this->runAfterFlush();
-
-		Application::setResponse($this);
     }
 
 }

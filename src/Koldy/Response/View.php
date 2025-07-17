@@ -267,7 +267,6 @@ class View extends AbstractResponse
         $this->flushBuffer();
 
         $this->runAfterFlush();
-	    Application::setResponse($this);
     }
 
     /**

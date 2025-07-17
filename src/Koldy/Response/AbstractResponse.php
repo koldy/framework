@@ -3,12 +3,14 @@
 namespace Koldy\Response;
 
 use Closure;
+use Koldy\Application;
 use Koldy\Log;
 use Koldy\Response\Exception as ResponseException;
 use Koldy\Session;
 
 /**
- * Every return from controller's method must return instance that extends this class
+ * Every return from controller's method should return instance that extends this class. Only by returning an instance
+ * of this class you ensure that framework can handle the response correctly.
  */
 abstract class AbstractResponse
 {
@@ -54,12 +56,6 @@ abstract class AbstractResponse
 	 * @var int
 	 */
 	protected int $statusCode = 200;
-
-	/**
-	 * The HTTP status code that was outputted to client; if you call flush() multiple times (which you shouldn't), then
-	 * this value will be overridden
-	 */
-	static protected AbstractResponse|null $output = null;
 
 	/**
 	 * Set response header
@@ -283,8 +279,6 @@ abstract class AbstractResponse
 	{
 	}
 
-	abstract public function getOutput(): mixed;
-
 	/**
 	 * Flush the content to output buffer
 	 */
@@ -309,6 +303,9 @@ abstract class AbstractResponse
 			// with this in mind, you'll immediately see the error
 			call_user_func($fn, $this);
 		}
+
+		// the response that flushes itself should set the response of the application cycle
+		Application::setResponse($this);
 	}
 
 	/**

@@ -3,11 +3,14 @@
 namespace Koldy\Response;
 
 use Koldy\Application;
+use Koldy\Exception;
 use Koldy\Json;
 use Koldy\Log;
 use Koldy\Response\Exception\BadRequestException;
 use Koldy\Response\Exception\ForbiddenException;
 use Koldy\Response\Exception\NotFoundException;
+use Koldy\Response\Json as JsonResponse;
+use Koldy\Validator\ConfigException;
 use Koldy\Validator\Exception as ValidatorException;
 use Throwable;
 
@@ -21,44 +24,38 @@ use Throwable;
 class ResponseExceptionHandler
 {
 
-	/**
-	 * @var \Throwable
-	 */
-	protected Throwable $e;
-
-	public function __construct(Throwable $e)
+	public function __construct(protected Throwable $e)
 	{
-		$this->e = $e;
 	}
 
 	/**
 	 * @param Throwable $e
 	 *
-	 * @throws Json\Exception
 	 * @throws ValidatorException
-	 * @throws \Koldy\Validator\ConfigException
+	 * @throws Exception
+	 * @throws ConfigException
 	 */
 	protected function handleExceptionInAjax(Throwable $e): void
 	{
-		$data = [
+		$response = JsonResponse::create([
 			'success' => false,
 			'type' => 'exception',
 			'exception' => !Application::isLive() ? $e->getMessage() : null,
 			'trace' => !Application::isLive() ? $e->getTrace() : null
-		];
+		]);
 
 		if ($e instanceof BadRequestException) {
-			http_response_code(400);
+			$response->statusCode(400);
 
 		} else if ($e instanceof ValidatorException) {
-			http_response_code(400);
-			$data['messages'] = $e->getValidator()->getMessages();
+			$response->statusCode(400);
+			$response->set('messages', $e->getValidator()->getMessages());
 
 		} else if ($e instanceof NotFoundException) {
-			http_response_code(404);
+			$response->statusCode(404);
 
 		} else if ($e instanceof ForbiddenException) {
-			http_response_code(403);
+			$response->statusCode(403);
 
 		} else {
 			try {
@@ -66,13 +63,11 @@ class ResponseExceptionHandler
 			} catch (Log\Exception $ignored) {
 				// we can't handle this
 			}
-			http_response_code(503);
+			$response->statusCode(503);
 
 		}
 
-		$response = Json::encode($data);
-		print $response;
-		Application::setResponse($response);
+		$response->flush();
 	}
 
 	/**
@@ -102,42 +97,39 @@ class ResponseExceptionHandler
 					// we can't handle this
 				}
 				$view->statusCode(503);
-
 			}
 
 			$view->set('e', $e);
 			$view->flush();
-			Application::setResponse($view);
 		} else {
 			// we don't have a view for exception handling, let's return something
+			$plain = Plain::create();
 
 			if ($e instanceof BadRequestException || $e instanceof ValidatorException) {
-				http_response_code(400);
+				$plain->statusCode(400);
 
 			} else if ($e instanceof NotFoundException) {
-				http_response_code(404);
+				$plain->statusCode(404);
 
 			} else if ($e instanceof ForbiddenException) {
-				http_response_code(403);
+				$plain->statusCode(403);
 
 			} else {
 				try {
 					Log::emergency($e);
-				} catch (Log\Exception $e) {
+				} catch (Throwable $e) {
 					// we can't handle this
 				}
-				http_response_code(503);
-
+				$plain->statusCode(503);
 			}
 
-			ob_start();
 			if (!Application::isLive()) {
-				echo "<strong>{$e->getMessage()}</strong><pre>{$e->getTraceAsString()}</pre>";
+				$plain->setContent("<strong>{$e->getMessage()}</strong><pre>{$e->getTraceAsString()}</pre>");
 			} else {
-				echo "<h1>Error</h1><p>Something went wrong. Please try again later!</p>";
+				$plain->setContent("<h1>Error</h1><p>Something went wrong. Please try again later!</p>");
 			}
-			$output = ob_get_flush();
-			Application::setResponse($output);
+
+			$plain->flush();
 		}
 	}
 

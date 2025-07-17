@@ -1250,7 +1250,7 @@ class Application
 				// in the future, we might handle different number of parameters, but until that, we won't
 
 				// you can also call script in module using standard colon as separator
-				// example: php cli.php user:backup   -> where "user" is module and "backup" is script name
+				// example: php cli.php user:backup -> where "user" is module and "backup" is script name
 
 				if (!isset($argv[1])) {
 					throw new CliException('Script name is not set in your script call. Please use notation: php index.php script-name');
@@ -1259,7 +1259,7 @@ class Application
 				$script = $argv[1]; // this should be the second parameter
 				static::$cliName = $script;
 
-				if (preg_match('/^([a-zA-Z0-9\_\-\:]+)$/', $script)) {
+				if (preg_match('/^([a-zA-Z0-9_\-:]+)$/', $script)) {
 					$scriptName = $script;
 					$module = null;
 

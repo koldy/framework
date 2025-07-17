@@ -102,7 +102,6 @@ class Json extends AbstractResponse
 		}
 
         $this->runAfterFlush();
-	    Application::setResponse($this);
     }
 
 }
