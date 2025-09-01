@@ -2,8 +2,11 @@
 
 namespace Koldy\Filesystem;
 
+use FilesystemIterator;
 use Koldy\Application;
 use Koldy\Filesystem\Exception as FilesystemException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Class for manipulation with directories on server
@@ -22,34 +25,34 @@ class Directory
 	 * @throws Exception
 	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
 	 */
-    public static function read(string $path, string|null $filter = null): array
-    {
-        if (is_dir($path) && $handle = opendir($path)) {
-            $files = [];
+	public static function read(string $path, string|null $filter = null): array
+	{
+		if (is_dir($path) && $handle = opendir($path)) {
+			$files = [];
 
-            if (!str_ends_with($path, '/')) {
-                $path .= '/';
-            }
+			if (!str_ends_with($path, '/')) {
+				$path .= '/';
+			}
 
-            while (false !== ($entry = readdir($handle))) {
-                if ($entry !== '.' && $entry !== '..') {
-                    if ($filter === null || preg_match($filter, $entry)) {
-                        $fullPath = $path . $entry;
+			while (false !== ($entry = readdir($handle))) {
+				if ($entry !== '.' && $entry !== '..') {
+					if ($filter === null || preg_match($filter, $entry)) {
+						$fullPath = $path . $entry;
 
-                        if (str_starts_with($fullPath, '.')) {
-                            $fullPath = stream_resolve_include_path($path . $entry);
-                        }
+						if (str_starts_with($fullPath, '.')) {
+							$fullPath = stream_resolve_include_path($path . $entry);
+						}
 
-                        $files[$fullPath] = $entry;
-                    }
-                }
-            }
+						$files[$fullPath] = $entry;
+					}
+				}
+			}
 
-            return $files;
-        } else {
-            throw new FilesystemException("Unable to open directory on path={$path}");
-        }
-    }
+			return $files;
+		} else {
+			throw new FilesystemException("Unable to open directory on path={$path}");
+		}
+	}
 
 	/**
 	 * Get the list of all files in in given folder, but with no subdirectories
@@ -61,35 +64,35 @@ class Directory
 	 * @throws Exception
 	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
 	 */
-    public static function readFiles(string $path, string|null $filter = null): array
-    {
-        if (is_dir($path) && $handle = opendir($path)) {
-            $files = [];
+	public static function readFiles(string $path, string|null $filter = null): array
+	{
+		if (is_dir($path) && $handle = opendir($path)) {
+			$files = [];
 
-            // append slash if path doesn't contain slash
-            if (!str_ends_with($path, '/')) {
-                $path .= '/';
-            }
+			// append slash if path doesn't contain slash
+			if (!str_ends_with($path, '/')) {
+				$path .= '/';
+			}
 
-            while (false !== ($entry = readdir($handle))) {
-                if ($entry !== '.' && $entry !== '..' && !is_dir($path . $entry)) {
-                    if ($filter === null || preg_match($filter, $entry)) {
-                        $fullPath = $path . $entry;
+			while (false !== ($entry = readdir($handle))) {
+				if ($entry !== '.' && $entry !== '..' && !is_dir($path . $entry)) {
+					if ($filter === null || preg_match($filter, $entry)) {
+						$fullPath = $path . $entry;
 
-                        if (str_starts_with($fullPath, '.')) {
-                            $fullPath = stream_resolve_include_path($path . $entry);
-                        }
+						if (str_starts_with($fullPath, '.')) {
+							$fullPath = stream_resolve_include_path($path . $entry);
+						}
 
-                        $files[$fullPath] = $entry;
-                    }
-                }
-            }
+						$files[$fullPath] = $entry;
+					}
+				}
+			}
 
-            return $files;
-        } else {
-            throw new FilesystemException("Unable to open directory on path={$path}");
-        }
-    }
+			return $files;
+		} else {
+			throw new FilesystemException("Unable to open directory on path={$path}");
+		}
+	}
 
 	/**
 	 * Get the list of all only files from the given folder and its sub-folders
@@ -101,107 +104,108 @@ class Directory
 	 * @throws Exception
 	 * @example return array('/var/www/site.tld/folder/croatia.png' => 'croatia.png')
 	 */
-    public static function readFilesRecursive(string $path, string|null $filter = null): array
-    {
-        if (is_dir($path) && $handle = opendir($path)) {
-            $files = [];
+	public static function readFilesRecursive(string $path, string|null $filter = null): array
+	{
+		if (is_dir($path) && $handle = opendir($path)) {
+			$files = [];
 
-            // append slash if path doesn't contain slash
-            if (!str_ends_with($path, '/')) {
-                $path .= '/';
-            }
+			// append slash if path doesn't contain slash
+			if (!str_ends_with($path, '/')) {
+				$path .= '/';
+			}
 
-            while (false !== ($entry = readdir($handle))) {
-                if ($entry !== '.' && $entry !== '..') {
-                    if (!is_dir($path . $entry)) {
-                        if ($filter === null || preg_match($filter, $entry)) {
-                            $fullPath = $path . $entry;
+			while (false !== ($entry = readdir($handle))) {
+				if ($entry !== '.' && $entry !== '..') {
+					if (!is_dir($path . $entry)) {
+						if ($filter === null || preg_match($filter, $entry)) {
+							$fullPath = $path . $entry;
 
-                            if (str_starts_with($fullPath, '.')) {
-                                $fullPath = stream_resolve_include_path($path . $entry);
-                            }
+							if (str_starts_with($fullPath, '.')) {
+								$fullPath = stream_resolve_include_path($path . $entry);
+							}
 
-                            $files[$fullPath] = $entry;
-                        }
-                    } else {
-                        // it is sub-directory
-                        $files = array_merge($files, static::readFilesRecursive($path . $entry . '/', $filter));
-                    }
-                }
-            }
+							$files[$fullPath] = $entry;
+						}
+					} else {
+						// it is sub-directory
+						$files = array_merge($files, static::readFilesRecursive($path . $entry . '/', $filter));
+					}
+				}
+			}
 
-            return $files;
-        } else {
-            throw new FilesystemException("Unable to open directory on path={$path}");
-        }
-    }
+			return $files;
+		} else {
+			throw new FilesystemException("Unable to open directory on path={$path}");
+		}
+	}
 
-    /**
-     * Create the target directory recursively if needed
-     *
-     * @param string $path
-     * @param int|null $chmod default 0644
-     *
-     * @return void
-     * @throws Exception
-     * @throws \Koldy\Config\Exception
-     * @throws \Koldy\Exception
-     * @example $chmod 0777, 0755, 0700
-     */
-    public static function mkdir(string $path, int|null $chmod = null): void
-    {
-        if (!is_dir($path)) {
-            if ($chmod === null) {
-                $chmod = Application::getConfig('application')->getArrayItem('filesystem', 'default_chmod') ?? 0644;
-            }
+	/**
+	 * Create the target directory recursively if needed
+	 *
+	 * @param string $path
+	 * @param int|null $chmod default 0644
+	 *
+	 * @return void
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 * @example $chmod 0777, 0755, 0700
+	 */
+	public static function mkdir(string $path, int|null $chmod = null): void
+	{
+		if (!is_dir($path)) {
+			if ($chmod === null) {
+				$chmod = Application::getConfig('application')->getArrayItem('filesystem', 'default_chmod') ?? 0644;
+			}
 
-            if (!mkdir($path, $chmod, true)) {
-                throw new FilesystemException("Can not create directory on path={$path}");
-            }
-        }
-    }
+			if (!mkdir($path, $chmod, true)) {
+				throw new FilesystemException("Can not create directory on path={$path}");
+			}
+		}
+	}
 
-    /**
-     * Remove directory and content inside recursively
-     *
-     * @param string $directory
-     *
-     * @throws FilesystemException
-     */
-    public static function rmdirRecursive(string $directory): void
-    {
-        if (is_dir($directory)) {
-            static::emptyDirectory($directory);
+	/**
+	 * Remove directory and content inside recursively
+	 *
+	 * @param string $directory
+	 *
+	 * @throws FilesystemException
+	 */
+	public static function rmdirRecursive(string $directory): void
+	{
+		if (is_dir($directory)) {
+			static::emptyDirectory($directory);
 
-            if (!rmdir($directory)) {
-                throw new FilesystemException("Unable to remove directory on path={$directory}");
-            }
-        }
-    }
+			if (!rmdir($directory)) {
+				throw new FilesystemException("Unable to remove directory on path={$directory}");
+			}
+		}
+	}
 
-    /**
-     * Empty all directory content, but do not delete the directory
-     *
-     * @param string $directory
-     *
-     * @return void
-     * @throws FilesystemException
-     */
-    public static function emptyDirectory(string $directory): void
-    {
-        if (is_dir($directory)) {
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $path) {
-                if ($path->isFile()) {
-                    if (!unlink($path->getPathname())) {
-                        throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
-                    }
-                } else {
-                    if (!rmdir($path->getPathname())) {
-                        throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
-                    }
-                }
-            }
-        }
-    }
+	/**
+	 * Empty all directory content, but do not delete the directory
+	 *
+	 * @param string $directory
+	 *
+	 * @return void
+	 * @throws FilesystemException
+	 */
+	public static function emptyDirectory(string $directory): void
+	{
+		if (is_dir($directory)) {
+			foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory,
+				FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $path) {
+				if ($path->isFile()) {
+					if (!unlink($path->getPathname())) {
+						throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
+					}
+				} else {
+					if (!rmdir($path->getPathname())) {
+						throw new FilesystemException("Unable to empty directory while emptying directory on path={$path->getPathname()}");
+					}
+				}
+			}
+		}
+	}
 
 }

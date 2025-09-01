@@ -20,32 +20,32 @@ class Cookie
 	 * @throws Crypt\MalformedException
 	 * @throws Exception
 	 */
-    public static function get(string $key): ?string
-    {
-	    /** @phpstan-ignore isset.variable */
-        if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
-            return Crypt::decrypt($_COOKIE[$key]);
-        }
+	public static function get(string $key): ?string
+	{
+		/** @phpstan-ignore isset.variable */
+		if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
+			return Crypt::decrypt($_COOKIE[$key]);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    /**
-     * Get the raw value from cookie, without decrypting data
-     *
-     * @param string $key
-     *
-     * @return null|string
-     */
-    public static function rawGet(string $key): ?string
-    {
-	    /** @phpstan-ignore isset.variable */
-        if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
-            return $_COOKIE[$key];
-        }
+	/**
+	 * Get the raw value from cookie, without decrypting data
+	 *
+	 * @param string $key
+	 *
+	 * @return null|string
+	 */
+	public static function rawGet(string $key): ?string
+	{
+		/** @phpstan-ignore isset.variable */
+		if (isset($_COOKIE) && array_key_exists($key, $_COOKIE)) {
+			return $_COOKIE[$key];
+		}
 
-        return null;
-    }
+		return null;
+	}
 
 	/**
 	 * Set the cookie to encrypted value
@@ -66,25 +66,33 @@ class Cookie
 	 * @link http://koldy.net/docs/cookies#set
 	 * @example Cookie::set('last_visited', date('r'));
 	 */
-    public static function set(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null, ?string $samesite = null): string
-    {
-        $encryptedValue = Crypt::encrypt($value);
+	public static function set(
+		string $name,
+		string $value,
+		?int $expire = null,
+		?string $path = null,
+		?string $domain = null,
+		?bool $secure = null,
+		?bool $httpOnly = null,
+		?string $samesite = null
+	): string {
+		$encryptedValue = Crypt::encrypt($value);
 
-        $options = [
-	        'expires' => $expire ?? 0,
-	        'path' => $path ?? '/',
-	        'domain' => $domain ?? '',
-	        'secure' => $secure ?? false,
-	        'httponly' => $httpOnly ?? false
-        ];
+		$options = [
+			'expires' => $expire ?? 0,
+			'path' => $path ?? '/',
+			'domain' => $domain ?? '',
+			'secure' => $secure ?? false,
+			'httponly' => $httpOnly ?? false
+		];
 
-        if ($samesite !== null) {
-        	$options['samesite'] = $samesite;
-        }
+		if ($samesite !== null) {
+			$options['samesite'] = $samesite;
+		}
 
-        setcookie($name, $encryptedValue, $options);
-        return $encryptedValue;
-    }
+		setcookie($name, $encryptedValue, $options);
+		return $encryptedValue;
+	}
 
 	/**
 	 * Set the raw cookie value, without encryption
@@ -102,66 +110,80 @@ class Cookie
 	 * @link http://koldy.net/docs/cookies#set
 	 * @example Cookie::set('last_visited', date('r'));
 	 */
-    public static function rawSet(string $name, string $value, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null, ?string $samesite = null): string
-    {
-	    $options = [
-		    'expires' => $expire ?? 0,
-		    'path' => $path ?? '/',
-		    'domain' => $domain ?? '',
-		    'secure' => $secure ?? false,
-		    'httponly' => $httpOnly ?? false
-	    ];
+	public static function rawSet(
+		string $name,
+		string $value,
+		?int $expire = null,
+		?string $path = null,
+		?string $domain = null,
+		?bool $secure = null,
+		?bool $httpOnly = null,
+		?string $samesite = null
+	): string {
+		$options = [
+			'expires' => $expire ?? 0,
+			'path' => $path ?? '/',
+			'domain' => $domain ?? '',
+			'secure' => $secure ?? false,
+			'httponly' => $httpOnly ?? false
+		];
 
-	    if ($samesite !== null) {
-		    $options['samesite'] = $samesite;
-	    }
+		if ($samesite !== null) {
+			$options['samesite'] = $samesite;
+		}
 
-        setcookie($name, $value, $options);
-        return $value;
-    }
+		setcookie($name, $value, $options);
+		return $value;
+	}
 
-    /**
-     * Is cookie with given name set or not
-     *
-     * @param string $name
-     *
-     * @return boolean
-     * @link http://koldy.net/docs/cookies#has
-     */
-    public static function has(string $name): bool
-    {
-	    /** @phpstan-ignore isset.variable */
-        return isset($_COOKIE) && array_key_exists($name, $_COOKIE);
-    }
+	/**
+	 * Is cookie with given name set or not
+	 *
+	 * @param string $name
+	 *
+	 * @return boolean
+	 * @link http://koldy.net/docs/cookies#has
+	 */
+	public static function has(string $name): bool
+	{
+		/** @phpstan-ignore isset.variable */
+		return isset($_COOKIE) && array_key_exists($name, $_COOKIE);
+	}
 
-    /**
-     * Delete the cookie
-     *
-     * @param string $name
-     *
-     * @param null|string $path
-     * @param null|string $domain
-     * @param bool|null $secure
-     * @param bool|null $httpOnly
-     * @param string|null $samesite
-     *
-     * @link http://koldy.net/docs/cookies#delete
-     */
-    public static function delete(string $name, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httpOnly = null, ?string $samesite = null): void
-    {
-	    $options = [
-		    'expires' => time() - 3600 * 24,
-		    'path' => $path ?? '/',
-		    'domain' => $domain ?? '',
-		    'secure' => $secure ?? false,
-		    'httponly' => $httpOnly ?? false
-	    ];
+	/**
+	 * Delete the cookie
+	 *
+	 * @param string $name
+	 *
+	 * @param null|string $path
+	 * @param null|string $domain
+	 * @param bool|null $secure
+	 * @param bool|null $httpOnly
+	 * @param string|null $samesite
+	 *
+	 * @link http://koldy.net/docs/cookies#delete
+	 */
+	public static function delete(
+		string $name,
+		?string $path = null,
+		?string $domain = null,
+		?bool $secure = null,
+		?bool $httpOnly = null,
+		?string $samesite = null
+	): void {
+		$options = [
+			'expires' => time() - 3600 * 24,
+			'path' => $path ?? '/',
+			'domain' => $domain ?? '',
+			'secure' => $secure ?? false,
+			'httponly' => $httpOnly ?? false
+		];
 
-	    if ($samesite !== null) {
-		    $options['samesite'] = $samesite;
-	    }
+		if ($samesite !== null) {
+			$options['samesite'] = $samesite;
+		}
 
-        setcookie($name, '', $options);
-    }
+		setcookie($name, '', $options);
+	}
 
 }

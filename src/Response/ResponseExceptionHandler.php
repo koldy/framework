@@ -29,6 +29,25 @@ class ResponseExceptionHandler
 	}
 
 	/**
+	 * Execute exception handler
+	 * @throws Exception
+	 * @throws Json\Exception
+	 * @throws ValidatorException
+	 * @throws Exception
+	 * @throws ConfigException
+	 */
+	public function exec(): void
+	{
+		if (Application::route()->isAjax()) {
+			// if is ajax
+			$this->handleExceptionInAjax($this->e);
+		} else {
+			// normal request
+			$this->handleExceptionInNormalRequest($this->e);
+		}
+	}
+
+	/**
 	 * @param Throwable $e
 	 *
 	 * @throws ValidatorException
@@ -74,7 +93,7 @@ class ResponseExceptionHandler
 	 * @param Throwable $e
 	 *
 	 * @throws Exception
-	 * @throws \Koldy\Exception
+	 * @throws Exception
 	 */
 	protected function handleExceptionInNormalRequest(Throwable $e): void
 	{
@@ -130,25 +149,6 @@ class ResponseExceptionHandler
 			}
 
 			$plain->flush();
-		}
-	}
-
-	/**
-	 * Execute exception handler
-	 * @throws Exception
-	 * @throws Json\Exception
-	 * @throws ValidatorException
-	 * @throws \Koldy\Exception
-	 * @throws \Koldy\Validator\ConfigException
-	 */
-	public function exec(): void
-	{
-		if (Application::route()->isAjax()) {
-			// if is ajax
-			$this->handleExceptionInAjax($this->e);
-		} else {
-			// normal request
-			$this->handleExceptionInNormalRequest($this->e);
 		}
 	}
 

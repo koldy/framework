@@ -15,41 +15,41 @@ use Koldy\Json as KoldyJson;
 class Json extends AbstractResponse
 {
 
-    use Data;
+	use Data;
 
-    /**
-     * Json constructor.
-     *
-     * @param array $data
-     */
-    public function __construct(array $data = [])
-    {
-        $this->setHeader('Content-Type', 'application/json');
-        $this->setData($data);
-    }
+	/**
+	 * Json constructor.
+	 *
+	 * @param array $data
+	 */
+	public function __construct(array $data = [])
+	{
+		$this->setHeader('Content-Type', 'application/json');
+		$this->setData($data);
+	}
 
-    /**
-     * Create the object with initial data
-     *
-     * @param array $data [optional]
-     *
-     * @return static
-     * @link http://koldy.net/docs/json#usage
-     */
-    public static function create(array $data = []): Json
-    {
-        return new static($data);
-    }
+	/**
+	 * Create the object with initial data
+	 *
+	 * @param array $data [optional]
+	 *
+	 * @return static
+	 * @link http://koldy.net/docs/json#usage
+	 */
+	public static function create(array $data = []): Json
+	{
+		return new static($data);
+	}
 
-    /**
-     * If you try to print your JSON object instance, you'll get JSON encoded string
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return json_encode($this->getData());
-    }
+	/**
+	 * If you try to print your JSON object instance, you'll get JSON encoded string
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return json_encode($this->getData());
+	}
 
 	public function getOutput(): mixed
 	{
@@ -61,20 +61,20 @@ class Json extends AbstractResponse
 	}
 
 	/**
-     * @link http://koldy.net/docs/json#usage
-     * @throws \Koldy\Exception
-     */
-    public function flush(): void
-    {
-        $this->prepareFlush();
-        $this->runBeforeFlush();
+	 * @link http://koldy.net/docs/json#usage
+	 * @throws \Koldy\Exception
+	 */
+	public function flush(): void
+	{
+		$this->prepareFlush();
+		$this->runBeforeFlush();
 
-        $content = KoldyJson::encode($this->getData());
+		$content = KoldyJson::encode($this->getData());
 
-	    $statusCode = $this->statusCode;
-	    $statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
+		$statusCode = $this->statusCode;
+		$statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
 
-	    if (!$statusCodeIs1XX) {
+		if (!$statusCodeIs1XX) {
 			if ($statusCode === 204) {
 				// there is no content to output
 				$this->setHeader('Content-Length', 0);
@@ -92,16 +92,16 @@ class Json extends AbstractResponse
 					$this->setHeader('Content-Length', $size);
 				}
 			}
-	    } // in case of 1XX status, you should handle specific headers by yourself
+		} // in case of 1XX status, you should handle specific headers by yourself
 
-        $this->flushHeaders();
+		$this->flushHeaders();
 
 		if ($content !== '') {
 			// print content ONLY if status code is not 204 (No Content)
 			print $content;
 		}
 
-        $this->runAfterFlush();
-    }
+		$this->runAfterFlush();
+	}
 
 }

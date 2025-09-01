@@ -8,7 +8,7 @@ class Exception extends \Koldy\Exception
 	/**
 	 * @var null|string
 	 */
-	protected string | null $adapter = null;
+	protected string|null $adapter = null;
 
 	/**
 	 * Get the name of DB adapter on which query was performed

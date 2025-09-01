@@ -3,6 +3,7 @@
 namespace Koldy\Response;
 
 use Closure;
+use InvalidArgumentException;
 use Koldy\Application;
 use Koldy\Log;
 use Koldy\Response\Exception as ResponseException;
@@ -171,7 +172,7 @@ abstract class AbstractResponse
 	public function statusCode(int $statusCode): AbstractResponse
 	{
 		if ($statusCode < 100 || $statusCode > 999) {
-			throw new \InvalidArgumentException('Invalid HTTP code while setting HTTP header');
+			throw new InvalidArgumentException('Invalid HTTP code while setting HTTP header');
 		}
 
 		$this->statusCode = $statusCode;
@@ -269,52 +270,9 @@ abstract class AbstractResponse
 	}
 
 	/**
-	 * @throws Exception
-	 */
-	protected function runBeforeFlush(): void
-	{
-		foreach ($this->workBeforeResponse as $fn) {
-			// function call is not wrapped in try/catch because we want the exception to pass through;
-			// with this in mind, you'll immediately see the error
-			call_user_func($fn, $this);
-		}
-	}
-
-	/**
-	 * Prepare flush - override if needed
-	 */
-	protected function prepareFlush(): void
-	{
-	}
-
-	/**
 	 * Flush the content to output buffer
 	 */
 	abstract public function flush(): void;
-
-	/**
-	 * @throws \Koldy\Exception
-	 */
-	protected function runAfterFlush(): void
-	{
-		if (isset($_SESSION)) {
-			// close writing to session, since this code will run after client's connection to server has ended
-			Session::close();
-		}
-
-		if (function_exists('fastcgi_finish_request')) {
-			fastcgi_finish_request();
-		}
-
-		foreach ($this->workAfterResponse as $fn) {
-			// function call is not wrapped in try/catch because we want the exception to pass through;
-			// with this in mind, you'll immediately see the error
-			call_user_func($fn, $this);
-		}
-
-		// the response that flushes itself should set the response of the application cycle
-		Application::setResponse($this);
-	}
 
 	/**
 	 * Set the function to execute AFTER flushing output buffer. If needed, add more than once and if you want,
@@ -362,6 +320,49 @@ abstract class AbstractResponse
 		}
 
 		return $counter;
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function runBeforeFlush(): void
+	{
+		foreach ($this->workBeforeResponse as $fn) {
+			// function call is not wrapped in try/catch because we want the exception to pass through;
+			// with this in mind, you'll immediately see the error
+			call_user_func($fn, $this);
+		}
+	}
+
+	/**
+	 * Prepare flush - override if needed
+	 */
+	protected function prepareFlush(): void
+	{
+	}
+
+	/**
+	 * @throws \Koldy\Exception
+	 */
+	protected function runAfterFlush(): void
+	{
+		if (isset($_SESSION)) {
+			// close writing to session, since this code will run after client's connection to server has ended
+			Session::close();
+		}
+
+		if (function_exists('fastcgi_finish_request')) {
+			fastcgi_finish_request();
+		}
+
+		foreach ($this->workAfterResponse as $fn) {
+			// function call is not wrapped in try/catch because we want the exception to pass through;
+			// with this in mind, you'll immediately see the error
+			call_user_func($fn, $this);
+		}
+
+		// the response that flushes itself should set the response of the application cycle
+		Application::setResponse($this);
 	}
 
 }

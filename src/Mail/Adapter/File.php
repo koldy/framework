@@ -22,84 +22,84 @@ class File extends CommonMailAdapter
 	 * @throws \Koldy\Exception
 	 * @throws \Koldy\Filesystem\Exception
 	 */
-    public function send(): void
-    {
-        $content = [];
+	public function send(): void
+	{
+		$content = [];
 
-        if ($this->hasHeader('From')) {
-            $content[] = 'From: ' . $this->getHeader('From');
-            $this->removeHeader('From');
-        }
+		if ($this->hasHeader('From')) {
+			$content[] = 'From: ' . $this->getHeader('From');
+			$this->removeHeader('From');
+		}
 
-        $to = $cc = $bcc = [];
+		$to = $cc = $bcc = [];
 
-        if (count($this->to) == 0) {
-            throw new Exception('There\'s no recipients to send email to');
-        }
+		if (count($this->to) == 0) {
+			throw new Exception('There\'s no recipients to send email to');
+		}
 
-        foreach ($this->to as $address) {
-            $to[] = $this->getAddressValue($address['email'], $address['name']);
-        }
+		foreach ($this->to as $address) {
+			$to[] = $this->getAddressValue($address['email'], $address['name']);
+		}
 
-        foreach ($this->cc as $address) {
-            $cc[] = $this->getAddressValue($address['email'], $address['name']);
-        }
+		foreach ($this->cc as $address) {
+			$cc[] = $this->getAddressValue($address['email'], $address['name']);
+		}
 
-        foreach ($this->bcc as $address) {
-            $bcc[] = $this->getAddressValue($address['email'], $address['name']);
-        }
+		foreach ($this->bcc as $address) {
+			$bcc[] = $this->getAddressValue($address['email'], $address['name']);
+		}
 
-        $content[] = 'To: ' . implode(', ', $to);
+		$content[] = 'To: ' . implode(', ', $to);
 
-        if (count($cc) > 0) {
-            $content[] = 'Cc: ' . implode(', ', $cc);
-        }
+		if (count($cc) > 0) {
+			$content[] = 'Cc: ' . implode(', ', $cc);
+		}
 
-        if (count($bcc) > 0) {
-            $content[] = 'Bcc: ' . implode(', ', $bcc);
-        }
+		if (count($bcc) > 0) {
+			$content[] = 'Bcc: ' . implode(', ', $bcc);
+		}
 
-        if ($this->replyTo !== null) {
-            $content[] = 'Reply-To: ' . $this->replyTo;
-        }
+		if ($this->replyTo !== null) {
+			$content[] = 'Reply-To: ' . $this->replyTo;
+		}
 
-        $content[] = 'Subject: ' . $this->subject;
+		$content[] = 'Subject: ' . $this->subject;
 
-        $charset = $this->config['charset'] ?? 'utf-8';
-        $contentType = ($this->isHTML) ? ('text/html; charset=' . $charset) : ('text/plain; charset=' . $charset);
-        $this->setHeader('Content-type', $contentType);
+		$charset = $this->config['charset'] ?? 'utf-8';
+		$contentType = ($this->isHTML) ? ('text/html; charset=' . $charset) : ('text/plain; charset=' . $charset);
+		$this->setHeader('Content-type', $contentType);
 
-        $content = implode("\n", $content) . "\n" . str_repeat('=', 80) . "\n";
+		$content = implode("\n", $content) . "\n" . str_repeat('=', 80) . "\n";
 
-        $content .= $this->body;
+		$content .= $this->body;
 
-        if ($this->alternativeText != null) {
-            $content .= "\n" . str_repeat('=', 80) . "\n";
-            $content .= $this->alternativeText;
-        }
+		if ($this->alternativeText != null) {
+			$content .= "\n" . str_repeat('=', 80) . "\n";
+			$content .= $this->alternativeText;
+		}
 
-        $now = DateTime::createFromFormat('U.u', (string)microtime(true));
-        $time = $now->format('Y-m-d H-i-s.u');
+		$now = DateTime::createFromFormat('U.u', (string)microtime(true));
+		$time = $now->format('Y-m-d H-i-s.u');
 
-        if (!isset($this->config['location'])) {
-            $file = Application::getStoragePath('email' . DS . "{$time}.txt");
-        } else {
-            $location = $this->config['location'];
+		if (!isset($this->config['location'])) {
+			$file = Application::getStoragePath('email' . DS . "{$time}.txt");
+		} else {
+			$location = $this->config['location'];
 
-            if (str_starts_with($location, 'storage:')) {
-                $file = Application::getStoragePath(substr($location, 8) . DS . "{$time}.txt");
-            } else {
-                $file = $location . DS . "{$time}.txt";
-                $file = str_replace(DS . DS, DS, $file);
-            }
-        }
+			if (str_starts_with($location, 'storage:')) {
+				$file = Application::getStoragePath(substr($location, 8) . DS . "{$time}.txt");
+			} else {
+				$file = $location . DS . "{$time}.txt";
+				$file = str_replace(DS . DS, DS, $file);
+			}
+		}
 
-        $directory = dirname($file);
-        if (!is_dir($directory)) {
-            Directory::mkdir($directory, 0755);
-        }
+		$directory = dirname($file);
+		if (!is_dir($directory)) {
+			Directory::mkdir($directory, 0755);
+		}
 
-        file_put_contents($file, $content);
-    }
+		file_put_contents($file, $content);
+	}
 
 }

@@ -6,9 +6,9 @@ use Closure;
 use Koldy\Config\Exception as ConfigException;
 use Koldy\Db as DbAdapter;
 use Koldy\Db\Adapter\AbstractAdapter;
-use Koldy\Log\Exception;
 use Koldy\Db\Query\Insert;
 use Koldy\Log;
+use Koldy\Log\Exception;
 use Koldy\Log\Message;
 
 /**
@@ -34,136 +34,136 @@ use Koldy\Log\Message;
 class Db extends AbstractLogAdapter
 {
 
-    /**
-     * @var string|null
-     */
-    protected string | null $adapter;
+	/**
+	 * @var string|null
+	 */
+	protected string|null $adapter;
 
-    /**
-     * @var string
-     */
-    protected string $table;
+	/**
+	 * @var string
+	 */
+	protected string $table;
 
-    /**
-     * The flag if query is being inserted into database to prevent recursion
-     *
-     * @var boolean
-     */
-    protected bool $inserting = false;
+	/**
+	 * The flag if query is being inserted into database to prevent recursion
+	 *
+	 * @var boolean
+	 */
+	protected bool $inserting = false;
 
-    /**
-     * @var Closure|null
-     */
-    protected Closure|null $insertFn = null;
+	/**
+	 * @var Closure|null
+	 */
+	protected Closure|null $insertFn = null;
 
-    /**
-     * @var bool
-     */
-    protected bool $disableLog = true;
+	/**
+	 * @var bool
+	 */
+	protected bool $disableLog = true;
 
-    /**
-     * Construct the DB writer
-     *
-     * @param array $config
-     *
-     * @throws ConfigException
-     */
-    public function __construct(array $config)
-    {
-        $this->adapter = $config['adapter'] ?? null;
-        $this->table = $config['table'] ?? 'log';
-        $this->disableLog = array_key_exists('disable_log', $config) ? (bool)$config['disable_log'] : true;
+	/**
+	 * Construct the DB writer
+	 *
+	 * @param array $config
+	 *
+	 * @throws ConfigException
+	 */
+	public function __construct(array $config)
+	{
+		$this->adapter = $config['adapter'] ?? null;
+		$this->table = $config['table'] ?? 'log';
+		$this->disableLog = array_key_exists('disable_log', $config) ? (bool)$config['disable_log'] : true;
 
-        if (isset($config['get_insert_fn'])) {
-            if (!is_callable($config['get_insert_fn'])) {
-                throw new ConfigException('\'get_insert_fn\' in DB log adapter options is not instance of Callable');
-            } else {
-                $this->insertFn = $config['get_insert_fn'];
-            }
-        }
+		if (isset($config['get_insert_fn'])) {
+			if (!is_callable($config['get_insert_fn'])) {
+				throw new ConfigException('\'get_insert_fn\' in DB log adapter options is not instance of Callable');
+			} else {
+				$this->insertFn = $config['get_insert_fn'];
+			}
+		}
 
-        parent::__construct($config);
-    }
+		parent::__construct($config);
+	}
 
-    /**
-     * @return string
-     */
-    protected function getTableName(): string
-    {
-        return $this->table;
-    }
+	/**
+	 * @param Message $message
+	 *
+	 * @throws Exception
+	 * @throws \Exception
+	 */
+	public function logMessage(Message $message): void
+	{
+		if (in_array($message->getLevel(), $this->config['log']) && !$this->inserting) {
+			if ($this->insertFn !== null) {
+				$insert = call_user_func($this->insertFn, $message, $this->config);
 
-    /**
-     * @return null|string
-     */
-    protected function getAdapterConnection(): ?string
-    {
-        return $this->adapter;
-    }
+				if ($insert !== null) {
 
-    /**
-     * @return AbstractAdapter
-     * @throws ConfigException
-     * @throws \Koldy\Db\Exception
-     * @throws \Koldy\Exception
-     */
-    protected function getAdapter(): AbstractAdapter
-    {
-        return DbAdapter::getAdapter($this->getAdapterConnection());
-    }
+					if (!is_object($insert)) {
+						throw new Exception('\'get_insert_fn\' function must return an instance of Insert; instead got type of ' . gettype($insert));
+					} else {
+						// it is object, but what type
+						if (!($insert instanceof Insert)) {
+							throw new Exception('\'get_insert_fn\' function must return an instance of Insert; instead got instance of ' . get_class($insert));
+						}
+					}
 
-    /**
-     * @param Message $message
-     *
-     * @throws Exception
-     * @throws \Exception
-     */
-    public function logMessage(Message $message): void
-    {
-        if (in_array($message->getLevel(), $this->config['log']) && !$this->inserting) {
-            if ($this->insertFn !== null) {
-                $insert = call_user_func($this->insertFn, $message, $this->config);
+				}
+			} else {
+				$data = [
+					'time' => $message->getTime()->format('Y-m-d H:i:s'),
+					'level' => $message->getLevel(),
+					'who' => $message->getWho() ?? Log::getWho(),
+					'message' => $message->getMessage()
+				];
 
-                if ($insert !== null) {
+				$insert = new Insert($this->getTableName(), $data, $this->getAdapterConnection());
+			}
 
-                    if (!is_object($insert)) {
-                        throw new Exception('\'get_insert_fn\' function must return an instance of Insert; instead got type of ' . gettype($insert));
-                    } else {
-                        // it is object, but what type
-                        if (!($insert instanceof Insert)) {
-                            throw new Exception('\'get_insert_fn\' function must return an instance of Insert; instead got instance of ' . get_class($insert));
-                        }
-                    }
+			if ($insert !== null) {
+				$this->inserting = true;
 
-                }
-            } else {
-                $data = [
-                  'time' => $message->getTime()->format('Y-m-d H:i:s'),
-                  'level' => $message->getLevel(),
-                  'who' => $message->getWho() ?? Log::getWho(),
-                  'message' => $message->getMessage()
-                ];
+				try {
 
-                $insert = new Insert($this->getTableName(), $data, $this->getAdapterConnection());
-            }
+					Log::temporaryDisable();
+					$insert->exec();
 
-            if ($insert !== null) {
-                $this->inserting = true;
+				} catch (\Exception $e) {
+					throw $e;
 
-                try {
+				} finally {
+					Log::restoreTemporaryDisablement();
+					$this->inserting = false;
+				}
+			}
+		}
+	}
 
-                    Log::temporaryDisable();
-                    $insert->exec();
+	/**
+	 * @return string
+	 */
+	protected function getTableName(): string
+	{
+		return $this->table;
+	}
 
-                } catch (\Exception $e) {
-                    throw $e;
+	/**
+	 * @return AbstractAdapter
+	 * @throws ConfigException
+	 * @throws \Koldy\Db\Exception
+	 * @throws \Koldy\Exception
+	 */
+	protected function getAdapter(): AbstractAdapter
+	{
+		return DbAdapter::getAdapter($this->getAdapterConnection());
+	}
 
-                } finally {
-                    Log::restoreTemporaryDisablement();
-                    $this->inserting = false;
-                }
-            }
-        }
-    }
+	/**
+	 * @return null|string
+	 */
+	protected function getAdapterConnection(): ?string
+	{
+		return $this->adapter;
+	}
 
 }

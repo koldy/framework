@@ -11,52 +11,52 @@ use Koldy\Security\Exception as SecurityException;
 class Token
 {
 
-    /**
-     * @var string
-     */
-    private string $token;
+	/**
+	 * @var string
+	 */
+	private string $token;
 
-    /**
-     * @var string|null
-     */
-    private string | null $cookieToken = null;
+	/**
+	 * @var string|null
+	 */
+	private string|null $cookieToken = null;
 
-    /**
-     * Token constructor.
-     *
-     * @param string $token
-     * @param string|null $cookieToken
-     */
-    public function __construct(string $token, string|null $cookieToken = null)
-    {
-        $this->token = $token;
-        $this->cookieToken = $cookieToken;
-    }
+	/**
+	 * Token constructor.
+	 *
+	 * @param string $token
+	 * @param string|null $cookieToken
+	 */
+	public function __construct(string $token, string|null $cookieToken = null)
+	{
+		$this->token = $token;
+		$this->cookieToken = $cookieToken;
+	}
 
-    public function getToken(): string
-    {
-        return $this->token;
-    }
+	/**
+	 * String representation of object
+	 * @link http://php.net/manual/en/serializable.serialize.php
+	 * @return string the string representation of the object or null
+	 * @since 5.1.0
+	 * @throws Json\Exception
+	 */
+	public function serialize()
+	{
+		return Json::encode([
+			'token' => $this->getToken(),
+			'cookie_token' => $this->getCookieToken()
+		]);
+	}
 
-    public function getCookieToken(): ?string
-    {
-        return $this->cookieToken;
-    }
+	public function getToken(): string
+	{
+		return $this->token;
+	}
 
-    /**
-     * String representation of object
-     * @link http://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
-     * @since 5.1.0
-     * @throws Json\Exception
-     */
-    public function serialize()
-    {
-        return Json::encode([
-          'token' => $this->getToken(),
-          'cookie_token' => $this->getCookieToken()
-        ]);
-    }
+	public function getCookieToken(): ?string
+	{
+		return $this->cookieToken;
+	}
 
 	/**
 	 * Serialize handler for newer PHP versions
@@ -69,32 +69,32 @@ class Token
 		];
 	}
 
-    /**
-     * Constructs the object
-     * @link http://php.net/manual/en/serializable.unserialize.php
-     *
-     * @param string $serialized <p>
-     * The string representation of the object.
-     * </p>
-     *
-     * @return void
-     * @throws Json\Exception
-     * @throws SecurityException
-     * @since 5.1.0
-     */
-    public function unserialize($serialized)
-    {
-        $data = Json::decode($serialized);
+	/**
+	 * Constructs the object
+	 * @link http://php.net/manual/en/serializable.unserialize.php
+	 *
+	 * @param string $serialized <p>
+	 * The string representation of the object.
+	 * </p>
+	 *
+	 * @return void
+	 * @throws Json\Exception
+	 * @throws SecurityException
+	 * @since 5.1.0
+	 */
+	public function unserialize($serialized)
+	{
+		$data = Json::decode($serialized);
 
-        foreach (['token', 'cookie_token'] as $key) {
-            if (!array_key_exists($key, $data)) {
-                throw new SecurityException("Unserialized CSRF token doesn't contain required \"{$key}\" key");
-            }
-        }
+		foreach (['token', 'cookie_token'] as $key) {
+			if (!array_key_exists($key, $data)) {
+				throw new SecurityException("Unserialized CSRF token doesn't contain required \"{$key}\" key");
+			}
+		}
 
-        $this->token = $data['token'];
-        $this->cookieToken = $data['cookie_token'];
-    }
+		$this->token = $data['token'];
+		$this->cookieToken = $data['cookie_token'];
+	}
 
 	/**
 	 * Unserialize handler for newer PHP versions
@@ -115,9 +115,9 @@ class Token
 		$this->cookieToken = $data['cookie_token'];
 	}
 
-    public function __toString()
-    {
-        return $this->getToken();
-    }
+	public function __toString()
+	{
+		return $this->getToken();
+	}
 
 }

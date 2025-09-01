@@ -12,15 +12,15 @@ use PDOStatement;
 abstract class AbstractAdapter
 {
 
-    protected array $config;
+	protected array $config;
 
-    protected string | null $configKey;
+	protected string|null $configKey;
 
-    protected Pdo | null $pdo = null;
+	protected Pdo|null $pdo = null;
 
-    protected PDOStatement | null $stmt = null;
+	protected PDOStatement|null $stmt = null;
 
-    protected Query | null $lastQuery = null;
+	protected Query|null $lastQuery = null;
 
 	/**
 	 * Number of "active" database transactions; allows "nesting" multiple db transactions
@@ -29,129 +29,125 @@ abstract class AbstractAdapter
 	 */
 	private int $transactions = 0;
 
-    /**
-     * AbstractAdapter constructor.
-     *
-     * @param array $config
-     * @param string|null $configKey
-     */
-    public function __construct(array $config = [], string|null $configKey = null)
-    {
-        $this->config = $config;
-        $this->configKey = $configKey;
-        $this->checkConfig($config);
-    }
+	/**
+	 * AbstractAdapter constructor.
+	 *
+	 * @param array $config
+	 * @param string|null $configKey
+	 */
+	public function __construct(array $config = [], string|null $configKey = null)
+	{
+		$this->config = $config;
+		$this->configKey = $configKey;
+		$this->checkConfig($config);
+	}
 
-    /**
-     * Check if configuration has all required keys
-     *
-     * @param array $config
-     */
-    abstract protected function checkConfig(array $config): void;
+	/**
+	 * Check if configuration has all required keys
+	 *
+	 * @param array $config
+	 */
+	abstract protected function checkConfig(array $config): void;
 
-    /**
-     * Get connection type (or better say, database type)
-     *
-     * @return string
-     */
-    public function getType(): string
-    {
-        return $this->config['type'];
-    }
+	/**
+	 * Get connection type (or better say, database type)
+	 *
+	 * @return string
+	 */
+	public function getType(): string
+	{
+		return $this->config['type'];
+	}
 
-    /**
-     * @return PDO
-     */
-    public function getPDO(): PDO
-    {
-        if ($this->pdo === null) {
-            $this->connect();
-        }
+	/**
+	 * Get the config array used for this adapter
+	 *
+	 * @return array
+	 */
+	public function getConfig(): array
+	{
+		return $this->config;
+	}
 
-        return $this->pdo;
-    }
+	/**
+	 * Reconnect to database
+	 *
+	 * @throws QueryException
+	 * @throws \Koldy\Exception
+	 */
+	public function reconnect(): void
+	{
+		$this->close();
+		$this->query('SELECT 1')->exec();
+	}
 
-    /**
-     * Get the config array used for this adapter
-     *
-     * @return array
-     */
-    public function getConfig(): array
-    {
-        return $this->config;
-    }
+	/**
+	 * Close connection to database
+	 */
+	abstract public function close(): void;
 
-    /**
-     * Get the config key name of this adapter. This must not be null!
-     *
-     * @return string
-     */
-    public function getConfigKey(): string
-    {
-        return $this->configKey;
-    }
-
-    /**
-     * @param string $keyIdentifier
-     */
-    public function setConfigKey(string $keyIdentifier): void
-    {
-        $this->configKey = $keyIdentifier;
-    }
-
-    /**
-     * Connect to database
-     */
-    abstract public function connect(): void;
-
-    /**
-     * Reconnect to database
-     *
-     * @throws QueryException
-     * @throws \Koldy\Exception
-     */
-    public function reconnect(): void
-    {
-        $this->close();
-        $this->query('SELECT 1')->exec();
-    }
-
-    /**
-     * Close connection to database
-     */
-    abstract public function close(): void;
+	/**
+	 * Get new query
+	 *
+	 * @param string $query
+	 * @param array|null $bindings
+	 *
+	 * @return Query
+	 */
+	public function query(string $query, array|null $bindings = null): Query
+	{
+		$this->lastQuery = new Query($query, $bindings, $this->configKey);
+		return $this->lastQuery;
+	}
 
 	/**
 	 * @return PDOStatement
 	 * @throws Exception
 	 */
-    public function getStatement(): PDOStatement
-    {
-        if ($this->stmt === null) {
-            throw new Exception('Can not get statement when it\'s not set; did you prepare your query before getting the PDO statement?');
-        }
+	public function getStatement(): PDOStatement
+	{
+		if ($this->stmt === null) {
+			throw new Exception('Can not get statement when it\'s not set; did you prepare your query before getting the PDO statement?');
+		}
 
-        return $this->stmt;
-    }
+		return $this->stmt;
+	}
 
-    /**
-     * @param string $queryStatement
-     *
-     * @throws QueryException
-     */
-    public function prepare(string $queryStatement): void
-    {
-        try {
-            $this->stmt = $this->getPDO()->prepare($queryStatement);
-        } catch (PDOException $e) {
-            //$dashes = str_repeat('=', 50);
-            //Log::notice("Can't prepare query statement ({$this->getConfigKey()}):\n{$dashes}\n{$queryStatement}\n{$dashes}");
+	/**
+	 * @param string $queryStatement
+	 *
+	 * @throws QueryException
+	 */
+	public function prepare(string $queryStatement): void
+	{
+		try {
+			$this->stmt = $this->getPDO()->prepare($queryStatement);
+		} catch (PDOException $e) {
+			//$dashes = str_repeat('=', 50);
+			//Log::notice("Can't prepare query statement ({$this->getConfigKey()}):\n{$dashes}\n{$queryStatement}\n{$dashes}");
 
-            $exception = new QueryException($e->getMessage(), (int)$e->getCode(), $e);
-            $exception->setSql($queryStatement);
-            throw $exception;
-        }
-    }
+			$exception = new QueryException($e->getMessage(), (int)$e->getCode(), $e);
+			$exception->setSql($queryStatement);
+			throw $exception;
+		}
+	}
+
+	/**
+	 * @return PDO
+	 */
+	public function getPDO(): PDO
+	{
+		if ($this->pdo === null) {
+			$this->connect();
+		}
+
+		return $this->pdo;
+	}
+
+	/**
+	 * Connect to database
+	 */
+	abstract public function connect(): void;
 
 	/**
 	 * Begin SQL transaction
@@ -169,6 +165,24 @@ abstract class AbstractAdapter
 		}
 
 		$this->transactions++;
+	}
+
+	/**
+	 * Get the config key name of this adapter. This must not be null!
+	 *
+	 * @return string
+	 */
+	public function getConfigKey(): string
+	{
+		return $this->configKey;
+	}
+
+	/**
+	 * @param string $keyIdentifier
+	 */
+	public function setConfigKey(string $keyIdentifier): void
+	{
+		$this->configKey = $keyIdentifier;
 	}
 
 	/**
@@ -207,20 +221,6 @@ abstract class AbstractAdapter
 		$this->transactions--;
 	}
 
-    /**
-     * Get new query
-     *
-     * @param string $query
-     * @param array|null $bindings
-     *
-     * @return Query
-     */
-    public function query(string $query, array|null $bindings = null): Query
-    {
-        $this->lastQuery = new Query($query, $bindings, $this->configKey);
-        return $this->lastQuery;
-    }
-
 	/**
 	 * @param string|null $table
 	 * @param string|null $tableAlias
@@ -229,12 +229,12 @@ abstract class AbstractAdapter
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function select(string|null $table = null, string|null $tableAlias = null): Query\Select
-    {
-        $select = new Query\Select($table, $tableAlias);
-        $select->setAdapter($this->getConfigKey());
-        return $select;
-    }
+	public function select(string|null $table = null, string|null $tableAlias = null): Query\Select
+	{
+		$select = new Query\Select($table, $tableAlias);
+		$select->setAdapter($this->getConfigKey());
+		return $select;
+	}
 
 	/**
 	 * @param string|null $table
@@ -246,10 +246,10 @@ abstract class AbstractAdapter
 	 * @throws \Koldy\Exception
 	 * @throws \Koldy\Json\Exception
 	 */
-    public function insert(string|null $table = null, array|null $rowValues = null): Query\Insert
-    {
-        return new Query\Insert($table, $rowValues, $this->getConfigKey());
-    }
+	public function insert(string|null $table = null, array|null $rowValues = null): Query\Insert
+	{
+		return new Query\Insert($table, $rowValues, $this->getConfigKey());
+	}
 
 	/**
 	 * @param string|null $table
@@ -259,20 +259,20 @@ abstract class AbstractAdapter
 	 * @throws \Koldy\Config\Exception
 	 * @throws \Koldy\Exception
 	 */
-    public function update(string|null $table = null, array|null $values = null): Query\Update
-    {
-        return new Query\Update($table, $values, $this->getConfigKey());
-    }
+	public function update(string|null $table = null, array|null $values = null): Query\Update
+	{
+		return new Query\Update($table, $values, $this->getConfigKey());
+	}
 
-    /**
-     * @param string|null $table
-     *
-     * @return Query\Delete
-     */
-    public function delete(string|null $table = null): Query\Delete
-    {
-        return new Query\Delete($table, $this->getConfigKey());
-    }
+	/**
+	 * @param string|null $table
+	 *
+	 * @return Query\Delete
+	 */
+	public function delete(string|null $table = null): Query\Delete
+	{
+		return new Query\Delete($table, $this->getConfigKey());
+	}
 
 	/**
 	 * @param string|null $keyName
@@ -286,7 +286,8 @@ abstract class AbstractAdapter
 		try {
 			$id = $this->getPDO()->lastInsertId($keyName);
 		} catch (PDOException $e) {
-			throw new Exception('Unable to get last insert ID' . ($keyName !== null ? " named \"{$keyName}\"" : ''), 0, $e);
+			throw new Exception('Unable to get last insert ID' . ($keyName !== null ? " named \"{$keyName}\"" : ''), 0,
+				$e);
 		}
 
 		if ($id === false) {

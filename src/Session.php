@@ -4,6 +4,7 @@ namespace Koldy;
 
 use Closure;
 use Koldy\Session\Exception as SessionException;
+use SessionHandlerInterface;
 
 /**
  * The session class. It's easy to use, just make sure that your configuration
@@ -32,7 +33,27 @@ class Session
 	 *
 	 * @var string|null
 	 */
-	protected static string | null $sessionId = null;
+	protected static string|null $sessionId = null;
+
+	/**
+	 * Set the key to the session. If key already exists, it will be overwritten
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 *
+	 * @throws Exception
+	 * @throws SessionException
+	 * @link http://koldy.net/docs/session#set
+	 */
+	public static function set(string $key, mixed $value): void
+	{
+		if (static::$closed) {
+			throw new SessionException('Can not set any other value to session because all data has been already committed');
+		}
+
+		static::init();
+		$_SESSION[$key] = $value;
+	}
 
 	/**
 	 * Initialize the session handler and session itself
@@ -84,7 +105,7 @@ class Session
 
 				$handler = new $adapterClass($config->get('options') ?? []);
 
-				if (!($handler instanceof \SessionHandlerInterface)) {
+				if (!($handler instanceof SessionHandlerInterface)) {
 					throw new SessionException("Your session adapter={$adapterClass} doesn't implement \\SessionHandlerInterface, which is a must");
 				}
 
@@ -141,26 +162,6 @@ class Session
 	{
 		static::init();
 		return $_SESSION[$key] ?? null;
-	}
-
-	/**
-	 * Set the key to the session. If key already exists, it will be overwritten
-	 *
-	 * @param string $key
-	 * @param mixed $value
-	 *
-	 * @throws Exception
-	 * @throws SessionException
-	 * @link http://koldy.net/docs/session#set
-	 */
-	public static function set(string $key, mixed $value): void
-	{
-		if (static::$closed) {
-			throw new SessionException('Can not set any other value to session because all data has been already committed');
-		}
-
-		static::init();
-		$_SESSION[$key] = $value;
 	}
 
 	/**
@@ -282,6 +283,7 @@ class Session
 	 * @link http://koldy.net/docs/session#start
 	 *
 	 * @param string|null $sessionId
+	 *
 	 * @throws Exception
 	 */
 	public static function start(string|null $sessionId = null): void

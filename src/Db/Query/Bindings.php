@@ -29,6 +29,35 @@ class Bindings
 	 */
 	protected array $bindings = [];
 
+	public function set(
+		string $parameter,
+		int|float|bool|string|BackedEnum|null $value,
+		int|null $typeConstant = null
+	): string {
+		$this->bindings[$parameter] = new Bind($parameter, $value, $typeConstant);
+		return $parameter;
+	}
+
+	/**
+	 * @param string|Expr $parameter
+	 * @param $value
+	 * @param int|null $typeConstant
+	 *
+	 * @return string
+	 */
+	public function makeAndSet(string|Expr $parameter, $value, int|null $typeConstant = null): string
+	{
+		if ($parameter instanceof Expr) {
+			// something complex in the field name, so create generic name instead of trying to create human-friendly-readable name
+			$bindName = 'expr' . static::getNextIndex();
+		} else {
+			$bindName = static::make($parameter);
+		}
+
+		$this->bindings[$bindName] = new Bind($bindName, $value, $typeConstant);
+		return $bindName;
+	}
+
 	/**
 	 * Get next unique index for binding to SQL statements
 	 *
@@ -46,12 +75,6 @@ class Bindings
 		}
 
 		return static::$index++;
-	}
-
-	public function set(string $parameter, int | float | bool | string | BackedEnum | null $value, int | null $typeConstant = null): string
-	{
-		$this->bindings[$parameter] = new Bind($parameter, $value, $typeConstant);
-		return $parameter;
 	}
 
 	/**
@@ -89,36 +112,6 @@ class Bindings
 	}
 
 	/**
-	 * @param string|Expr $parameter
-	 * @param $value
-	 * @param int|null $typeConstant
-	 *
-	 * @return string
-	 */
-	public function makeAndSet(string | Expr $parameter, $value, int|null $typeConstant = null): string
-	{
-		if ($parameter instanceof Expr) {
-			// something complex in the field name, so create generic name instead of trying to create human-friendly-readable name
-			$bindName = 'expr' . static::getNextIndex();
-		} else {
-			$bindName = static::make($parameter);
-		}
-
-		$this->bindings[$bindName] = new Bind($bindName, $value, $typeConstant);
-		return $bindName;
-	}
-
-	/**
-	 * @param string $parameter
-	 *
-	 * @return bool
-	 */
-	public function has(string $parameter): bool
-	{
-		return isset($this->bindings[$parameter]);
-	}
-
-	/**
 	 * Get already binded parameter
 	 *
 	 * @param string $parameter
@@ -136,13 +129,13 @@ class Bindings
 	}
 
 	/**
-	 * Get the array of all bindings where key is the parameter name and value is instance of Bind
+	 * @param string $parameter
 	 *
-	 * @return Bind[]
+	 * @return bool
 	 */
-	public function getBindings(): array
+	public function has(string $parameter): bool
 	{
-		return $this->bindings;
+		return isset($this->bindings[$parameter]);
 	}
 
 	/**
@@ -167,6 +160,16 @@ class Bindings
 	public function addBindingsFromInstance(self $bindings): void
 	{
 		$this->bindings = array_merge($this->bindings, $bindings->getBindings());
+	}
+
+	/**
+	 * Get the array of all bindings where key is the parameter name and value is instance of Bind
+	 *
+	 * @return Bind[]
+	 */
+	public function getBindings(): array
+	{
+		return $this->bindings;
 	}
 
 	/**

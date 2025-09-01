@@ -4,6 +4,7 @@ namespace Koldy;
 
 use Koldy\Security\Exception as SecurityException;
 use ReflectionClass;
+use ReflectionException;
 
 /**
  * Mock class for simulating HTTP requests in testing environments. You can safely use it in unit tests to simulate
@@ -34,205 +35,32 @@ class Mock
 	private static bool $isMocking = false;
 
 	/**
-	 * Ensure we're in a testing environment
+	 * Mock a JSON request
 	 *
-	 * @throws SecurityException
-	 */
-	private static function ensureTestingEnvironment(): void
-	{
-		// Check for PHPUnit or testing environment
-		if (!Application::inTest()) {
-			throw new SecurityException('Mock can only be used in testing environments');
-		}
-	}
-
-	/**
-	 * Start mocking by backing up current superglobals
+	 * @param string $method HTTP method
+	 * @param string $uri Request URI
+	 * @param array $data JSON data
+	 * @param array $headers Additional headers
 	 *
 	 * @return void
 	 * @throws SecurityException
 	 */
-	public static function start(): void
-	{
-		self::ensureTestingEnvironment();
+	public static function json(
+		string $method,
+		string $uri,
+		array $data,
+		array $headers = []
+	): void {
+		$jsonData = json_encode($data);
+		$contentLength = strlen($jsonData);
 
-		if (!self::$isMocking) {
-			// Backup current superglobals
+		$defaultHeaders = [
+			'Content-Type' => 'application/json',
+			'Content-Length' => (string)$contentLength,
+			'Accept' => 'application/json'
+		];
 
-			/** @phpstan-ignore-next-line */
-			self::$original['get'] = $_GET ?? [];
-
-			/** @phpstan-ignore-next-line */
-			self::$original['post'] = $_POST ?? [];
-
-			/** @phpstan-ignore-next-line */
-			self::$original['server'] = $_SERVER ?? [];
-
-			/** @phpstan-ignore-next-line */
-			self::$original['files'] = $_FILES ?? [];
-
-			/** @phpstan-ignore-next-line */
-			self::$original['cookie'] = $_COOKIE ?? [];
-
-			self::$original['session'] = $_SESSION ?? [];
-
-			self::$isMocking = true;
-		}
-	}
-
-	/**
-	 * Reset all mocked data to original values
-	 *
-	 * @return void
-	 */
-	public static function reset(): void
-	{
-		if (self::$isMocking) {
-			$_GET = self::$original['get'];
-			$_POST = self::$original['post'];
-			$_SERVER = self::$original['server'];
-			$_FILES = self::$original['files'];
-			$_COOKIE = self::$original['cookie'];
-			$_SESSION = self::$original['session'];
-
-			// Reset any static properties in Request class
-			self::resetRequestClass();
-		}
-	}
-
-	/**
-	 * Reset static properties in Request class
-	 *
-	 * @return void
-	 */
-	private static function resetRequestClass(): void
-	{
-		try {
-			$reflection = new ReflectionClass(Request::class);
-
-			$staticProps = [
-				'realIp' => null,
-				'rawData' => null,
-				'vars' => null,
-				'uploadedFiles' => null,
-				'parsedMultipartContent' => null
-			];
-
-			foreach ($staticProps as $prop => $defaultValue) {
-				if ($reflection->hasProperty($prop)) {
-					$property = $reflection->getProperty($prop);
-					$property->setAccessible(true);
-					$property->setValue(null, $defaultValue);
-				}
-			}
-		} catch (\ReflectionException $e) {
-			// Silently fail - this is just cleanup
-		}
-	}
-
-	/**
-	 * Set GET parameters
-	 *
-	 * @param array $params
-	 *
-	 * @return void
-	 * @throws SecurityException
-	 */
-	public static function get(array $params): void
-	{
-		self::ensureTestingEnvironment();
-
-		if (!self::$isMocking) {
-			self::start();
-		}
-
-		$_GET = $params;
-	}
-
-	/**
-	 * Set POST parameters
-	 *
-	 * @param array $params
-	 *
-	 * @return void
-	 * @throws SecurityException
-	 */
-	public static function post(array $params): void
-	{
-		self::ensureTestingEnvironment();
-
-		if (!self::$isMocking) {
-			self::start();
-		}
-
-		$_POST = $params;
-	}
-
-	/**
-	 * Set SERVER parameters
-	 *
-	 * @param array $params
-	 *
-	 * @return void
-	 * @throws SecurityException
-	 */
-	public static function server(array $params): void
-	{
-		self::ensureTestingEnvironment();
-
-		if (!self::$isMocking) {
-			self::start();
-		}
-
-		$_SERVER = array_merge($_SERVER, $params);
-	}
-
-	/**
-	 * Set FILES parameters
-	 *
-	 * @param array $files
-	 *
-	 * @return void
-	 * @throws SecurityException
-	 */
-	public static function files(array $files): void
-	{
-		self::ensureTestingEnvironment();
-
-		if (!self::$isMocking) {
-			self::start();
-		}
-
-		$_FILES = $files;
-	}
-
-	/**
-	 * Set raw request data
-	 *
-	 * @param string $data
-	 *
-	 * @return void
-	 * @throws SecurityException
-	 */
-	public static function rawData(string $data): void
-	{
-		self::ensureTestingEnvironment();
-
-		if (!self::$isMocking) {
-			self::start();
-		}
-
-		try {
-			$reflection = new ReflectionClass(Request::class);
-
-			if ($reflection->hasProperty('rawData')) {
-				$property = $reflection->getProperty('rawData');
-				$property->setAccessible(true);
-				$property->setValue(null, $data);
-			}
-		} catch (\ReflectionException $e) {
-			// If reflection fails, we can't set the raw data
-		}
+		self::request($method, $uri, $data, array_merge($defaultHeaders, $headers), $jsonData);
 	}
 
 	/**
@@ -337,7 +165,7 @@ class Mock
 							$property->setAccessible(true);
 							$property->setValue(null, $params);
 						}
-					} catch (\ReflectionException $e) {
+					} catch (ReflectionException $e) {
 						// If reflection fails, we can't set the vars
 					}
 				}
@@ -350,31 +178,204 @@ class Mock
 	}
 
 	/**
-	 * Mock a JSON request
+	 * Ensure we're in a testing environment
 	 *
-	 * @param string $method HTTP method
-	 * @param string $uri Request URI
-	 * @param array $data JSON data
-	 * @param array $headers Additional headers
+	 * @throws SecurityException
+	 */
+	private static function ensureTestingEnvironment(): void
+	{
+		// Check for PHPUnit or testing environment
+		if (!Application::inTest()) {
+			throw new SecurityException('Mock can only be used in testing environments');
+		}
+	}
+
+	/**
+	 * Reset all mocked data to original values
+	 *
+	 * @return void
+	 */
+	public static function reset(): void
+	{
+		if (self::$isMocking) {
+			$_GET = self::$original['get'];
+			$_POST = self::$original['post'];
+			$_SERVER = self::$original['server'];
+			$_FILES = self::$original['files'];
+			$_COOKIE = self::$original['cookie'];
+			$_SESSION = self::$original['session'];
+
+			// Reset any static properties in Request class
+			self::resetRequestClass();
+		}
+	}
+
+	/**
+	 * Reset static properties in Request class
+	 *
+	 * @return void
+	 */
+	private static function resetRequestClass(): void
+	{
+		try {
+			$reflection = new ReflectionClass(Request::class);
+
+			$staticProps = [
+				'realIp' => null,
+				'rawData' => null,
+				'vars' => null,
+				'uploadedFiles' => null,
+				'parsedMultipartContent' => null
+			];
+
+			foreach ($staticProps as $prop => $defaultValue) {
+				if ($reflection->hasProperty($prop)) {
+					$property = $reflection->getProperty($prop);
+					$property->setAccessible(true);
+					$property->setValue(null, $defaultValue);
+				}
+			}
+		} catch (ReflectionException $e) {
+			// Silently fail - this is just cleanup
+		}
+	}
+
+	/**
+	 * Start mocking by backing up current superglobals
 	 *
 	 * @return void
 	 * @throws SecurityException
 	 */
-	public static function json(
-		string $method,
-		string $uri,
-		array $data,
-		array $headers = []
-	): void {
-		$jsonData = json_encode($data);
-		$contentLength = strlen($jsonData);
+	public static function start(): void
+	{
+		self::ensureTestingEnvironment();
 
-		$defaultHeaders = [
-			'Content-Type' => 'application/json',
-			'Content-Length' => (string)$contentLength,
-			'Accept' => 'application/json'
-		];
+		if (!self::$isMocking) {
+			// Backup current superglobals
 
-		self::request($method, $uri, $data, array_merge($defaultHeaders, $headers), $jsonData);
+			/** @phpstan-ignore-next-line */
+			self::$original['get'] = $_GET ?? [];
+
+			/** @phpstan-ignore-next-line */
+			self::$original['post'] = $_POST ?? [];
+
+			/** @phpstan-ignore-next-line */
+			self::$original['server'] = $_SERVER ?? [];
+
+			/** @phpstan-ignore-next-line */
+			self::$original['files'] = $_FILES ?? [];
+
+			/** @phpstan-ignore-next-line */
+			self::$original['cookie'] = $_COOKIE ?? [];
+
+			self::$original['session'] = $_SESSION ?? [];
+
+			self::$isMocking = true;
+		}
+	}
+
+	/**
+	 * Set GET parameters
+	 *
+	 * @param array $params
+	 *
+	 * @return void
+	 * @throws SecurityException
+	 */
+	public static function get(array $params): void
+	{
+		self::ensureTestingEnvironment();
+
+		if (!self::$isMocking) {
+			self::start();
+		}
+
+		$_GET = $params;
+	}
+
+	/**
+	 * Set POST parameters
+	 *
+	 * @param array $params
+	 *
+	 * @return void
+	 * @throws SecurityException
+	 */
+	public static function post(array $params): void
+	{
+		self::ensureTestingEnvironment();
+
+		if (!self::$isMocking) {
+			self::start();
+		}
+
+		$_POST = $params;
+	}
+
+	/**
+	 * Set raw request data
+	 *
+	 * @param string $data
+	 *
+	 * @return void
+	 * @throws SecurityException
+	 */
+	public static function rawData(string $data): void
+	{
+		self::ensureTestingEnvironment();
+
+		if (!self::$isMocking) {
+			self::start();
+		}
+
+		try {
+			$reflection = new ReflectionClass(Request::class);
+
+			if ($reflection->hasProperty('rawData')) {
+				$property = $reflection->getProperty('rawData');
+				$property->setAccessible(true);
+				$property->setValue(null, $data);
+			}
+		} catch (ReflectionException $e) {
+			// If reflection fails, we can't set the raw data
+		}
+	}
+
+	/**
+	 * Set SERVER parameters
+	 *
+	 * @param array $params
+	 *
+	 * @return void
+	 * @throws SecurityException
+	 */
+	public static function server(array $params): void
+	{
+		self::ensureTestingEnvironment();
+
+		if (!self::$isMocking) {
+			self::start();
+		}
+
+		$_SERVER = array_merge($_SERVER, $params);
+	}
+
+	/**
+	 * Set FILES parameters
+	 *
+	 * @param array $files
+	 *
+	 * @return void
+	 * @throws SecurityException
+	 */
+	public static function files(array $files): void
+	{
+		self::ensureTestingEnvironment();
+
+		if (!self::$isMocking) {
+			self::start();
+		}
+
+		$_FILES = $files;
 	}
 }

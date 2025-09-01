@@ -14,92 +14,92 @@ use Koldy\Log\Message;
 class Other extends AbstractLogAdapter
 {
 
-    /**
-     * The array of last X messages (by default, the last 100 messages)
-     *
-     * @var array
-     */
-    protected array $messages = [];
+	/**
+	 * The array of last X messages (by default, the last 100 messages)
+	 *
+	 * @var array
+	 */
+	protected array $messages = [];
 
-    /**
-     * Construct the HTTP log adapter
-     *
-     * @param array $config
-     *
-     * @throws ConfigException
-     */
-    public function __construct(array $config)
-    {
-        if (!isset($config['send_immediately'])) {
-            $config['send_immediately'] = false;
-        }
+	/**
+	 * Construct the HTTP log adapter
+	 *
+	 * @param array $config
+	 *
+	 * @throws ConfigException
+	 */
+	public function __construct(array $config)
+	{
+		if (!isset($config['send_immediately'])) {
+			$config['send_immediately'] = false;
+		}
 
-        if (isset($config['exec']) && !is_callable($config['exec'])) {
-            throw new ConfigException('exec in Other log adapter options is not callable');
-        }
+		if (isset($config['exec']) && !is_callable($config['exec'])) {
+			throw new ConfigException('exec in Other log adapter options is not callable');
+		}
 
-        if (!isset($config['max_messages'])) {
-            $config['max_messages'] = 200;
-        }
+		if (!isset($config['max_messages'])) {
+			$config['max_messages'] = 200;
+		}
 
-        parent::__construct($config);
-    }
+		parent::__construct($config);
+	}
 
-    /**
-     * Append log message to the request's scope
-     *
-     * @param string $message
-     */
-    protected function appendMessage(string $message): void
-    {
-        $this->messages[] = $message;
+	/**
+	 * Actually execute something with our messages
+	 *
+	 * @param Message $message
+	 */
+	public function logMessage(Message $message): void
+	{
+		if (in_array($message->getLevel(), $this->config['log'])) {
+			if ($this->config['send_immediately']) {
 
-        if (count($this->messages) > $this->config['max_messages']) {
-            array_shift($this->messages);
-        }
-    }
+				call_user_func($this->config['exec'], $message);
 
-    /**
-     * Actually execute something with our messages
-     *
-     * @param Message $message
-     */
-    public function logMessage(Message $message): void
-    {
-        if (in_array($message->getLevel(), $this->config['log'])) {
-            if ($this->config['send_immediately']) {
+			} else {
+				$this->messages[] = $message;
 
-                call_user_func($this->config['exec'], $message);
+				if (count($this->messages) == 1) {
+					// register shutdown on first message in queue
+					$self = $this;
+					register_shutdown_function(function () use ($self) {
+						$fn = $self->getExecFunction();
+						call_user_func($fn, $self->getMessages());
+					});
+				}
+			}
+		}
+	}
 
-            } else {
-                $this->messages[] = $message;
+	/**
+	 * @return Closure
+	 */
+	public function getExecFunction(): Closure
+	{
+		return $this->config['exec'];
+	}
 
-                if (count($this->messages) == 1) {
-                    // register shutdown on first message in queue
-                    $self = $this;
-                    register_shutdown_function(function () use ($self) {
-                        $fn = $self->getExecFunction();
-                        call_user_func($fn, $self->getMessages());
-                    });
-                }
-            }
-        }
-    }
+	/**
+	 * @return Message[]
+	 */
+	public function getMessages(): array
+	{
+		return $this->messages;
+	}
 
-    /**
-     * @return Message[]
-     */
-    public function getMessages(): array
-    {
-        return $this->messages;
-    }
+	/**
+	 * Append log message to the request's scope
+	 *
+	 * @param string $message
+	 */
+	protected function appendMessage(string $message): void
+	{
+		$this->messages[] = $message;
 
-    /**
-     * @return Closure
-     */
-    public function getExecFunction(): Closure
-    {
-        return $this->config['exec'];
-    }
+		if (count($this->messages) > $this->config['max_messages']) {
+			array_shift($this->messages);
+		}
+	}
 
 }

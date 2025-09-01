@@ -18,6 +18,37 @@ class ResultCodeInfo implements Stringable
 	}
 
 	/**
+	 * This method exists because developers will usually want to check if operation is in error or not.
+	 *
+	 * @return bool
+	 */
+	public function isError(): bool
+	{
+		return !$this->isSuccess();
+	}
+
+	/**
+	 * Returns true for memcache success operations on read, write and delete. However, read the method's body to see
+	 * exactly when it returns true.
+	 *
+	 * @return bool
+	 */
+	public function isSuccess(): bool
+	{
+		return in_array($this->resultCode, [
+			/* Memcached::RES_SUCCESS, */ 0,
+			/* Memcached::RES_STORED, */ 15,
+			/* Memcached::RES_DELETED, */ 22,
+			/* Memcached::RES_END */ 21
+		]);
+	}
+
+	public function __toString(): string
+	{
+		return "Memcached result code #{$this->resultCode}: {$this->getDescription()}";
+	}
+
+	/**
 	 * Get the result code human-readable description. It is good fod logging and troubleshooting problems.
 	 *
 	 * @return string
@@ -123,36 +154,5 @@ class ResultCodeInfo implements Stringable
 			49 => 'This in an internal only state.',
 			default => "Unknown result code: {$this->resultCode}"
 		};
-	}
-
-	/**
-	 * Returns true for memcache success operations on read, write and delete. However, read the method's body to see
-	 * exactly when it returns true.
-	 *
-	 * @return bool
-	 */
-	public function isSuccess(): bool
-	{
-		return in_array($this->resultCode, [
-			/* Memcached::RES_SUCCESS, */ 0,
-			/* Memcached::RES_STORED, */ 15,
-			/* Memcached::RES_DELETED, */ 22,
-			/* Memcached::RES_END */ 21
-		]);
-	}
-
-	/**
-	 * This method exists because developers will usually want to check if operation is in error or not.
-	 *
-	 * @return bool
-	 */
-	public function isError(): bool
-	{
-		return !$this->isSuccess();
-	}
-
-	public function __toString(): string
-	{
-		return "Memcached result code #{$this->resultCode}: {$this->getDescription()}";
 	}
 }

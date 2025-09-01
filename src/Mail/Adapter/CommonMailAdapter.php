@@ -11,66 +11,66 @@ use InvalidArgumentException;
 abstract class CommonMailAdapter extends AbstractMailAdapter
 {
 
-    /**
-     * The array of recipients
-     *
-     * @var array
-     */
-    protected array $to = [];
+	/**
+	 * The array of recipients
+	 *
+	 * @var array
+	 */
+	protected array $to = [];
 
-    /**
-     * The array of CC recipients
-     *
-     * @var array
-     */
-    protected array $cc = [];
+	/**
+	 * The array of CC recipients
+	 *
+	 * @var array
+	 */
+	protected array $cc = [];
 
-    /**
-     * The array of BCC recipients
-     *
-     * @var array
-     */
-    protected array $bcc = [];
+	/**
+	 * The array of BCC recipients
+	 *
+	 * @var array
+	 */
+	protected array $bcc = [];
 
-    /**
-     * @var string|null
-     */
-    protected string | null $fromEmail = null;
+	/**
+	 * @var string|null
+	 */
+	protected string|null $fromEmail = null;
 
-    /**
-     * @var string|null
-     */
-    protected string | null $fromName = null;
+	/**
+	 * @var string|null
+	 */
+	protected string|null $fromName = null;
 
-    /**
-     * @var string|null
-     */
-    protected string | null $replyTo = null;
+	/**
+	 * @var string|null
+	 */
+	protected string|null $replyTo = null;
 
-    /**
-     * @var string|null
-     */
-    protected string | null $subject = null;
+	/**
+	 * @var string|null
+	 */
+	protected string|null $subject = null;
 
-    /**
-     * @var string|null
-     */
-    protected string | null $body = null;
+	/**
+	 * @var string|null
+	 */
+	protected string|null $body = null;
 
-    /**
-     * @var string|null
-     */
-    protected string | null $alternativeText = null;
+	/**
+	 * @var string|null
+	 */
+	protected string|null $alternativeText = null;
 
-    /**
-     * @var bool
-     */
-    protected bool $isHTML = false;
+	/**
+	 * @var bool
+	 */
+	protected bool $isHTML = false;
 
-    /**
-     * @var array
-     */
-    protected array $attachedFiles = [];
+	/**
+	 * @var array
+	 */
+	protected array $attachedFiles = [];
 
 	/**
 	 * Set email's "from"
@@ -80,13 +80,13 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 *
 	 * @return static
 	 */
-    public function from(string $email, string|null $name = null): CommonMailAdapter
-    {
-        $this->fromEmail = $email;
-        $this->fromName = $name;
+	public function from(string $email, string|null $name = null): CommonMailAdapter
+	{
+		$this->fromEmail = $email;
+		$this->fromName = $name;
 
-        return $this;
-    }
+		return $this;
+	}
 
 	/**
 	 * Set email's "Reply To" option
@@ -96,11 +96,11 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 *
 	 * @return static
 	 */
-    public function replyTo(string $email, string|null $name = null): CommonMailAdapter
-    {
-        $this->replyTo = $this->getAddressValue($email, $name);
-        return $this;
-    }
+	public function replyTo(string $email, string|null $name = null): CommonMailAdapter
+	{
+		$this->replyTo = $this->getAddressValue($email, $name);
+		return $this;
+	}
 
 	/**
 	 * Set email's "to"
@@ -110,15 +110,15 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 *
 	 * @return static
 	 */
-    public function to(string $email, string|null $name = null): CommonMailAdapter
-    {
-        $this->to[] = [
-          'email' => $email,
-          'name' => $name
-        ];
+	public function to(string $email, string|null $name = null): CommonMailAdapter
+	{
+		$this->to[] = [
+			'email' => $email,
+			'name' => $name
+		];
 
-        return $this;
-    }
+		return $this;
+	}
 
 	/**
 	 * Set email's "cc"
@@ -128,15 +128,15 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 *
 	 * @return static
 	 */
-    public function cc(string $email, string|null $name = null): CommonMailAdapter
-    {
-        $this->cc[] = [
-          'email' => $email,
-          'name' => $name
-        ];
+	public function cc(string $email, string|null $name = null): CommonMailAdapter
+	{
+		$this->cc[] = [
+			'email' => $email,
+			'name' => $name
+		];
 
-        return $this;
-    }
+		return $this;
+	}
 
 	/**
 	 * Set email's "bcc"
@@ -146,28 +146,28 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 *
 	 * @return static
 	 */
-    public function bcc(string $email, string|null $name = null): CommonMailAdapter
-    {
-        $this->bcc[] = [
-          'email' => $email,
-          'name' => $name
-        ];
+	public function bcc(string $email, string|null $name = null): CommonMailAdapter
+	{
+		$this->bcc[] = [
+			'email' => $email,
+			'name' => $name
+		];
 
-        return $this;
-    }
+		return $this;
+	}
 
-    /**
-     * Set email's subject
-     *
-     * @param string $subject
-     *
-     * @return static
-     */
-    public function subject(string $subject): CommonMailAdapter
-    {
-        $this->subject = $subject;
-        return $this;
-    }
+	/**
+	 * Set email's subject
+	 *
+	 * @param string $subject
+	 *
+	 * @return static
+	 */
+	public function subject(string $subject): CommonMailAdapter
+	{
+		$this->subject = $subject;
+		return $this;
+	}
 
 	/**
 	 * Sets the e-mail's body in HTML format. If you want to send plain text only, please use plain() method.
@@ -178,13 +178,13 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 *
 	 * @return static
 	 */
-    public function body(string $body, bool $isHTML = false, string|null $alternativeText = null): CommonMailAdapter
-    {
-        $this->body = $body;
-        $this->isHTML = $isHTML;
-        $this->alternativeText = $alternativeText;
-        return $this;
-    }
+	public function body(string $body, bool $isHTML = false, string|null $alternativeText = null): CommonMailAdapter
+	{
+		$this->body = $body;
+		$this->isHTML = $isHTML;
+		$this->alternativeText = $alternativeText;
+		return $this;
+	}
 
 	/**
 	 * Attach file to e-mail
@@ -194,32 +194,32 @@ abstract class CommonMailAdapter extends AbstractMailAdapter
 	 *
 	 * @return static
 	 */
-    public function attachFile(string $fullFilePath, string|null $attachedAsName = null): CommonMailAdapter
-    {
-    	if (strlen($fullFilePath) == 0) {
-    		throw new InvalidArgumentException('Attached file path can not be empty string');
-	    }
+	public function attachFile(string $fullFilePath, string|null $attachedAsName = null): CommonMailAdapter
+	{
+		if (strlen($fullFilePath) == 0) {
+			throw new InvalidArgumentException('Attached file path can not be empty string');
+		}
 
-    	if ($attachedAsName === null) {
-    		$attachedAsName = basename($fullFilePath);
-	    }
+		if ($attachedAsName === null) {
+			$attachedAsName = basename($fullFilePath);
+		}
 
-	    $fileName = basename($fullFilePath);
+		$fileName = basename($fullFilePath);
 
-    	if (!str_contains($fileName, '.')) {
-    		throw new InvalidArgumentException("Unable to attach file from path={$fullFilePath} because file extension can't be detected");
-	    }
+		if (!str_contains($fileName, '.')) {
+			throw new InvalidArgumentException("Unable to attach file from path={$fullFilePath} because file extension can't be detected");
+		}
 
-    	$extension = substr($fileName, strrpos($fileName, '.') + 1);
+		$extension = substr($fileName, strrpos($fileName, '.') + 1);
 
-        $this->attachedFiles[] = [
-          'fullFilePath' => $fullFilePath,
-          'fileName' => $fileName,
-	      'extension' => $extension,
-          'attachedAsName' => $attachedAsName
-        ];
+		$this->attachedFiles[] = [
+			'fullFilePath' => $fullFilePath,
+			'fileName' => $fileName,
+			'extension' => $extension,
+			'attachedAsName' => $attachedAsName
+		];
 
-        return $this;
-    }
+		return $this;
+	}
 
 }

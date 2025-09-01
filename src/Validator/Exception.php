@@ -7,25 +7,25 @@ use Koldy\Validator;
 class Exception extends \Koldy\Exception
 {
 
-    /**
-     * @var Validator|null
-     */
-    private Validator | null $validator = null;
+	/**
+	 * @var Validator|null
+	 */
+	private Validator|null $validator = null;
 
-    /**
-     * @param Validator $validator
-     */
-    public function setValidator(Validator $validator): void
-    {
-        $this->validator = $validator;
-    }
+	/**
+	 * @return Validator
+	 */
+	public function getValidator(): Validator
+	{
+		return $this->validator;
+	}
 
-    /**
-     * @return Validator
-     */
-    public function getValidator(): Validator
-    {
-        return $this->validator;
-    }
+	/**
+	 * @param Validator $validator
+	 */
+	public function setValidator(Validator $validator): void
+	{
+		$this->validator = $validator;
+	}
 
 }

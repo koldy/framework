@@ -12,56 +12,56 @@ use Koldy\Route;
 class Redirect extends AbstractResponse
 {
 
-    /**
-     * Permanent redirect (301) to the given URL
-     *
-     * @param string $where
-     *
-     * @return static
-     */
-    public static function permanent(string $where): Redirect
-    {
+	/**
+	 * Permanent redirect (301) to the given URL
+	 *
+	 * @param string $where
+	 *
+	 * @return static
+	 */
+	public static function permanent(string $where): Redirect
+	{
 		// @phpstan-ignore-next-line due to @phpstan-consistent-constructor
-        $self = new static();
-        $self->statusCode(301)
-          ->setHeader('Location', $where)
-          ->setHeader('Connection', 'close')
-          ->setHeader('Content-Length', 0);
+		$self = new static();
+		$self->statusCode(301)
+			->setHeader('Location', $where)
+			->setHeader('Connection', 'close')
+			->setHeader('Content-Length', 0);
 
-        return $self;
-    }
+		return $self;
+	}
 
-    /**
-     * Temporary redirect (302) to the given URL
-     *
-     * @param string $where
-     *
-     * @return static
-     */
-    public static function temporary(string $where): Redirect
-    {
-	    // @phpstan-ignore-next-line due to @phpstan-consistent-constructor
-        $self = new static();
-        $self->statusCode(302)
-          ->setHeader('Location', $where)
-          ->setHeader('Connection', 'close')
-          ->setHeader('Content-Length', 0);
+	/**
+	 * Alias to temporary() method (302)
+	 *
+	 * @param string $where
+	 *
+	 * @return static
+	 * @example http://www.google.com
+	 */
+	public static function to(string $where): Redirect
+	{
+		return static::temporary($where);
+	}
 
-        return $self;
-    }
+	/**
+	 * Temporary redirect (302) to the given URL
+	 *
+	 * @param string $where
+	 *
+	 * @return static
+	 */
+	public static function temporary(string $where): Redirect
+	{
+		// @phpstan-ignore-next-line due to @phpstan-consistent-constructor
+		$self = new static();
+		$self->statusCode(302)
+			->setHeader('Location', $where)
+			->setHeader('Connection', 'close')
+			->setHeader('Content-Length', 0);
 
-    /**
-     * Alias to temporary() method (302)
-     *
-     * @param string $where
-     *
-     * @return static
-     * @example http://www.google.com
-     */
-    public static function to(string $where): Redirect
-    {
-        return static::temporary($where);
-    }
+		return $self;
+	}
 
 	/**
 	 * Redirect client (302) to home page
@@ -69,10 +69,10 @@ class Redirect extends AbstractResponse
 	 * @return static
 	 * @throws Exception
 	 */
-    public static function home(): Redirect
-    {
-        return static::href();
-    }
+	public static function home(): Redirect
+	{
+		return static::href();
+	}
 
 	/**
 	 * Redirect client (302) to the URL generated with Route::href method
@@ -82,12 +82,15 @@ class Redirect extends AbstractResponse
 	 * @param array|null $params
 	 *
 	 * @return static
-	 * @throws \Koldy\Exception
+	 * @throws Exception
 	 */
-    public static function href(string|null $controller = null, string|null $action = null, array|null $params = null): Redirect
-    {
-        return static::temporary(Application::route()->href($controller, $action, $params));
-    }
+	public static function href(
+		string|null $controller = null,
+		string|null $action = null,
+		array|null $params = null
+	): Redirect {
+		return static::temporary(Application::route()->href($controller, $action, $params));
+	}
 
 	/**
 	 * Redirect client the the given link under the same domain.
@@ -97,13 +100,13 @@ class Redirect extends AbstractResponse
 	 *
 	 * @return static
 	 * @throws \Koldy\Config\Exception
-	 * @throws \Koldy\Exception
+	 * @throws Exception
 	 * @deprecated use asset() method instead of this method
 	 */
-    public static function link(string $path, string|null $assetSite = null): Redirect
-    {
-        return self::temporary(Application::route()->asset($path, $assetSite));
-    }
+	public static function link(string $path, string|null $assetSite = null): Redirect
+	{
+		return self::temporary(Application::route()->asset($path, $assetSite));
+	}
 
 	/**
 	 * Redirect client to asset URL (defined by key in mandatory config under assets)
@@ -114,12 +117,12 @@ class Redirect extends AbstractResponse
 	 * @return static
 	 * @throws Route\Exception
 	 * @throws \Koldy\Config\Exception
-	 * @throws \Koldy\Exception
+	 * @throws Exception
 	 */
-    public static function asset(string $path, string|null $assetKey = null): Redirect
-    {
-        return self::temporary(Route::asset($path, $assetKey));
-    }
+	public static function asset(string $path, string|null $assetKey = null): Redirect
+	{
+		return self::temporary(Route::asset($path, $assetKey));
+	}
 
 	public function getOutput(): mixed
 	{
@@ -128,18 +131,18 @@ class Redirect extends AbstractResponse
 	}
 
 	/**
-     * Run Redirect
-     */
-    public function flush(): void
-    {
-        $this->prepareFlush();
-        $this->runBeforeFlush();
+	 * Run Redirect
+	 */
+	public function flush(): void
+	{
+		$this->prepareFlush();
+		$this->runBeforeFlush();
 
-        $this->setHeader('Content-Length', 0);
-        $this->flushHeaders();
-        flush();
+		$this->setHeader('Content-Length', 0);
+		$this->flushHeaders();
+		flush();
 
-        $this->runAfterFlush();
-    }
+		$this->runAfterFlush();
+	}
 
 }

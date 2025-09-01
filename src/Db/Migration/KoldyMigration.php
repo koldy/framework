@@ -22,18 +22,18 @@ use Koldy\Db\Model;
 class KoldyMigration extends Model
 {
 
-    protected static string | null $table = 'koldy_migration';
+	protected static string|null $table = 'koldy_migration';
 
-    /**
-     * If you define koldy_migration database adapter, then migration table will be stored there
-     *
-     * @return null|string
-     * @throws \Koldy\Exception
-     */
-    public static function getAdapterConnection(): ?string
-    {
-        return Db::getConfig()->has('koldy_migration') ? 'koldy_migration' : null;
-    }
+	/**
+	 * If you define koldy_migration database adapter, then migration table will be stored there
+	 *
+	 * @return null|string
+	 * @throws \Koldy\Exception
+	 */
+	public static function getAdapterConnection(): ?string
+	{
+		return Db::getConfig()->has('koldy_migration') ? 'koldy_migration' : null;
+	}
 
 	/**
 	 * Get the ID or null.
@@ -69,44 +69,44 @@ class KoldyMigration extends Model
 		$this->id = $id;
 	}
 
-    /**
-     * Get the script (and class) name
-     *
-     * @return string
-     */
-    public function getScript(): string
-    {
-        return $this->script;
-    }
+	/**
+	 * Get the script (and class) name
+	 *
+	 * @return string
+	 */
+	public function getScript(): string
+	{
+		return $this->script;
+	}
 
-    /**
-     * Get the timestamp of the script. This is the timestamp of when script was generated
-     *
-     * @return int
-     */
-    public function getScriptTimestamp(): int
-    {
-        return (int)$this->script_timestamp;
-    }
+	/**
+	 * Get the timestamp of the script. This is the timestamp of when script was generated
+	 *
+	 * @return int
+	 */
+	public function getScriptTimestamp(): int
+	{
+		return (int)$this->script_timestamp;
+	}
 
-    /**
-     * Get yyyy-mm-dd of when script was executed
-     *
-     * @return string
-     */
-    public function getScriptExecutedAt(): string
-    {
-        return $this->script_executed_at;
-    }
+	/**
+	 * Get yyyy-mm-dd of when script was executed
+	 *
+	 * @return string
+	 */
+	public function getScriptExecutedAt(): string
+	{
+		return $this->script_executed_at;
+	}
 
-    /**
-     * Get how long did it take to execute migration up() method in seconds
-     *
-     * @return int
-     */
-    public function getScriptExecutionDuration(): int
-    {
-        return (int)$this->script_execution_duration;
-    }
+	/**
+	 * Get how long did it take to execute migration up() method in seconds
+	 *
+	 * @return int
+	 */
+	public function getScriptExecutionDuration(): int
+	{
+		return (int)$this->script_execution_duration;
+	}
 
 }

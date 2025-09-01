@@ -11,31 +11,32 @@ use Stringable;
  */
 class Expr implements Stringable
 {
-    /**
-     * Construct the object
-     *
-     * @param string $expression
-     */
-    public function __construct(private string $expression)
-    {
-    }
 
-    /**
-     * Get the data
-     * @return string
-     */
-    public function getExpression(): string
-    {
-        return $this->expression;
-    }
+	/**
+	 * Construct the object
+	 *
+	 * @param string $expression
+	 */
+	public function __construct(private string $expression)
+	{
+	}
 
-    /**
-     * Print the data as is
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->getExpression();
-    }
+	/**
+	 * Print the data as is
+	 * @return string
+	 */
+	public function __toString(): string
+	{
+		return $this->getExpression();
+	}
+
+	/**
+	 * Get the data
+	 * @return string
+	 */
+	public function getExpression(): string
+	{
+		return $this->expression;
+	}
 
 }

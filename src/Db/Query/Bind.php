@@ -3,6 +3,7 @@
 namespace Koldy\Db\Query;
 
 use BackedEnum;
+use InvalidArgumentException;
 use PDO;
 
 /**
@@ -16,7 +17,7 @@ class Bind
 
 	private string $parameter;
 
-	private int | float | bool | string | BackedEnum | null $value;
+	private int|float|bool|string|BackedEnum|null $value;
 
 	private int $type;
 
@@ -27,14 +28,17 @@ class Bind
 	 * @param int|float|bool|string|BackedEnum|null $value
 	 * @param int|null $typeConstant
 	 */
-	public function __construct(string $parameter, int | float | bool | string | BackedEnum | null $value, int|null $typeConstant = null)
-	{
+	public function __construct(
+		string $parameter,
+		int|float|bool|string|BackedEnum|null $value,
+		int|null $typeConstant = null
+	) {
 		$this->parameter = $parameter;
 		$this->value = $value;
 
 		if ($typeConstant !== null) {
 			if (!in_array($typeConstant, [PDO::PARAM_NULL, PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])) {
-				throw new \InvalidArgumentException('Invalid $typeConstant provided: ' . $typeConstant);
+				throw new InvalidArgumentException('Invalid $typeConstant provided: ' . $typeConstant);
 			}
 
 			$this->type = $typeConstant;
@@ -56,7 +60,7 @@ class Bind
 		return $this->parameter;
 	}
 
-	public function getValue(): int | float | bool | string | null
+	public function getValue(): int|float|bool|string|null
 	{
 		if ($this->value instanceof BackedEnum) {
 			return $this->value->value;

@@ -2,11 +2,13 @@
 
 namespace Koldy\Exception;
 
+use Koldy\Exception;
+
 /**
  * This exception will be thrown if you try to use extension which is not present on host
  * @package Koldy\Exception
  */
-class ExtensionException extends \Koldy\Exception
+class ExtensionException extends Exception
 {
 
 }

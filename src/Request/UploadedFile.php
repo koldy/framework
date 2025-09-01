@@ -55,6 +55,16 @@ class UploadedFile
 	}
 
 	/**
+	 * Returns true if the uploaded file came with an error
+	 *
+	 * @return bool
+	 */
+	public function hasError(): bool
+	{
+		return $this->errorCode !== UPLOAD_ERR_OK;
+	}
+
+	/**
 	 * Creates new instance of UploadedFile from a "single" file array
 	 *
 	 * @param string $name the name of a key in $_FILES array from which you want to create new instance of UploadedFile
@@ -75,16 +85,6 @@ class UploadedFile
 	}
 
 	/**
-	 * Get file's original name
-	 *
-	 * @return string
-	 */
-	public function getName(): string
-	{
-		return $this->name;
-	}
-
-	/**
 	 * Get the file's extension, lowercase. If extension can't be detected (for example, files that has no dot in name),
 	 * you'll get null back.
 	 *
@@ -102,39 +102,13 @@ class UploadedFile
 	}
 
 	/**
-	 * Get detected mime type by looking into file. If option for checking it is not available, then standard mimeType from $_FILES
-	 * will be returned.
+	 * Get file's original name
 	 *
 	 * @return string
 	 */
-	public function getMimeType(): string
+	public function getName(): string
 	{
-		if ($this->detectedMimeType !== null) {
-			return $this->detectedMimeType;
-		}
-
-		if (function_exists('mime_content_type')) {
-			if (($mimeType = mime_content_type($this->location ?? $this->tmpName)) !== false) {
-				$this->detectedMimeType = $mimeType;
-			} else {
-				// unable to detect the real mime type based on content
-				$this->detectedMimeType = $this->mimeType;
-			}
-		} else {
-			$this->detectedMimeType = $this->mimeType;
-		}
-
-		return $this->detectedMimeType;
-	}
-
-	/**
-	 * Get the size of file in bytes as integer
-	 *
-	 * @return int
-	 */
-	public function getSize(): int
-	{
-		return $this->size;
+		return $this->name;
 	}
 
 	/**
@@ -145,6 +119,16 @@ class UploadedFile
 	public function getSizeString(): string
 	{
 		return Convert::bytesToString($this->getSize());
+	}
+
+	/**
+	 * Get the size of file in bytes as integer
+	 *
+	 * @return int
+	 */
+	public function getSize(): int
+	{
+		return $this->size;
 	}
 
 	/**
@@ -174,16 +158,6 @@ class UploadedFile
 	}
 
 	/**
-	 * Returns true if the uploaded file came with an error
-	 *
-	 * @return bool
-	 */
-	public function hasError(): bool
-	{
-		return $this->errorCode !== UPLOAD_ERR_OK;
-	}
-
-	/**
 	 * Get the PHP's error code; returns null if there's no error
 	 *
 	 * @return int|null
@@ -198,7 +172,8 @@ class UploadedFile
 	}
 
 	/**
-	 * Gets the error description as string, as described on official PHP documentation. If there's no error, null will be returned.
+	 * Gets the error description as string, as described on official PHP documentation. If there's no error, null will
+	 * be returned.
 	 *
 	 * @return string|null
 	 *
@@ -231,7 +206,8 @@ class UploadedFile
 
 			case UPLOAD_ERR_EXTENSION:
 				$loadedExtensions = get_loaded_extensions();
-				return 'A PHP extension stopped the file upload. PHP does not provide a way to ascertain which extension caused the file upload to stop so you have to examine loaded extensions yourself. Currently loaded extensions are: ' . implode(', ', $loadedExtensions);
+				return 'A PHP extension stopped the file upload. PHP does not provide a way to ascertain which extension caused the file upload to stop so you have to examine loaded extensions yourself. Currently loaded extensions are: ' . implode(', ',
+						$loadedExtensions);
 
 			default:
 				throw new Exception("Unknown upload error code: {$this->errorCode}");
@@ -270,6 +246,32 @@ class UploadedFile
 	public function isImage(): bool
 	{
 		return str_starts_with($this->getMimeType(), 'image');
+	}
+
+	/**
+	 * Get detected mime type by looking into file. If option for checking it is not available, then standard mimeType
+	 * from $_FILES will be returned.
+	 *
+	 * @return string
+	 */
+	public function getMimeType(): string
+	{
+		if ($this->detectedMimeType !== null) {
+			return $this->detectedMimeType;
+		}
+
+		if (function_exists('mime_content_type')) {
+			if (($mimeType = mime_content_type($this->location ?? $this->tmpName)) !== false) {
+				$this->detectedMimeType = $mimeType;
+			} else {
+				// unable to detect the real mime type based on content
+				$this->detectedMimeType = $this->mimeType;
+			}
+		} else {
+			$this->detectedMimeType = $this->mimeType;
+		}
+
+		return $this->detectedMimeType;
 	}
 
 }

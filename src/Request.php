@@ -63,11 +63,31 @@ class Request
 	protected static array|null $parsedMultipartContent = null;
 
 	/**
+	 * Get the host name of remote user. This will use gethostbyaddr function or its "cached" version
+	 *
+	 * @return string|null
+	 * @throws Exception
+	 * @link http://php.net/manual/en/function.gethostbyaddr.php
+	 */
+	public static function host(): ?string
+	{
+		$ip = self::ip();
+
+		if (isset(static::$hosts[$ip])) {
+			return static::$hosts[$ip];
+		}
+
+		$host = gethostbyaddr($ip);
+		static::$hosts[$ip] = ($host === '') ? null : $host;
+		return static::$hosts[$ip];
+	}
+
+	/**
 	 * Get the real IP address of remote user. If you're looking for server's IP, please refer to Server::ip()
 	 *
 	 * @return string
 	 * @throws Exception
-	 * @see \Koldy\Server::ip()
+	 * @see Server::ip
 	 */
 	public static function ip(): string
 	{
@@ -108,26 +128,6 @@ class Request
 		}
 
 		return static::$realIp;
-	}
-
-	/**
-	 * Get the host name of remote user. This will use gethostbyaddr function or its "cached" version
-	 *
-	 * @return string|null
-	 * @throws Exception
-	 * @link http://php.net/manual/en/function.gethostbyaddr.php
-	 */
-	public static function host(): ?string
-	{
-		$ip = self::ip();
-
-		if (isset(static::$hosts[$ip])) {
-			return static::$hosts[$ip];
-		}
-
-		$host = gethostbyaddr($ip);
-		static::$hosts[$ip] = ($host === '') ? null : $host;
-		return static::$hosts[$ip];
 	}
 
 	/**
@@ -348,7 +348,7 @@ class Request
 	 *
 	 * @return Url
 	 * @throws Exception
-	 * @see \Koldy\Application::getCurrentURL()
+	 * @see Application::getCurrentURL
 	 */
 	public static function getCurrentURL(): Url
 	{
@@ -356,52 +356,31 @@ class Request
 	}
 
 	/**
-	 * Get raw data of the request
-	 * @return string
-	 * @throws RequestException
+	 * Does GET parameter exists or not
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 * @link http://koldy.net/docs/input#get
 	 */
-	public static function getRawData(): string
+	public static function hasGetParameter(string $name): bool
 	{
-		if (static::$rawData === null) {
-			$rawData = file_get_contents('php://input');
-
-			if ($rawData === false) {
-				throw new RequestException('Unable to read raw data from request');
-			}
-
-			static::$rawData = $rawData;
-		}
-
-		return static::$rawData;
+		/** @phpstan-ignore-next-line */
+		return isset($_GET) && is_array($_GET) && array_key_exists($name, $_GET);
 	}
 
 	/**
-	 * Get the input vars
+	 * Returns the GET parameter
 	 *
-	 * @return array
-	 * @throws RequestException
-	 */
-	protected static function getInputVars(): array
-	{
-		if (static::$vars === null) {
-			// take those vars only once
-			parse_str(static::getRawData(), $vars);
-			static::$vars = (array)$vars;
-		}
-
-		return static::$vars;
-	}
-
-	/**
-	 * Get array from raw data posted as JSON
+	 * @param string $name
 	 *
-	 * @return array
-	 * @throws Json\Exception
+	 * @return string|null
 	 * @throws RequestException
+	 * @link http://koldy.net/docs/input#get
 	 */
-	public static function getDataFromJSON(): array
+	public static function getGetParameter(string $name): ?string
 	{
-		return Json::decode(static::getRawData());
+		return self::get('GET', $name);
 	}
 
 	/**
@@ -417,20 +396,10 @@ class Request
 	{
 		switch ($resourceName) {
 			case 'GET':
-				/** @phpstan-ignore-next-line */
-				if (!isset($_GET)) {
-					return null;
-				}
-
 				$resource = $_GET;
 				break;
 
 			case 'POST':
-				/** @phpstan-ignore-next-line */
-				if (!isset($_POST)) {
-					return null;
-				}
-
 				$resource = $_POST;
 				break;
 
@@ -470,31 +439,40 @@ class Request
 	}
 
 	/**
-	 * Does GET parameter exists or not
+	 * Get the input vars
 	 *
-	 * @param string $name
-	 *
-	 * @return bool
-	 * @link http://koldy.net/docs/input#get
+	 * @return array
+	 * @throws RequestException
 	 */
-	public static function hasGetParameter(string $name): bool
+	protected static function getInputVars(): array
 	{
-		/** @phpstan-ignore-next-line */
-		return isset($_GET) && is_array($_GET) && array_key_exists($name, $_GET);
+		if (static::$vars === null) {
+			// take those vars only once
+			parse_str(static::getRawData(), $vars);
+			static::$vars = (array)$vars;
+		}
+
+		return static::$vars;
 	}
 
 	/**
-	 * Returns the GET parameter
-	 *
-	 * @param string $name
-	 *
-	 * @return string|null
+	 * Get raw data of the request
+	 * @return string
 	 * @throws RequestException
-	 * @link http://koldy.net/docs/input#get
 	 */
-	public static function getGetParameter(string $name): ?string
+	public static function getRawData(): string
 	{
-		return self::get('GET', $name);
+		if (static::$rawData === null) {
+			$rawData = file_get_contents('php://input');
+
+			if ($rawData === false) {
+				throw new RequestException('Unable to read raw data from request');
+			}
+
+			static::$rawData = $rawData;
+		}
+
+		return static::$rawData;
 	}
 
 	/**
@@ -621,6 +599,30 @@ class Request
 	}
 
 	/**
+	 * Get required parameters as object
+	 *
+	 * @param string ...$requiredParameters
+	 *
+	 * @return stdClass
+	 * @throws BadRequestException
+	 * @throws Exception
+	 *
+	 * @example
+	 *    $params = Input::requireParams('id', 'email');
+	 *    echo $params->email;
+	 */
+	public static function requireParamsObj(string ...$requiredParameters): stdClass
+	{
+		$class = new stdClass();
+
+		foreach (static::requireParams(...$requiredParameters) as $param => $value) {
+			$class->$param = $value;
+		}
+
+		return $class;
+	}
+
+	/**
 	 * Get the required parameters. Return bad request if any of them is missing.
 	 *
 	 * @param string ...$requiredParameters
@@ -674,33 +676,27 @@ class Request
 	}
 
 	/**
-	 * Get required parameters as object
-	 *
-	 * @param string ...$requiredParameters
+	 * Get all parameters in stdClass
 	 *
 	 * @return stdClass
-	 * @throws BadRequestException
 	 * @throws Exception
-	 *
-	 * @example
-	 *    $params = Input::requireParams('id', 'email');
-	 *    echo $params->email;
 	 */
-	public static function requireParamsObj(string ...$requiredParameters): stdClass
+	public static function getAllParametersObj(): stdClass
 	{
-		$class = new stdClass();
+		$values = new stdClass();
 
-		foreach (static::requireParams(...$requiredParameters) as $param => $value) {
-			$class->$param = $value;
+		foreach (static::getAllParameters() as $name => $value) {
+			$values->$name = $value;
 		}
 
-		return $class;
+		return $values;
 	}
 
 	/**
-	 * Get all parameters according to request method; if request is made with Content-Type=application/json, it will be
-	 * detected and JSON will be parsed. If request contains that header, but the request body is empty, it'll be ignored
-	 * and standard Form Data will be taken as parameters data.
+	 * Get all parameters according to request method; if request is made with Content-Type=application/json, it will
+	 * be
+	 * detected and JSON will be parsed. If request contains that header, but the request body is empty, it'll be
+	 * ignored and standard Form Data will be taken as parameters data.
 	 *
 	 * @return array
 	 * @throws Exception
@@ -736,31 +732,33 @@ class Request
 	}
 
 	/**
-	 * Get all parameters in stdClass
+	 * Get array from raw data posted as JSON
 	 *
-	 * @return stdClass
-	 * @throws Exception
+	 * @return array
+	 * @throws Json\Exception
+	 * @throws RequestException
 	 */
-	public static function getAllParametersObj(): stdClass
+	public static function getDataFromJSON(): array
 	{
-		$values = new stdClass();
-
-		foreach (static::getAllParameters() as $name => $value) {
-			$values->$name = $value;
-		}
-
-		return $values;
+		return Json::decode(static::getRawData());
 	}
 
 	/**
-	 * How many parameters are passed?
+	 * Gets the multipart content from other request types, such as PATCH, PUT or DELETE
 	 *
-	 * @return int
-	 * @throws Exception
+	 * @return array
 	 */
-	public static function parametersCount(): int
+	protected static function getMultipartContent(): array
 	{
-		return count(static::getAllParameters());
+		if (self::$parsedMultipartContent === null) {
+			$contentType = array_key_exists('CONTENT_TYPE', $_SERVER) ? $_SERVER['CONTENT_TYPE'] : null;
+			$httpContentType = array_key_exists('HTTP_CONTENT_TYPE', $_SERVER) ? $_SERVER['HTTP_CONTENT_TYPE'] : null;
+			$default = 'application/x-www-form-urlencoded';
+			self::$parsedMultipartContent = Util::parseMultipartContent(file_get_contents('php://input'),
+				$contentType ?? $httpContentType ?? $default);
+		}
+
+		return self::$parsedMultipartContent;
 	}
 
 	/**
@@ -779,6 +777,17 @@ class Request
 		}
 
 		return static::containsParams(...$params);
+	}
+
+	/**
+	 * How many parameters are passed?
+	 *
+	 * @return int
+	 * @throws Exception
+	 */
+	public static function parametersCount(): int
+	{
+		return count(static::getAllParameters());
 	}
 
 	/**
@@ -828,54 +837,6 @@ class Request
 		}
 
 		return count($params) == $targetCount;
-	}
-
-	/**
-	 * @param array $uploadedFiles
-	 * @param string $property
-	 * @param array $data
-	 */
-	protected static function digFile(array &$uploadedFiles, string $property, array $data): void
-	{
-		foreach ($data as $key => $value) {
-			if (is_array($value)) {
-				if (!isset($uploadedFiles[$key])) {
-					$uploadedFiles[$key] = [];
-				}
-				static::digFile($uploadedFiles[$key], $property, $value);
-			} else {
-				if (!isset($uploadedFiles[$key])) {
-					$uploadedFiles[$key] = [];
-				}
-
-				$uploadedFiles[$key][$property] = $value;
-			}
-		}
-	}
-
-	/**
-	 * @param $uploadedFiles
-	 *
-	 * @throws Security\Exception
-	 */
-	protected static function initUploadedFile(&$uploadedFiles): void
-	{
-		// check segments of given parameter
-		$name = $uploadedFiles['name'] ?? null;
-		$type = $uploadedFiles['type'] ?? null;
-		$tmpName = $uploadedFiles['tmp_name'] ?? null;
-		$error = $uploadedFiles['error'] ?? null;
-		$size = $uploadedFiles['size'] ?? null;
-
-		if (is_string($name) && is_string($type) && is_string($tmpName) && is_int($error) && is_int($size)) {
-			// yeah! finally...
-			$uploadedFiles = new UploadedFile($name, $type, $size, $tmpName, $error);
-		} else {
-			// dig further...
-			foreach ($uploadedFiles as $key => $value) {
-				static::initUploadedFile($uploadedFiles[$key]);
-			}
-		}
 	}
 
 	/**
@@ -930,19 +891,50 @@ class Request
 	}
 
 	/**
-	 * Gets the multipart content from other request types, such as PATCH, PUT or DELETE
-	 *
-	 * @return array
+	 * @param array $uploadedFiles
+	 * @param string $property
+	 * @param array $data
 	 */
-	protected static function getMultipartContent(): array
+	protected static function digFile(array &$uploadedFiles, string $property, array $data): void
 	{
-		if (self::$parsedMultipartContent === null) {
-			$contentType = array_key_exists('CONTENT_TYPE', $_SERVER) ? $_SERVER['CONTENT_TYPE'] : null;
-			$httpContentType = array_key_exists('HTTP_CONTENT_TYPE', $_SERVER) ? $_SERVER['HTTP_CONTENT_TYPE'] : null;
-			$default = 'application/x-www-form-urlencoded';
-			self::$parsedMultipartContent = Util::parseMultipartContent(file_get_contents('php://input'), $contentType ?? $httpContentType ?? $default);
-		}
+		foreach ($data as $key => $value) {
+			if (is_array($value)) {
+				if (!isset($uploadedFiles[$key])) {
+					$uploadedFiles[$key] = [];
+				}
+				static::digFile($uploadedFiles[$key], $property, $value);
+			} else {
+				if (!isset($uploadedFiles[$key])) {
+					$uploadedFiles[$key] = [];
+				}
 
-		return self::$parsedMultipartContent;
+				$uploadedFiles[$key][$property] = $value;
+			}
+		}
+	}
+
+	/**
+	 * @param $uploadedFiles
+	 *
+	 * @throws Security\Exception
+	 */
+	protected static function initUploadedFile(&$uploadedFiles): void
+	{
+		// check segments of given parameter
+		$name = $uploadedFiles['name'] ?? null;
+		$type = $uploadedFiles['type'] ?? null;
+		$tmpName = $uploadedFiles['tmp_name'] ?? null;
+		$error = $uploadedFiles['error'] ?? null;
+		$size = $uploadedFiles['size'] ?? null;
+
+		if (is_string($name) && is_string($type) && is_string($tmpName) && is_int($error) && is_int($size)) {
+			// yeah! finally...
+			$uploadedFiles = new UploadedFile($name, $type, $size, $tmpName, $error);
+		} else {
+			// dig further...
+			foreach ($uploadedFiles as $key => $value) {
+				static::initUploadedFile($uploadedFiles[$key]);
+			}
+		}
 	}
 }

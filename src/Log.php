@@ -25,29 +25,30 @@ use Koldy\Log\Message;
 class Log
 {
 
-    private const EMERGENCY = 'emergency';
-    private const ALERT = 'alert';
-    private const CRITICAL = 'critical';
-    private const DEBUG = 'debug';
-    private const NOTICE = 'notice';
-    private const INFO = 'info';
-    private const WARNING = 'warning';
-    private const ERROR = 'error';
-    private const SQL = 'sql';
+	private const EMERGENCY = 'emergency';
+	private const ALERT = 'alert';
+	private const CRITICAL = 'critical';
+	private const DEBUG = 'debug';
+	private const NOTICE = 'notice';
+	private const INFO = 'info';
+	private const WARNING = 'warning';
+	private const ERROR = 'error';
+	private const SQL = 'sql';
 
-    /**
-     * The array of only enabled writer instances for this request
-     */
-    protected static array|null $adapters = null;
+	/**
+	 * The array of only enabled writer instances for this request
+	 */
+	protected static array|null $adapters = null;
 
-    /**
-     * The array of enabled log levels, combined for all loggers
-     *
-     * @var array of level => true, possible levels are: emergency, alert, critical, error, warning, notice, info, debug and sql
-     */
-    protected static array $enabledLevels = [];
+	/**
+	 * The array of enabled log levels, combined for all loggers
+	 *
+	 * @var array of level => true, possible levels are: emergency, alert, critical, error, warning, notice, info,
+	 *     debug and sql
+	 */
+	protected static array $enabledLevels = [];
 
-    protected static string|null $who = null;
+	protected static string|null $who = null;
 
 	/**
 	 * Random number generated only once per script (either HTTP or CLI), so if you reset the "who", random number
@@ -56,111 +57,131 @@ class Log
 	 *
 	 * @var null|int
 	 */
-    protected static int|null $randomNumber = null;
+	protected static int|null $randomNumber = null;
 
-    /**
-     * The array of enabled classes, stored as class name string
-     *
-     * @var array of className => true
-     */
-    protected static array $enabledAdapters = [];
+	/**
+	 * The array of enabled classes, stored as class name string
+	 *
+	 * @var array of className => true
+	 */
+	protected static array $enabledAdapters = [];
 
-    /**
-     * Flag if writing to log is temporary disabled or not. Set this to true for internal use, in cases like:
-     * "do not log SQL queries when DB session handler is enabled and such"
-     *
-     * @var bool|array
-     */
-    protected static bool|array $temporaryDisabled = false;
+	/**
+	 * Flag if writing to log is temporary disabled or not. Set this to true for internal use, in cases like:
+	 * "do not log SQL queries when DB session handler is enabled and such"
+	 *
+	 * @var bool|array
+	 */
+	protected static bool|array $temporaryDisabled = false;
 
-    protected function __construct()
-    {
-    }
+	protected function __construct()
+	{
+	}
 
-    protected function __clone()
-    {
-    }
+	/**
+	 * Is there any log adapter enabled in this moment?
+	 *
+	 * @return boolean
+	 */
+	public static function isEnabled(): bool
+	{
+		static::init();
+		return count(static::$adapters) > 0;
+	}
 
 	/**
 	 * Initialize, load config and etc.
 	 * @throws Exception
 	 */
-    public static function init(): void
-    {
-        if (static::$adapters === null) {
-        	static::$randomNumber = rand(100000, 999999);
+	public static function init(): void
+	{
+		if (static::$adapters === null) {
+			static::$randomNumber = rand(100000, 999999);
 
-        	// set the "who"
-            static::resetWho();
+			// set the "who"
+			static::resetWho();
 
-            static::$adapters = [];
-            $configs = Application::getConfig('application')->get('log') ?? [];
+			static::$adapters = [];
+			$configs = Application::getConfig('application')->get('log') ?? [];
 
-            $count = 0;
-            foreach ($configs as $index => $config) {
-                $enabled = $config['enabled'] && is_array($config['options']['log']) && count($config['options']['log']) > 0;
+			$count = 0;
+			foreach ($configs as $index => $config) {
+				$enabled = $config['enabled'] && is_array($config['options']['log']) && count($config['options']['log']) > 0;
 
-                // TODO: Register module if needed
+				// TODO: Register module if needed
 
-                if ($enabled) {
-                    if (!isset($config['adapter_class'])) {
-                        throw new ConfigException("Logger[{$index}] defined in application config is missing adapter_class key");
-                    }
+				if ($enabled) {
+					if (!isset($config['adapter_class'])) {
+						throw new ConfigException("Logger[{$index}] defined in application config is missing adapter_class key");
+					}
 
-                    // if the config is enabled, then make new instance
-                    $adapter = $config['adapter_class'];
+					// if the config is enabled, then make new instance
+					$adapter = $config['adapter_class'];
 
-                    static::$adapters[$count] = new $adapter($config['options']);
+					static::$adapters[$count] = new $adapter($config['options']);
 
-                    // Log class must be instance of AbstractLogAdapter
-                    if (!(static::$adapters[$count] instanceof AbstractLogAdapter)) {
-                        throw new Exception("Log adapter {$adapter} must extend AbstractLogAdapter");
-                    }
+					// Log class must be instance of AbstractLogAdapter
+					if (!(static::$adapters[$count] instanceof AbstractLogAdapter)) {
+						throw new Exception("Log adapter {$adapter} must extend AbstractLogAdapter");
+					}
 
-                    static::$enabledAdapters[$config['adapter_class']] = true;
+					static::$enabledAdapters[$config['adapter_class']] = true;
 
-                    foreach ($config['options']['log'] as $level) {
-                        static::$enabledLevels[$level] = true;
-                    }
+					foreach ($config['options']['log'] as $level) {
+						static::$enabledLevels[$level] = true;
+					}
 
-                    $count++;
-                }
-            }
-        }
-    }
+					$count++;
+				}
+			}
+		}
+	}
 
-    /**
-     * Is there any log adapter enabled in this moment?
-     *
-     * @return boolean
-     */
-    public static function isEnabled(): bool
-    {
-        static::init();
-        return count(static::$adapters) > 0;
-    }
+	/**
+	 * Reset the "who" value
+	 *
+	 * @throws Exception
+	 */
+	public static function resetWho(): void
+	{
+		if (Application::isCli()) {
+			static::$who = Application::getCliName() . '-' . static::$randomNumber;
+		} else {
+			static::$who = Request::ip() . '-' . static::$randomNumber;
+		}
+	}
 
-    /**
-     * @param string $level
-     *
-     * @return bool
-     */
-    public static function isEnabledLevel(string $level): bool
-    {
-        return isset(static::$enabledLevels[$level]);
-    }
+	/**
+	 * @param string $level
+	 *
+	 * @return bool
+	 */
+	public static function isEnabledLevel(string $level): bool
+	{
+		return isset(static::$enabledLevels[$level]);
+	}
 
-    /**
-     * Was logger under given class name enabled or not?
-     *
-     * @param string $className
-     *
-     * @return bool
-     */
-    public static function isEnabledLogger(string $className): bool
-    {
-        return isset(static::$enabledAdapters[$className]);
-    }
+	/**
+	 * Was logger under given class name enabled or not?
+	 *
+	 * @param string $className
+	 *
+	 * @return bool
+	 */
+	public static function isEnabledLogger(string $className): bool
+	{
+		return isset(static::$enabledAdapters[$className]);
+	}
+
+	/**
+	 * Get the "who"
+	 *
+	 * @return string
+	 */
+	public static function getWho(): string
+	{
+		return static::$who;
+	}
 
 	/**
 	 * Set the "who" - it'll be visible in logs as "who did that".
@@ -169,34 +190,10 @@ class Log
 	 *
 	 * @param string $who
 	 */
-    public static function setWho(string $who): void
-    {
-	    static::$who = $who;
-    }
-
-	/**
-	 * Reset the "who" value
-	 *
-	 * @throws Exception
-	 */
-    public static function resetWho(): void
-    {
-	    if (Application::isCli()) {
-		    static::$who = Application::getCliName() . '-' . static::$randomNumber;
-	    } else {
-		    static::$who = Request::ip() . '-' . static::$randomNumber;
-	    }
-    }
-
-    /**
-     * Get the "who"
-     *
-     * @return string
-     */
-    public static function getWho(): string
-    {
-        return static::$who;
-    }
+	public static function setWho(string $who): void
+	{
+		static::$who = $who;
+	}
 
 	/**
 	 * Get the "unique" random number generated on log class initialization. This number can be used for some other
@@ -204,52 +201,35 @@ class Log
 	 *
 	 * @return int
 	 */
-    public static function getRandomNumber(): int
-    {
-    	return static::$randomNumber;
-    }
+	public static function getRandomNumber(): int
+	{
+		return static::$randomNumber;
+	}
 
-    /**
-     * Temporary disable all logging for the requested levels. Each call of this method will overwrite previous call, so if
-     * need to disable multiple levels, pass them all in one call by passing an array of message types you'd like to disable
-     *
-     * @param array|string|null ...$levels
-     */
-    public static function temporaryDisable(array|string|null $levels = null): void
-    {
-        $disable = true;
+	/**
+	 * Temporary disable all logging for the requested levels. Each call of this method will overwrite previous call,
+	 * so if need to disable multiple levels, pass them all in one call by passing an array of message types you'd like
+	 * to disable
+	 *
+	 * @param array|string|null ...$levels
+	 */
+	public static function temporaryDisable(array|string|null $levels = null): void
+	{
+		$disable = true;
 
-        if (is_array($levels)) {
-            $disable = $levels;
-        } else if (is_string($levels)) {
-            $disable = [$levels];
-        }
+		if (is_array($levels)) {
+			$disable = $levels;
+		} else if (is_string($levels)) {
+			$disable = [$levels];
+		}
 
-        static::$temporaryDisabled = $disable;
-    }
+		static::$temporaryDisabled = $disable;
+	}
 
-    /**
-     * @param null|string $whichLevel
-     *
-     * @return bool
-     */
-    public static function isTemporaryDisabled(?string $whichLevel = null): bool
-    {
-        if ($whichLevel === null) {
-            return static::$temporaryDisabled !== false;
-        } else {
-            if (is_array(static::$temporaryDisabled)) {
-                return in_array($whichLevel, static::$temporaryDisabled);
-            } else {
-                return false;
-            }
-        }
-    }
-
-    public static function restoreTemporaryDisablement(): void
-    {
-        static::$temporaryDisabled = false;
-    }
+	public static function restoreTemporaryDisablement(): void
+	{
+		static::$temporaryDisabled = false;
+	}
 
 	/**
 	 * Write EMERGENCY message to log
@@ -258,203 +238,225 @@ class Log
 	 *
 	 * @link http://koldy.net/docs/log#usage
 	 */
-    public static function emergency(...$messages): void
-    {
-        static::init();
+	public static function emergency(...$messages): void
+	{
+		static::init();
 
-        if (!static::isTemporaryDisabled('emergency')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::EMERGENCY)) {
-                    $adapter->emergency((new Message(self::EMERGENCY))->setMessages($messages));
-                }
-            }
-        }
-    }
+		if (!static::isTemporaryDisabled('emergency')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::EMERGENCY)) {
+					$adapter->emergency((new Message(self::EMERGENCY))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-    /**
-     * Write ALERT message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function alert(...$messages): void
-    {
-        static::init();
+	/**
+	 * @param null|string $whichLevel
+	 *
+	 * @return bool
+	 */
+	public static function isTemporaryDisabled(?string $whichLevel = null): bool
+	{
+		if ($whichLevel === null) {
+			return static::$temporaryDisabled !== false;
+		} else {
+			if (is_array(static::$temporaryDisabled)) {
+				return in_array($whichLevel, static::$temporaryDisabled);
+			} else {
+				return false;
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('alert')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::ALERT)) {
-                    $adapter->alert((new Message(self::ALERT))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write ALERT message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function alert(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Write CRITICAL message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function critical(...$messages): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('alert')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::ALERT)) {
+					$adapter->alert((new Message(self::ALERT))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('critical')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::CRITICAL)) {
-                    $adapter->critical((new Message(self::CRITICAL))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write CRITICAL message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function critical(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Write DEBUG message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function debug(...$messages): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('critical')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::CRITICAL)) {
+					$adapter->critical((new Message(self::CRITICAL))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('debug')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::DEBUG)) {
-                    $adapter->debug((new Message(self::DEBUG))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write DEBUG message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function debug(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Write NOTICE message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function notice(...$messages): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('debug')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::DEBUG)) {
+					$adapter->debug((new Message(self::DEBUG))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('notice')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::NOTICE)) {
-                    $adapter->notice((new Message(self::NOTICE))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write NOTICE message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function notice(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Write INFO message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function info(...$messages): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('notice')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::NOTICE)) {
+					$adapter->notice((new Message(self::NOTICE))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('info')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::INFO)) {
-                    $adapter->info((new Message(self::INFO))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write INFO message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function info(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Write WARNING message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function warning(...$messages): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('info')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::INFO)) {
+					$adapter->info((new Message(self::INFO))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('warning')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::WARNING)) {
-                    $adapter->warning((new Message(self::WARNING))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write WARNING message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function warning(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Write ERROR message to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function error(...$messages): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('warning')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::WARNING)) {
+					$adapter->warning((new Message(self::WARNING))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('error')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::ERROR)) {
-                    $adapter->error((new Message(self::ERROR))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write ERROR message to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function error(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Write SQL query to log
-     *
-     * @param mixed ...$messages
-     *
-     * @link http://koldy.net/docs/log#usage
-     */
-    public static function sql(...$messages): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('error')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::ERROR)) {
+					$adapter->error((new Message(self::ERROR))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        if (!static::isTemporaryDisabled('sql')) {
-            foreach (static::$adapters as $adapter) {
-                /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-                if ($adapter->isLevelEnabled(self::SQL)) {
-                    $adapter->sql((new Message(self::SQL))->setMessages($messages));
-                }
-            }
-        }
-    }
+	/**
+	 * Write SQL query to log
+	 *
+	 * @param mixed ...$messages
+	 *
+	 * @link http://koldy.net/docs/log#usage
+	 */
+	public static function sql(...$messages): void
+	{
+		static::init();
 
-    /**
-     * Log message with prepared Log\Message instance
-     *
-     * @param Message $message
-     */
-    public static function message(Message $message): void
-    {
-        static::init();
+		if (!static::isTemporaryDisabled('sql')) {
+			foreach (static::$adapters as $adapter) {
+				/* @var $adapter AbstractLogAdapter */
+				if ($adapter->isLevelEnabled(self::SQL)) {
+					$adapter->sql((new Message(self::SQL))->setMessages($messages));
+				}
+			}
+		}
+	}
 
-        foreach (static::$adapters as $adapter) {
-            /* @var $adapter \Koldy\Log\Adapter\AbstractLogAdapter */
-            if ($adapter->isLevelEnabled($message->getLevel())) {
-                $adapter->logMessage($message);
-            }
-        }
-    }
+	/**
+	 * Log message with prepared Log\Message instance
+	 *
+	 * @param Message $message
+	 */
+	public static function message(Message $message): void
+	{
+		static::init();
+
+		foreach (static::$adapters as $adapter) {
+			/* @var $adapter AbstractLogAdapter */
+			if ($adapter->isLevelEnabled($message->getLevel())) {
+				$adapter->logMessage($message);
+			}
+		}
+	}
+
+	protected function __clone()
+	{
+	}
 
 }

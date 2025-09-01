@@ -23,7 +23,8 @@ class Mail extends CommonMailAdapter
 	public function send(): void
 	{
 		$charset = $this->config['charset'] ?? 'utf-8';
-		$this->setHeader('Content-Type', $this->isHTML ? "text/html; charset={$charset}" : "text/plain; charset={$charset}");
+		$this->setHeader('Content-Type',
+			$this->isHTML ? "text/html; charset={$charset}" : "text/plain; charset={$charset}");
 
 		if ($this->fromEmail !== null) {
 			if ($this->fromName !== null) {
