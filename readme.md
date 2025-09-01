@@ -4,7 +4,7 @@
 
 Koldy PHP Framework is a framework for rapid development using PHP. It can be used for any type or any size of PHP projects, including enterprise size.
 
-Current version is `3.1.1`. Minimum PHP version is `8.1`.
+Current version is `3.2.0`. Minimum PHP version is `8.1`.
 
 To install the framework in your project, run:
 
