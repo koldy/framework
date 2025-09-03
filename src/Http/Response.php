@@ -77,13 +77,45 @@ class Response
 	}
 
 	/**
-	 * Is response OK? (is HTTP response code 200)
+	 * Is response OK? (is HTTP response code 2XX)
 	 *
 	 * @return boolean
 	 */
 	public function isSuccess(): bool
 	{
 		return $this->getHttpCode() >= 200 && $this->getHttpCode() <= 299;
+	}
+
+	/**
+	 * Is response not OK? (HTTP response code is not 2XX)
+	 *
+	 * This method exists just because of better readability in your code.
+	 *
+	 * @return bool
+	 */
+	public function isNotSuccess(): bool
+	{
+		return !$this->isSuccess();
+	}
+
+	/**
+	 * Is response redirect? (HTTP response code is 3XX)
+	 *
+	 * @return bool
+	 */
+	public function isRedirect(): bool
+	{
+		return $this->getHttpCode() >= 300 && $this->getHttpCode() <= 399;
+	}
+
+	/**
+	 * Is response not redirect? (HTTP response code is not 3XX)
+	 *
+	 * @return bool
+	 */
+	public function isNotRedirect(): bool
+	{
+		return !$this->isRedirect();
 	}
 
 	/**
