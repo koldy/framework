@@ -2,14 +2,15 @@
 
 namespace Koldy\Route;
 
+use InvalidArgumentException;
 use Koldy\{Application,
+	Exception,
 	Log,
 	Response\AbstractResponse,
 	Response\Exception\ServerException,
 	Response\Plain,
-	Response\ResponseExceptionHandler};
-use ExceptionHandler;
-use InvalidArgumentException;
+	Response\ResponseExceptionHandler,
+	Validator\ConfigException};
 use Koldy\Response\Exception\NotFoundException;
 use Throwable;
 
@@ -445,8 +446,10 @@ class DefaultRoute extends AbstractRoute
 	 *
 	 * @param Throwable $e
 	 *
+	 * @throws Exception
 	 * @throws \Koldy\Json\Exception
-	 * @throws \Koldy\Response\Exception
+	 * @throws ConfigException
+	 * @throws \Koldy\Validator\Exception
 	 */
 	public function handleException(Throwable $e): void
 	{
@@ -464,7 +467,7 @@ class DefaultRoute extends AbstractRoute
 		if (is_file($exceptionHandlerPath)) {
 			require_once $exceptionHandlerPath;
 			// @phpstan-ignore-next-line
-			$exceptionHandler = new ExceptionHandler($e); // it will exist once the $exceptionHandlerPath file is included
+			$exceptionHandler = new \ExceptionHandler($e); // it will exist once the $exceptionHandlerPath file is included
 
 			if ($exceptionHandler instanceof ResponseExceptionHandler) {
 				// @phpstan-ignore-next-line
