@@ -13,7 +13,7 @@ use Koldy\Db\Model;
  *
  * @package Koldy\Db\Migration
  *
- * @property int $id
+ * @property int|null $id
  * @property string $script
  * @property int $script_timestamp
  * @property string $script_executed_at
