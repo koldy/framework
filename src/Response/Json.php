@@ -18,6 +18,13 @@ class Json extends AbstractResponse
 	use Data;
 
 	/**
+	 * Although we can detect if array is associative or not, we can't detect it if array is empty, so we have a flag.
+	 * By default, we serialize all arrays as JSON objects (associative), but you can change it to false if you have some
+	 * advanced use case.
+	 */
+	private bool $isAssociative = true;
+
+	/**
 	 * Json constructor.
 	 *
 	 * @param array $data
@@ -39,6 +46,20 @@ class Json extends AbstractResponse
 	public static function create(array $data = []): Json
 	{
 		return new static($data);
+	}
+
+	/**
+	 * Sets if array should be serialized as associative (object) or not (array). This is useful only when there's
+	 * an empty array to be serialized.
+	 *
+	 * @param bool $isAssociative
+	 *
+	 * @return $this
+	 */
+	public function setAssociativeArray(bool $isAssociative): Json
+	{
+		$this->isAssociative = $isAssociative;
+		return $this;
 	}
 
 	/**
@@ -85,7 +106,7 @@ class Json extends AbstractResponse
 
 				if (count($this->getData()) === 0) {
 					// if there is no data, then we'll output empty JSON object
-					$content = '{}';
+					$content = $this->isAssociative ? '{}' : '[]';
 					$this->setHeader('Content-Length', 2);
 				} else {
 					$size = mb_strlen($content, Application::getEncoding());

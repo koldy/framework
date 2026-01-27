@@ -420,7 +420,13 @@ class Util
 	 */
 	public static function isAssociativeArray(array $array): bool
 	{
-		return array_values($array) !== $array;
+		$i = 0;
+		foreach ($array as $key => $value) {
+			if ($key !== $i++) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

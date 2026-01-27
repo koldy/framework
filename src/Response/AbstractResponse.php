@@ -250,7 +250,7 @@ abstract class AbstractResponse
 	}
 
 	/**
-	 * Count how many functions was added to "before response" with given name, or functions without name (with NULL)
+	 * Count how many functions was added to "before response" with given name, or total count
 	 *
 	 * @param string|null $withName
 	 *
@@ -258,6 +258,10 @@ abstract class AbstractResponse
 	 */
 	public function countBeforeFunctions(string|null $withName = null): int
 	{
+		if ($withName === null) {
+			return count($this->workBeforeResponse);
+		}
+
 		$counter = 0;
 
 		foreach ($this->workBeforeIndex as $functionName) {
@@ -303,7 +307,7 @@ abstract class AbstractResponse
 	}
 
 	/**
-	 * Count how many functions was added to "after response" with given name, or functions without name (with NULL)
+	 * Count how many functions was added to "after response" with given name, or total count
 	 *
 	 * @param string|null $withName
 	 *
@@ -311,6 +315,10 @@ abstract class AbstractResponse
 	 */
 	public function countAfterFunctions(string|null $withName = null): int
 	{
+		if ($withName === null) {
+			return count($this->workAfterResponse);
+		}
+
 		$counter = 0;
 
 		foreach ($this->workAfterIndex as $functionName) {
@@ -361,7 +369,7 @@ abstract class AbstractResponse
 			call_user_func($fn, $this);
 		}
 
-		// the response that flushes itself should set the response of the application cycle
+		// the response that flushes itself should set the response of the execution cycle
 		Application::setResponse($this);
 	}
 
