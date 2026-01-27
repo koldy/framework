@@ -10,7 +10,8 @@ use Koldy\{Application,
 	Response\Exception\ServerException,
 	Response\Plain,
 	Response\ResponseExceptionHandler,
-	Validator\ConfigException};
+	Validator\ConfigException
+};
 use Koldy\Response\Exception\NotFoundException;
 use Throwable;
 

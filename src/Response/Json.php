@@ -19,8 +19,8 @@ class Json extends AbstractResponse
 
 	/**
 	 * Although we can detect if array is associative or not, we can't detect it if array is empty, so we have a flag.
-	 * By default, we serialize all arrays as JSON objects (associative), but you can change it to false if you have some
-	 * advanced use case.
+	 * By default, we serialize all arrays as JSON objects (associative), but you can change it to false if you have
+	 * some advanced use case.
 	 */
 	private bool $isAssociative = true;
 
