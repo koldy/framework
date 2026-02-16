@@ -17,21 +17,21 @@ use Throwable;
 /**
  * HttpRoute is new HTTP router that is using strictly namespaced PHP classes.
  *
- * The DefaultRouter that was standard in Koldy relied on PHP include path system to determine which class and which action
- * would be executed. That approach was fine back in 2010s, but it's not anymore.
+ * The DefaultRouter that was standard in Koldy relied on PHP include path system to determine which class and which
+ * action would be executed. That approach was fine back in 2010s, but it's not anymore.
  *
  * To minimize disk reads, this router relies only on PHP's built-in autoloader and class resolution.
  *
- * Unlike other PHP frameworks only that forces you do define all possible routes in one place (or via annotations or by
- * any other approach), the HTTP router in Koldy Framework will try to resolve the class and method based on the URI. But,
- * unlike others, it will process each URI segment separately and when first class and method returns some response, it will
- * stop processing and return the response. This approach allows us to have literally unlimited number of routes with no extra
- * maintenance nor overhead. Imagine having 2000 routes defined in one place - any approach that other frameworks are using would
- * start getting slower and slower.
+ * Unlike other PHP frameworks only that forces you do define all possible routes in one place (or via annotations or
+ * by any other approach), the HTTP router in Koldy Framework will try to resolve the class and method based on the URI.
+ * But, unlike others, it will process each URI segment separately and when first class and method returns some
+ * response, it will stop processing and return the response. This approach allows us to have literally unlimited
+ * number of routes with no extra maintenance nor overhead. Imagine having 2000 routes defined in one place - any
+ * approach that other frameworks are using would start getting slower and slower.
  *
  * With this approach, you can have routes such as /company/{name}/invoices/{uuid}/files and by natural order, you
- * don't want to end up in "files controller" directly, unless you really have an access to company and access to that invoice
- * specifically. HttpRouter will basically go like this:
+ * don't want to end up in "files controller" directly, unless you really have an access to company and access to that
+ * invoice specifically. HttpRouter will basically go like this:
  *
  * 1. enter CompanyHttp
  * 2. resolve {name}, load company, check access and store company in context
@@ -39,19 +39,21 @@ use Throwable;
  * 4. resolve {uuid}, load invoice, check access and store invoice in context
  * 5. enter Company/Invoices/FilesHttp and execute the method or execute something else
  *
- * This approach is not only fast, but also very flexible, intuitive, easy to use and allows handling of unlimited number of routes.
+ * This approach is not only fast, but also very flexible, intuitive, easy to use and allows handling of unlimited
+ * number of routes.
  *
  * To use this router, you need to set the "routing_class" in config/application.php to "Koldy\\Route\\HttpRoute",
  * then set "routing_options" to something like this:
  *
  * ```php
  * 'routing_options' => [
- *   'path' => APPLICATION_PATH . 'http/',
+ *   'path' => APPLICATION_PATH . '/http/',
  *   'namespace' => 'App\\Http\\'
  * ]
  * ```
  *
- * And then register App\Http namespace in your composer.json and set it to the same path as "routing_options.path" option.
+ * And then register App\Http namespace in your composer.json and set it to the same path as "routing_options.path"
+ * option.
  *
  * @template TContext of array
  *
@@ -158,7 +160,7 @@ class HttpRoute extends AbstractRoute
 		$fileSystemPath = $this->config['path'];
 		$namespace = $this->config['namespace'];
 
-		$self = new self();
+		$self = new self($this->config);
 		$self->uriParts = explode('/', substr($path, 1));
 		$self->uri = $uri;
 		$self->fileSystemRoute = $fileSystemPath;
@@ -209,7 +211,7 @@ class HttpRoute extends AbstractRoute
 					$return = $controller->$method();
 				} else if (method_exists($controller, '__call')) {
 					$return = $controller->__call($method, []);
-				} else  {
+				} else {
 					Log::debug("HttpRoute: Method {$method} does not exist in class={$className} on {$this->method}={$this->uri}");
 					throw new NotFoundException('Endpoint not found');
 				}
@@ -229,6 +231,12 @@ class HttpRoute extends AbstractRoute
 				Application::terminateWithError('Class does not extend HttpRoute');
 			}
 		} else {
+			// no class found, ... but, we might need to continue processing - it depends on number of segments
+			if (count($this->uriParts) > $this->pointer + 1) {
+				// so, we have more segments to process, so let's try the next one by moving pointer to the next segment
+				return $this->nextSegment()->exec();
+			}
+
 			// 404
 			Log::debug("HttpRoute: Class {$className} does not exist for {$this->method}={$this->uri}");
 			throw new NotFoundException('Endpoint not found');
