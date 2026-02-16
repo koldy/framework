@@ -8,6 +8,7 @@ use Koldy\Json;
 use Koldy\Log;
 use Koldy\Response\Exception\BadRequestException;
 use Koldy\Response\Exception\ForbiddenException;
+use Koldy\Response\Exception\MethodNotAllowedException;
 use Koldy\Response\Exception\NotFoundException;
 use Koldy\Response\Json as JsonResponse;
 use Koldy\Validator\ConfigException;
@@ -38,7 +39,9 @@ class ResponseExceptionHandler
 	 */
 	public function exec(): void
 	{
-		if (Application::route()->isAjax()) {
+		$isAjax = array_key_exists('HTTP_X_REQUESTED_WITH', $_SERVER) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
+		if ($isAjax) {
 			// if is ajax
 			$this->handleExceptionInAjax($this->e);
 		} else {
@@ -76,6 +79,9 @@ class ResponseExceptionHandler
 		} else if ($e instanceof ForbiddenException) {
 			$response->statusCode(403);
 
+		} else if ($e instanceof MethodNotAllowedException) {
+			$response->statusCode(405);
+
 		} else {
 			try {
 				Log::emergency($e);
@@ -109,6 +115,9 @@ class ResponseExceptionHandler
 			} else if ($e instanceof ForbiddenException) {
 				$view->statusCode(403);
 
+			} else if ($e instanceof MethodNotAllowedException) {
+				$view->statusCode(405);
+
 			} else {
 				try {
 					Log::emergency($e);
@@ -132,6 +141,9 @@ class ResponseExceptionHandler
 
 			} else if ($e instanceof ForbiddenException) {
 				$plain->statusCode(403);
+
+			} else if ($e instanceof MethodNotAllowedException) {
+				$plain->statusCode(405);
 
 			} else {
 				try {

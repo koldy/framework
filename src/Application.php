@@ -3,6 +3,7 @@
 namespace Koldy;
 
 use Closure;
+use InvalidArgumentException;
 use Koldy\Application\Exception as ApplicationException;
 use Koldy\Cli\Exception as CliException;
 use Koldy\Config\Exception as ConfigException;
@@ -96,6 +97,13 @@ class Application
 	 * @var string|null
 	 */
 	protected static string|null $uri = null;
+
+	/**
+	 * The array of URI segments
+	 *
+	 * @var array|null
+	 */
+	protected static array|null $uriSegments = null;
 
 	/**
 	 * If CLI env, then this is the path of CLI script
@@ -730,6 +738,31 @@ class Application
 	}
 
 	/**
+	 * Get the URI segment on specific index. Index starts from zero, but since URI always starts
+	 * with "/", first segment (the zero index) will a string after first slash.
+	 *
+	 * @example if URI is "/user/login", then getUriSegment(0) will return "user" and getUriSegment(1) will return "login"
+	 *
+	 * @param int $index
+	 *
+	 * @return string|null
+	 * @throws ApplicationException
+	 */
+	public static function getUriSegment(int $index): string|null
+	{
+		if ($index < 0) {
+			throw new InvalidArgumentException('Index can not be negative');
+		}
+
+		if (static::$uriSegments === null) {
+			static::$uriSegments = explode('/', static::getUri());
+			array_shift(static::$uriSegments);
+		}
+
+		return static::$uriSegments[$index] ?? null;
+	}
+
+	/**
 	 * Is application running in production mode or not
 	 *
 	 * @return boolean
@@ -959,6 +992,17 @@ class Application
 	}
 
 	/**
+	 * Shorthand for get the application config
+	 *
+	 * @return Config
+	 * @throws Exception
+	 */
+	public static function getApplicationConfig(): Config
+	{
+		return static::getConfig('application');
+	}
+
+	/**
 	 * Gets default application encoding set in mandatory config under "encoding" key. If not set, it'll return "UTF-8"
 	 * as default. Encoding will be used in functions list mb_strlen()
 	 *
@@ -1014,17 +1058,7 @@ class Application
 			static::$uri = $uri;
 
 			try {
-				$route = static::route();
-				$route->prepareHttp(static::$uri);
-
-				/*
-				 NOTE: CSRF will not be handled automatically by framework any more
-				if (Csrf::isEnabled() && (!Csrf::hasTokenStored() || !Csrf::hasCookieToken())) {
-					Csrf::generate();
-				}
-				*/
-
-				$response = $route->exec();
+				$response = static::route()->start($uri);
 
 				if ($response instanceof AbstractResponse) {
 					$response->flush(); // flush sets the response to Application, so we're all good

@@ -11,6 +11,8 @@ use Koldy\Route\{AbstractRoute, Exception as RouteException};
  *
  * This class relies on your route instance so you'll probably need to check
  * the docs of your routes to understand the methods below.
+ *
+ * @deprecated If you need to get the routing instance, use Application::route() instead
  */
 class Route
 {
@@ -20,6 +22,8 @@ class Route
 	 *
 	 * @return AbstractRoute
 	 * @throws Exception
+	 *
+	 * @deprecated Use Application::route() instead
 	 */
 	public static function getRoute(): AbstractRoute
 	{
@@ -36,6 +40,7 @@ class Route
 	 */
 	public static function getVar(string|int $whatVar): ?string
 	{
+		// @phpstan-ignore-next-line
 		return Application::route()->getVar($whatVar);
 	}
 
@@ -47,6 +52,7 @@ class Route
 	 */
 	public static function controller(): string
 	{
+		// @phpstan-ignore-next-line
 		return Application::route()->getControllerUrl();
 	}
 
@@ -60,6 +66,7 @@ class Route
 	 */
 	public static function isController(string $controller): bool
 	{
+		// @phpstan-ignore-next-line
 		return $controller == Application::route()->getControllerUrl();
 	}
 
@@ -71,6 +78,7 @@ class Route
 	 */
 	public static function action(): string
 	{
+		// @phpstan-ignore-next-line
 		return Application::route()->getActionUrl();
 	}
 
@@ -84,6 +92,7 @@ class Route
 	 */
 	public static function isAction(string $action): bool
 	{
+		// @phpstan-ignore-next-line
 		return $action == Application::route()->getActionUrl();
 	}
 
@@ -98,6 +107,7 @@ class Route
 	 */
 	public static function is(string $controller, string $action): bool
 	{
+		// @phpstan-ignore-next-line
 		return $controller == Application::route()->getControllerUrl() && $action == Application::route()
 				->getActionUrl();
 	}
@@ -115,15 +125,18 @@ class Route
 	public static function isModule(string $module, string|null $controller = null, string|null $action = null): bool
 	{
 		$route = Application::route();
+		// @phpstan-ignore-next-line
 		if ($module === $route->getModuleUrl()) {
 			if ($controller === null) {
 				return true;
 			} else {
+				// @phpstan-ignore-next-line
 				if ($controller === $route->getControllerUrl()) {
 					// now we have matched module and controller
 					if ($action === null) {
 						return true;
 					} else {
+						// @phpstan-ignore-next-line
 						return ($action === $route->getActionUrl());
 					}
 				} else {
@@ -153,6 +166,7 @@ class Route
 		string|null $action = null,
 		array|null $params = null
 	): string {
+		// @phpstan-ignore-next-line
 		return Application::route()->siteHref($site, $controller, $action, $params);
 	}
 
@@ -210,6 +224,7 @@ class Route
 		string|null $action = null,
 		array|null $params = null
 	): string {
+		// @phpstan-ignore-next-line
 		return Application::route()->href($controller, $action, $params);
 	}
 
@@ -227,8 +242,8 @@ class Route
 	 */
 	public static function asset(string $path, string|null $server = null): string
 	{
-		$route = Application::route();
-		return $route->asset($path, $server);
+		// @phpstan-ignore-next-line
+		return Application::route()->asset($path, $server);
 	}
 
 }

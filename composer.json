@@ -29,7 +29,8 @@
     "ext-bcmath": "Required for arbitrary precision math"
   },
   "require-dev": {
-    "phpstan/phpstan": "^2.1.17"
+    "phpstan/phpstan": "^2.1.17",
+    "phpunit/phpunit": "^12.0"
   },
   "config": {
     "bin-dir": "bin",
@@ -41,6 +42,11 @@
   "autoload": {
     "psr-4": {
       "Koldy\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
     }
   }
 }

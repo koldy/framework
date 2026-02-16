@@ -67,11 +67,12 @@ class Redirect extends AbstractResponse
 	 * Redirect client (302) to home page
 	 *
 	 * @return static
-	 * @throws Exception
+	 *
+	 * @deprecated Use Redirect::temporary('/') or Redirect::permanent('/') instead
 	 */
 	public static function home(): Redirect
 	{
-		return static::href();
+		return static::temporary('/');
 	}
 
 	/**
@@ -83,13 +84,16 @@ class Redirect extends AbstractResponse
 	 *
 	 * @return static
 	 * @throws Exception
+	 * @deprecated Use your own router to generate the URL
 	 */
 	public static function href(
 		string|null $controller = null,
 		string|null $action = null,
 		array|null $params = null
 	): Redirect {
-		return static::temporary(Application::route()->href($controller, $action, $params));
+		$route = Application::route();
+		/** @var Route\DefaultRoute $route */
+		return static::temporary($route->href($controller, $action, $params));
 	}
 
 	/**
@@ -101,11 +105,13 @@ class Redirect extends AbstractResponse
 	 * @return static
 	 * @throws \Koldy\Config\Exception
 	 * @throws Exception
-	 * @deprecated use asset() method instead of this method
+	 * @deprecated Use Application::getConfig('application')->get('assets') to get the asset URL
 	 */
 	public static function link(string $path, string|null $assetSite = null): Redirect
 	{
-		return self::temporary(Application::route()->asset($path, $assetSite));
+		$route = Application::route();
+		/** @var Route\DefaultRoute $route */
+		return self::temporary($route->asset($path, $assetSite));
 	}
 
 	/**
@@ -118,6 +124,8 @@ class Redirect extends AbstractResponse
 	 * @throws Route\Exception
 	 * @throws \Koldy\Config\Exception
 	 * @throws Exception
+	 *
+	 * @deprecated Use Application::getConfig('application')->get('assets') to get the asset URL
 	 */
 	public static function asset(string $path, string|null $assetKey = null): Redirect
 	{

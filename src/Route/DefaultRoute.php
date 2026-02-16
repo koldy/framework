@@ -27,10 +27,19 @@ use Throwable;
  * Parameters can be caught with getVar() method by passing the position of it.
  *
  * @link http://koldy.net/docs/routes/default-route
+ *
+ * @extends AbstractRoute<array{always_restful?: bool}>
  */
 class DefaultRoute extends AbstractRoute
 {
+	/**
+	 * The original URI as it was given to the router
+	 */
+	protected string|null $uri = null;
 
+	/**
+	 * The array of URI parts
+	 */
 	protected array|null $uriParts = null;
 
 	/**
@@ -93,14 +102,12 @@ class DefaultRoute extends AbstractRoute
 	/**
 	 * Prepare HTTP before executing exec() method
 	 *
-	 * @param string $uri
-	 *
 	 * @throws Application\Exception
 	 * @throws Exception
 	 * @throws NotFoundException
 	 * @throws \Koldy\Exception
 	 */
-	public function prepareHttp(string $uri): void
+	public function start(string $uri): mixed
 	{
 		$this->uri = $uri;
 
@@ -281,9 +288,14 @@ class DefaultRoute extends AbstractRoute
 		}
 
 		$this->controllerInstance = $controllerInstance;
+
+		return $this->exec();
 	}
 
 	/**
+	 * What is the controller class name got from URI. When routing class resolves
+	 * the URI, then you'll must have this info, so, return that name.
+	 *
 	 * @return string
 	 */
 	public function getControllerClass(): string
@@ -292,9 +304,10 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
-	 * Is this ajax request or not?
+	 * Is this request Ajax request or not? This is used in \Koldy\Application when printing
+	 * error or exception
 	 *
-	 * @return bool
+	 * @return boolean or false if feature is not implemented
 	 */
 	public function isAjax(): bool
 	{
@@ -302,11 +315,11 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
-	 * Get the variable value from parameters
+	 * Get the variable from the URL
 	 *
 	 * @param string|int $whatVar
 	 *
-	 * @return null|string
+	 * @return string|null
 	 */
 	public function getVar(string|int $whatVar): ?string
 	{
@@ -331,6 +344,8 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
+	 * Get the module URL part
+	 *
 	 * @return string|null
 	 */
 	public function getModuleUrl(): ?string
@@ -339,6 +354,8 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
+	 * Get the controller as it is in URI
+	 *
 	 * @return string
 	 */
 	public function getControllerUrl(): string
@@ -347,7 +364,10 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
+	 * Get the "action" part as it is URI
+	 *
 	 * @return string
+	 * @example if URI is "/user/login", then this might return "login" only
 	 */
 	public function getActionUrl(): string
 	{
@@ -355,13 +375,15 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
+	 * Generate link to another page
+	 *
 	 * @param string|null $controller
 	 * @param string|null $action
 	 * @param array<string, string>|null $params
 	 * @param string|null $lang
 	 *
 	 * @return string
-	 * @throws \Koldy\Exception
+	 * @throws Exception
 	 */
 	public function href(
 		string|null $controller = null,
@@ -373,6 +395,8 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
+	 * Generate link to another page on another server
+	 *
 	 * @param string $site
 	 * @param string|null $controller
 	 * @param string|null $action
@@ -380,7 +404,8 @@ class DefaultRoute extends AbstractRoute
 	 * @param string|null $lang
 	 *
 	 * @return string
-	 * @throws \Koldy\Exception
+	 * @throws Exception
+	 * @throws \Koldy\Config\Exception
 	 */
 	public function siteHref(
 		string $site,
@@ -528,11 +553,102 @@ class DefaultRoute extends AbstractRoute
 	}
 
 	/**
+	 * What is the action method name resolved from from URI and request type
+	 *
 	 * @return string
+	 * @example if URI is "/user/show-details/5", then this might return "showDetailsAction"
 	 */
 	public function getActionMethod(): string
 	{
 		return $this->actionMethod;
 	}
 
+	/**
+	 * Generate link to the resource file on the same domain
+	 *
+	 * @param string $path
+	 * @param string|null $assetSite [optional]
+	 *
+	 * @return string
+	 * @throws \Koldy\Config\Exception
+	 * @throws \Koldy\Exception
+	 *
+	 * @deprecated
+	 */
+	public function asset(string $path, string|null $assetSite = null): string
+	{
+		if (strlen($path) == 0) {
+			throw new InvalidArgumentException('Expected non-empty string');
+		}
+
+		// if you pass the full URL that contains "//" part, it'll be immediately
+		// returned without any kind of building or parsing
+
+		$pos = strpos($path, '//');
+		if (($pos !== false && $pos < 10) || str_starts_with($path, '//')) {
+			return $path;
+		}
+
+		$assets = Application::getConfig('application')->get('assets') ?? [];
+
+		if ($path[0] != '/') {
+			$path = '/' . $path;
+		}
+
+		$url = null;
+
+		if ($assetSite != null) {
+			if (isset($assets[$assetSite])) {
+				$url = $assets[$assetSite];
+			} else {
+				$backtrace = debug_backtrace();
+				$caller = $backtrace[1]['function'] ?? '[unknown caller]'; // TODO: Possible fix needed
+				Log::warning("Asset site {$assetSite} is used in {$caller}, but not set in application config; using first asset site if any");
+
+				if (count($assets) > 0) {
+					$url = array_values($assets)[0];
+				}
+			}
+		} else {
+			if (count($assets) > 0) {
+				$url = array_values($assets)[0];
+			}
+		}
+
+		if ($url == null) {
+			return static::makeUrl($path);
+		} else {
+			if (!str_ends_with($url, '/')) {
+				$url .= '/';
+			}
+
+			if (str_starts_with($path, '/')) {
+				$path = substr($path, 1);
+			}
+
+			return $url . $path;
+		}
+	}
+
+	/**
+	 * Make URL
+	 *
+	 * @param string|null $append
+	 *
+	 * @return string
+	 * @throws \Koldy\Exception
+	 *
+	 * @deprecated do not use
+	 */
+	public static function makeUrl(string|null $append = null): string
+	{
+		if ($append == null) {
+			return 'http' . (Application::isSSL() ? 's' : '') . '://' . Application::getDomain();
+		} else {
+			if (!str_starts_with($append, '/')) {
+				$append = '/' . $append;
+			}
+			return 'http' . (Application::isSSL() ? 's' : '') . '://' . Application::getDomain() . $append;
+		}
+	}
 }

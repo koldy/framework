@@ -23,10 +23,14 @@ switch_php() {
     fi
 }
 
-# Check if specific PHP version is requested
+DEFAULT_PHP="8.3"
+
+# Check if specific PHP version is requested, otherwise use default
 if [ "$1" == "php" ] && [ -n "$2" ]; then
     switch_php "$2" || exit 1
     shift 2
+else
+    switch_php "$DEFAULT_PHP" || exit 1
 fi
 
 php -v || exit 1
@@ -41,7 +45,7 @@ if [ "$CMD" == "phpstan" ]; then
 
 elif [ "$CMD" == "test" ]; then
     echo "Running tests on $(php -v | head -1)"
-    # Add your test commands here when you have them
+    php bin/phpunit --configuration phpunit.xml.dist "${@:2}" || exit 1
 
 elif [ "$CMD" == "versions" ]; then
     echo "Available PHP versions:"
@@ -69,17 +73,22 @@ elif [ "$CMD" == "install-php" ]; then
 else
     echo "Unknown command: [$CMD]"
     echo ""
+    echo "Default PHP version: $DEFAULT_PHP"
+    echo ""
     echo "Available commands:"
-    echo "  phpstan [level]     - Run PHPStan analysis (default level: 5)"
-    echo "  test               - Run tests"
-    echo "  versions           - Show available PHP versions"
-    echo "  install-php <ver>  - Install PHP version (e.g., 8.3)"
-    echo "  php <ver> <cmd>    - Switch to PHP version and run command"
+    echo "  phpstan [level]        - Run PHPStan analysis (default level: 5)"
+    echo "  test [phpunit args]    - Run tests (extra args passed to PHPUnit)"
+    echo "  versions               - Show available PHP versions"
+    echo "  install-php <ver>      - Install PHP version (e.g., 8.3)"
+    echo "  php <ver> <cmd> [args] - Use specific PHP version instead of default"
     echo ""
     echo "Examples:"
-    echo "  ./dev.sh php 8.1 phpstan     - Switch to PHP 8.1 and run PHPStan"
-    echo "  ./dev.sh php 8.3 versions    - Switch to PHP 8.3 and show versions"
-    echo "  ./dev.sh phpstan 6           - Run PHPStan level 6 on current PHP"
+    echo "  ./dev.sh phpstan 6              - Run PHPStan level 6 on PHP $DEFAULT_PHP"
+    echo "  ./dev.sh test                   - Run tests on PHP $DEFAULT_PHP"
+    echo "  ./dev.sh test --filter UtilTest - Run only UtilTest on PHP $DEFAULT_PHP"
+    echo "  ./dev.sh php 8.1 phpstan        - Run PHPStan on PHP 8.1"
+    echo "  ./dev.sh php 8.1 test           - Run tests on PHP 8.1"
+    echo "  ./dev.sh php 8.5 versions       - Show versions using PHP 8.5"
     exit 1
 fi
 
