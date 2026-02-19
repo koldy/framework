@@ -3,7 +3,6 @@
 namespace Koldy;
 
 use Closure;
-use InvalidArgumentException;
 use Koldy\Application\Exception as ApplicationException;
 use Koldy\Cli\Exception as CliException;
 use Koldy\Config\Exception as ConfigException;
@@ -95,15 +94,10 @@ class Application
 	 * The requested URI. Basically $_SERVER['REQUEST_URI'], but not if you pass your own
 	 *
 	 * @var string|null
+	 *
+	 * @deprecated
 	 */
 	protected static string|null $uri = null;
-
-	/**
-	 * The array of URI segments
-	 *
-	 * @var array|null
-	 */
-	protected static array|null $uriSegments = null;
 
 	/**
 	 * If CLI env, then this is the path of CLI script
@@ -646,7 +640,7 @@ class Application
 			throw new ApplicationException('Can not get current URL while running in CLI mode; URL doesn\'t exist in CLI mode');
 		}
 
-		static::$currentUrl = new Url(static::getDomainWithSchema() . static::getUri());
+		static::$currentUrl = new Url(static::getDomainWithSchema() . Request::uri());
 		return static::$currentUrl;
 	}
 
@@ -727,6 +721,8 @@ class Application
 	 *
 	 * @return string
 	 * @throws ApplicationException
+	 *
+	 * @deprecated use Request::uri() instead
 	 */
 	public static function getUri(): string
 	{
@@ -735,31 +731,6 @@ class Application
 		}
 
 		return static::$uri;
-	}
-
-	/**
-	 * Get the URI segment on specific index. Index starts from zero, but since URI always starts
-	 * with "/", first segment (the zero index) will a string after first slash.
-	 *
-	 * @example if URI is "/user/login", then getUriSegment(0) will return "user" and getUriSegment(1) will return "login"
-	 *
-	 * @param int $index
-	 *
-	 * @return string|null
-	 * @throws ApplicationException
-	 */
-	public static function getUriSegment(int $index): string|null
-	{
-		if ($index < 0) {
-			throw new InvalidArgumentException('Index can not be negative');
-		}
-
-		if (static::$uriSegments === null) {
-			static::$uriSegments = explode('/', static::getUri());
-			array_shift(static::$uriSegments);
-		}
-
-		return static::$uriSegments[$index] ?? null;
 	}
 
 	/**

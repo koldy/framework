@@ -2,6 +2,7 @@
 
 namespace Koldy;
 
+use InvalidArgumentException;
 use Koldy\Application\Exception as ApplicationException;
 use Koldy\Request\Exception as RequestException;
 use Koldy\Request\UploadedFile;
@@ -211,6 +212,30 @@ class Request
 	public static function uri(): ?string
 	{
 		return $_SERVER['REQUEST_URI'] ?? null;
+	}
+
+	/**
+	 * Get the URI segment on specific index. Index starts from zero, but since URI always starts
+	 * with "/", first segment (the zero index) will a string after first slash.
+	 *
+	 * @param int $index
+	 *
+	 * @return string|null
+	 * @example if URI is "/user/login", then uriSegment(0) will return "user" and uriSegment(1) will return "login"
+	 *
+	 */
+	public static function uriSegment(int $index): string|null
+	{
+		if ($index < 0) {
+			throw new InvalidArgumentException('Index can not be negative');
+		}
+
+		if (!isset($_SERVER['REQUEST_URI'])) {
+			return null;
+		}
+
+		$uri = explode('/', $_SERVER['REQUEST_URI']);
+		return array_key_exists($index, $uri) ? $uri[$index] : null;
 	}
 
 	/**
