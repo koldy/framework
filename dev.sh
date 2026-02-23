@@ -86,8 +86,8 @@ else
     echo "  ./dev.sh phpstan 6              - Run PHPStan level 6 on PHP $DEFAULT_PHP"
     echo "  ./dev.sh test                   - Run tests on PHP $DEFAULT_PHP"
     echo "  ./dev.sh test --filter UtilTest - Run only UtilTest on PHP $DEFAULT_PHP"
-    echo "  ./dev.sh php 8.1 phpstan        - Run PHPStan on PHP 8.1"
-    echo "  ./dev.sh php 8.1 test           - Run tests on PHP 8.1"
+    echo "  ./dev.sh php 8.3 phpstan        - Run PHPStan on PHP 8.1"
+    echo "  ./dev.sh php 8.3 test           - Run tests on PHP 8.1"
     echo "  ./dev.sh php 8.5 versions       - Show versions using PHP 8.5"
     exit 1
 fi

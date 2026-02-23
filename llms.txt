@@ -1,0 +1,35 @@
+# Koldy PHP Framework
+
+> Koldy PHP Framework is zero-dependency near-core PHP framework for rapid web development. It's small and simple because it gives you all the basic functionality you need to build your web apps. It's best used on medium and large scale enterprise projects where you want to have full control over your code, but still be near-core PHP without any bloat. Small framework also means smaller context usage for your AI tools. It features a static facade API, pluggable adapter architecture for database, cache, logging, sessions and mail, an ActiveRecord ORM with query builder, two routing systems (legacy controller/action and modern filesystem-based HTTP routing), and a built-in validation engine. Install via `composer require koldy/framework`.
+
+## Getting Started
+
+- [Overview](https://koldy.net/llms/overview.md): Framework architecture, installation, configuration, application bootstrap, environment modes, and project structure
+- [Routing](https://koldy.net/llms/routing.md): Both routing systems — DefaultRoute (legacy controller/action) and HttpRoute (filesystem-based namespace routing with dynamic segments and context propagation)
+
+## Core API
+
+- [Application](https://koldy.net/llms/application.md): Central orchestrator — config management, path resolution, environment detection, module system, and response lifecycle hooks
+- [Request & Response](https://koldy.net/llms/request-response.md): HTTP request parsing (parameters, headers, files, IP detection) and response types (JSON, View, Plain, Redirect, FileDownload, ContentDownload)
+- [Database & ORM](https://koldy.net/llms/database.md): Database facade, ActiveRecord Model, query builder (Select, Insert, Update, Delete), transactions, and adapter system (MySQL, PostgreSQL, SQLite)
+- [Validation](https://koldy.net/llms/validation.md): Rule-based data validation engine with 25+ built-in rules, strict mode, and automatic request parameter validation
+
+## Subsystems
+
+- [Cache](https://koldy.net/llms/cache.md): Multi-adapter caching with get/set, multi-key operations, increment/decrement, and getOrSet pattern (Runtime, Files, Db, Memcached, DevNull adapters)
+- [Logging](https://koldy.net/llms/logging.md): Multi-adapter logging with severity levels following PSR-3 conventions (File, Db, Email, Out adapters)
+- [Session](https://koldy.net/llms/session.md): Session management with pluggable storage (File, Db adapters)
+- [Mail](https://koldy.net/llms/mail.md): Email sending with adapter pattern (PHP mail(), File for testing, Simulate for disabled mode)
+
+## Utilities
+
+- [Utilities](https://koldy.net/llms/utilities.md): Config management, encryption (Crypt), JSON helper, URL parsing, cookie handling, filesystem operations, string/array/date utilities, and type conversion helpers
+
+## Testing
+
+- [Testing](https://koldy.net/llms/testing.md): Mock class for simulating HTTP requests in PHPUnit tests — backs up and restores superglobals, supports GET/POST/PUT/DELETE/JSON requests with headers and file uploads
+
+## Optional
+
+- [Migration System](https://koldy.net/llms/migrations.md): Database migration system with CLI commands for creating, running, and rolling back migrations
+- [Security](https://koldy.net/llms/security.md): CSRF protection with token generation and validation

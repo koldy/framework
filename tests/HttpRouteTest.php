@@ -431,14 +431,15 @@ class HttpRouteTest extends TestCase
 		$this->assertSame('companies-list', $result);
 	}
 
-	// ── route: /companies/status (static nested) ──
+	// ── route: /companies/status (dynamic __ takes precedence over static Status) ──
 
-	public function testCompaniesStatusStaticNested(): void
+	public function testCompaniesStatusDynamicTakesPrecedence(): void
 	{
 		$this->setRequestMethod('GET');
 		$route = $this->createRoute(self::NS_COMPANY);
+		// Companies\__ exists and takes precedence over Companies\Status
 		$result = $route->start('/companies/status');
-		$this->assertSame('companies-status', $result);
+		$this->assertSame('company-detail-status', $result);
 	}
 
 	// ── route: /companies/dynamic-company-name ──
@@ -527,8 +528,8 @@ class HttpRouteTest extends TestCase
 		$nsProp = $routeRef->getProperty('namespace');
 		$nsProp->setValue($route, self::NS_BROKEN);
 
-		// 'broken' → static match Broken (valid controller, not last)
-		// 'anything' → no static Broken\Anything → try Broken\__ → exists but NOT HttpController
+		// 'broken' → no dynamic BrokenControllers\__ → static match Broken (valid controller, not last)
+		// 'anything' → try dynamic Broken\__ first → exists but NOT HttpController
 		$this->expectException(ServerException::class);
 		$exec = new ReflectionMethod($route, 'exec');
 		$exec->invoke($route);
@@ -555,8 +556,8 @@ class HttpRouteTest extends TestCase
 		$nsProp = $routeRef->getProperty('namespace');
 		$nsProp->setValue($route, self::NS_DYNAMIC);
 
-		// 'users' → static match Users (valid, not last)
-		// 'abc-123' → no static Users\Abc123 → try Users\__ → exists, isLast,
+		// 'users' → no dynamic DynamicRoutes\__ → static match Users (valid, not last)
+		// 'abc-123' → try dynamic Users\__ first → exists, isLast,
 		// but delete() doesn't exist → NotFoundException
 		$this->expectException(NotFoundException::class);
 		$exec = new ReflectionMethod($route, 'exec');

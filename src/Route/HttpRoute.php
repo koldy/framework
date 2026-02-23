@@ -29,16 +29,17 @@ use Throwable;
  * forward. The last controller in the chain receives the HTTP method call.
  *
  * Example: `GET /companies/splendido-solutions/invoices`
- * 1. `companies`            → `App\Http\Companies` (constructor runs, context passed forward)
- * 2. `splendido-solutions`  → `App\Http\Companies\SplendidoSolutions` or `App\Http\Companies\__` (dynamic match)
+ * 1. `companies`            → no `App\Http\__`, falls back to `App\Http\Companies` (static match)
+ * 2. `splendido-solutions`  → `App\Http\Companies\__` (dynamic match takes precedence)
  * 3. `invoices`             → `App\Http\Companies\__\Invoices` → `get()` is called (last segment)
  *
- * ## Static vs dynamic matching
+ * ## Dynamic vs static matching
  *
- * For each segment, the router first tries a **static match** — a class whose PascalCased name matches the segment.
- * If no such class exists, it falls back to a **dynamic match** — a class named `__` (double underscore) in the
+ * For each segment, the router first tries a **dynamic match** — a class named `__` (double underscore) in the
  * current namespace. The `__` class acts as a wildcard/catch-all and receives the raw segment value via the
  * `$this->segment` property, which is useful for capturing dynamic parameters like UUIDs or slugs.
+ * If no `__` class exists, it falls back to a **static match** — a class whose PascalCased name matches the segment.
+ * This means that if both a `__` class and a static class exist at the same level, the `__` class always wins.
  *
  * ## Context propagation
  *
@@ -66,8 +67,8 @@ use Throwable;
  * ```php
  * 'routing_options' => [
  *   'namespace' => 'App\\Http\\',   // required — root namespace for all HTTP handler classes
- *   'debugFailure' => true,          // optional (default: false) — logs when route resolution fails
- *   'debugSuccess' => true           // optional (default: false) — logs when route resolution succeeds
+ *   'debugFailure' => true,          // optional (default: false) — troubleshoot why route resolution fails
+ *   'debugSuccess' => true           // optional (default: false) — troubleshoot why route resolution succeeds
  * ]
  * ```
  *
@@ -219,88 +220,79 @@ class HttpRoute extends AbstractRoute
 			$name = $this->sanitize($segment);
 			$isLast = $i === $count - 1;
 
-			// rule 1: see if we can match the $name with a class (static matching)
-			// rule 2: if rule 1 fails, see if there's dynamic match (_)
+			// rule 1: dynamic match (__) — always takes precedence if available
+			// rule 2: if no dynamic, try static match (class whose name matches the segment)
 
-			$className = "{$classPath}{$name}";
+			$dynamicClassName = "{$classPath}__";
+			$staticClassName = "{$classPath}{$name}";
 
-			// rule 1:
+			// rule 1: dynamic match
+			if (class_exists($dynamicClassName)) {
+				if (!is_subclass_of($dynamicClassName, HttpController::class)) {
+					throw new ServerException("Class {$dynamicClassName} must extend " . HttpController::class);
+				}
 
-			if (class_exists($className)) {
-				if (!is_subclass_of($className, HttpController::class)) {
-					throw new ServerException("Class {$className} must extend " . HttpController::class);
+				$classPath .= '__\\';
+
+				if ($this->debugSuccess) {
+					Log::debug("HTTP: via  {$dynamicClassName}->__construct()");
+				}
+
+				/** @var HttpController $instance */
+				$instance = new $dynamicClassName($this->constructConstructor($segment));
+				$this->context = $instance->context;
+
+				if ($isLast) {
+					if (method_exists($instance, $this->method)) {
+						if ($this->debugSuccess) {
+							Log::debug("HTTP: exec {$dynamicClassName}->{$this->method}()");
+						}
+
+						return $instance->{$this->method}();
+					} else {
+						if ($this->debugFailure) {
+							Log::debug("HTTP: fail {$dynamicClassName}->{$this->method}() not found");
+						}
+
+						throw new NotFoundException('Endpoint not found');
+					}
+				}
+			} else if (class_exists($staticClassName)) {
+				// rule 2: static match
+				if (!is_subclass_of($staticClassName, HttpController::class)) {
+					throw new ServerException("Class {$staticClassName} must extend " . HttpController::class);
 				}
 
 				if ($this->debugSuccess) {
-					Log::debug("HTTP: via  {$className}->__construct()");
+					Log::debug("HTTP: via  {$staticClassName}->__construct()");
 				}
 
-				$instance = new $className($this->constructConstructor($segment));
+				$instance = new $staticClassName($this->constructConstructor($segment));
 				$this->context = $instance->context;
 				$classPath .= $name . '\\';
 
 				if ($isLast) {
 					if (method_exists($instance, $this->method)) {
 						if ($this->debugSuccess) {
-							Log::debug("HTTP: exec {$className}->{$this->method}()");
+							Log::debug("HTTP: exec {$staticClassName}->{$this->method}()");
 						}
 
 						return $instance->{$this->method}();
 					} else {
 						if ($this->debugFailure) {
-							Log::debug("HTTP: fail {$className}->{$this->method}() not found");
+							Log::debug("HTTP: fail {$staticClassName}->{$this->method}() not found");
 						}
 
 						throw new NotFoundException('Endpoint not found');
 					}
 				}
 			} else {
-				// otherwise, check if there's dynamic match
-				$className = "{$classPath}__";
-
-				if (class_exists($className)) {
-					if (!is_subclass_of($className, HttpController::class)) {
-						throw new ServerException("Class {$className} must extend " . HttpController::class);
-					}
-
-					$classPath .= '__\\';
-
-					if ($this->debugSuccess) {
-						Log::debug("HTTP: via  {$className}->__construct()");
-					}
-
-					/** @var HttpController $instance */
-					$instance = new $className($this->constructConstructor($segment));
-					$this->context = $instance->context;
-
-					if ($isLast) {
-						if (method_exists($instance, $this->method)) {
-							if ($this->debugSuccess) {
-								Log::debug("HTTP: exec {$className}->{$this->method}()");
-							}
-
-							return $instance->{$this->method}();
-						} else {
-							if ($this->debugFailure) {
-								Log::debug("HTTP: fail {$className}->{$this->method}() not found");
-							}
-
-							throw new NotFoundException('Endpoint not found');
-						}
-					} else {
-						if ($this->debugSuccess) {
-							Log::debug("HTTP: via  {$className}->__construct()");
-						}
-					}
-				} else {
-					$className = "{$classPath}{$name}";
-
-					if ($this->debugFailure) {
-						Log::debug("HTTP: miss {$className}");
-					}
-
-					$classPath .= $name . '\\';
+				// neither found — advance class path and continue
+				if ($this->debugFailure) {
+					Log::debug("HTTP: miss {$staticClassName}");
 				}
+
+				$classPath .= $name . '\\';
 			}
 		}
 
