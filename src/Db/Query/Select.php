@@ -245,11 +245,11 @@ class Select extends Where
 				if ($this->fields[$i]['name'] === $field && $this->fields[$i]['as'] === $as) {
 					$index = $i;
 				}
+				// @phpstan-ignore-next-line
 			} else if ($field !== null && $as === null) {
 				if ($this->fields[$i]['name'] === $field) {
 					$index = $i;
 				}
-				// @phpstan-ignore-next-line
 			} else if ($field === null && $as !== null) {
 				if ($this->fields[$i]['as'] === $as) {
 					$index = $i;

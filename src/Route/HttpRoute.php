@@ -229,7 +229,11 @@ class HttpRoute extends AbstractRoute
 			$instance = null;
 
 			// rule 1: dynamic match
-			if (class_exists($dynamicClassName) && is_subclass_of($dynamicClassName, HttpController::class)) {
+			if (class_exists($dynamicClassName) && !is_subclass_of($dynamicClassName, HttpController::class)) {
+				throw new ServerException("Class {$dynamicClassName} exists but does not extend HttpController");
+			}
+
+			if (class_exists($dynamicClassName)) {
 				try {
 					$instance = new $dynamicClassName($this->constructConstructor($segment));
 					$classPath .= '__\\';
@@ -250,7 +254,11 @@ class HttpRoute extends AbstractRoute
 			}
 
 			// rule 2: static match (if dynamic didn't work)
-			if ($instance === null && class_exists($staticClassName) && is_subclass_of($staticClassName, HttpController::class)) {
+			if ($instance === null && class_exists($staticClassName) && !is_subclass_of($staticClassName, HttpController::class)) {
+				throw new ServerException("Class {$staticClassName} exists but does not extend HttpController");
+			}
+
+			if ($instance === null && class_exists($staticClassName)) {
 				try {
 					$instance = new $staticClassName($this->constructConstructor($segment));
 					$classPath .= $name . '\\';

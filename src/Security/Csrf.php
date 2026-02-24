@@ -15,11 +15,11 @@ class Csrf
 	/**
 	 * @deprecated
 	 */
-	protected const string ENABLED = 'enabled';
+	protected const ENABLED = 'enabled';
 
-	protected const string PARAMETER_NAME = 'parameter_name';
-	protected const string COOKIE_NAME = 'cookie_name';
-	protected const string SESSION_KEY_NAME = 'session_key_name';
+	protected const PARAMETER_NAME = 'parameter_name';
+	protected const COOKIE_NAME = 'cookie_name';
+	protected const SESSION_KEY_NAME = 'session_key_name';
 
 	protected static Token|null $token = null;
 

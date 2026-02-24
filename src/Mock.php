@@ -231,7 +231,6 @@ class Mock
 			foreach ($staticProps as $prop => $defaultValue) {
 				if ($reflection->hasProperty($prop)) {
 					$property = $reflection->getProperty($prop);
-					$property->setAccessible(true);
 					$property->setValue(null, $defaultValue);
 				}
 			}

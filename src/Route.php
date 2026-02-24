@@ -2,7 +2,7 @@
 
 namespace Koldy;
 
-use Koldy\Route\{AbstractRoute, Exception as RouteException};
+use Koldy\Route\{AbstractRoute, DefaultRoute, Exception as RouteException};
 
 /**
  * This is another utility class that know how to handle URL. While developing
@@ -104,12 +104,13 @@ class Route
 	 *
 	 * @return bool
 	 * @throws Exception
+	 * @deprecated
 	 */
 	public static function is(string $controller, string $action): bool
 	{
-		// @phpstan-ignore-next-line
-		return $controller == Application::route()->getControllerUrl() && $action == Application::route()
-				->getActionUrl();
+		/** @var DefaultRoute $route */
+		$route = Application::route();
+		return $controller == $route->getControllerUrl() && $action == $route->getActionUrl();
 	}
 
 	/**
