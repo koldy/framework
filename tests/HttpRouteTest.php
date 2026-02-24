@@ -21,6 +21,7 @@ class HttpRouteTest extends TestCase
 	private const NS_COMPANY = 'Tests\\Fixtures\\HttpRoute\\CompanyHierarchy\\';
 	private const NS_BROKEN = 'Tests\\Fixtures\\HttpRoute\\BrokenControllers\\';
 	private const NS_ERROR = 'Tests\\Fixtures\\HttpRoute\\ErrorHandling\\';
+	private const NS_ROOT = 'Tests\\Fixtures\\HttpRoute\\RootRoute\\';
 
 	private static bool $appInitialized = false;
 
@@ -560,6 +561,114 @@ class HttpRouteTest extends TestCase
 		// 'abc-123' → try dynamic Users\__ first → exists, isLast,
 		// but delete() doesn't exist → NotFoundException
 		$this->expectException(NotFoundException::class);
+		$exec = new ReflectionMethod($route, 'exec');
+		$exec->invoke($route);
+	}
+
+	// ── root route (/) via namespace class ──
+
+	public function testRootRouteGet(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_ROOT);
+		$result = $route->start('/');
+		$this->assertSame('homepage', $result);
+	}
+
+	public function testRootRoutePost(): void
+	{
+		$this->setRequestMethod('POST');
+		$route = $this->createRoute(self::NS_ROOT);
+		$result = $route->start('/');
+		$this->assertSame('homepage-post', $result);
+	}
+
+	public function testRootRouteNotFoundForUnsupportedMethod(): void
+	{
+		$this->setRequestMethod('DELETE');
+		$route = $this->createRoute(self::NS_ROOT);
+
+		$routeRef = new \ReflectionClass($route);
+
+		$uriProp = $routeRef->getProperty('uri');
+		$uriProp->setValue($route, '/');
+
+		$uriPartsProp = $routeRef->getProperty('uriParts');
+		$uriPartsProp->setValue($route, ['']);
+
+		$methodProp = $routeRef->getProperty('method');
+		$methodProp->setValue($route, 'delete');
+
+		$nsProp = $routeRef->getProperty('namespace');
+		$nsProp->setValue($route, self::NS_ROOT);
+
+		$this->expectException(NotFoundException::class);
+		$exec = new ReflectionMethod($route, 'exec');
+		$exec->invoke($route);
+	}
+
+	public function testRootRouteDoesNotAffectChildRoutes(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_ROOT);
+		$result = $route->start('/about');
+		$this->assertSame('about-page', $result);
+	}
+
+	public function testRootRouteNotFoundWhenNoRootClassExists(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_STATIC);
+
+		// NS_STATIC = Tests\Fixtures\HttpRoute\StaticRoutes\ → no class Tests\Fixtures\HttpRoute\StaticRoutes exists
+		$routeRef = new \ReflectionClass($route);
+
+		$uriProp = $routeRef->getProperty('uri');
+		$uriProp->setValue($route, '/');
+
+		$uriPartsProp = $routeRef->getProperty('uriParts');
+		$uriPartsProp->setValue($route, ['']);
+
+		$methodProp = $routeRef->getProperty('method');
+		$methodProp->setValue($route, 'get');
+
+		$nsProp = $routeRef->getProperty('namespace');
+		$nsProp->setValue($route, self::NS_STATIC);
+
+		$this->expectException(NotFoundException::class);
+		$exec = new ReflectionMethod($route, 'exec');
+		$exec->invoke($route);
+	}
+
+	public function testRootRouteServerExceptionForNonController(): void
+	{
+		$this->setRequestMethod('GET');
+		// ErrorHandling namespace has ExceptionHandler class — which exists but does NOT extend HttpController
+		// So rtrim('Tests\Fixtures\HttpRoute\ErrorHandling\', '\') = 'Tests\Fixtures\HttpRoute\ErrorHandling'
+		// But that's the namespace, not a class. Let's use a dedicated fixture for this.
+		// Actually, we can use NS_ERROR: the class Tests\Fixtures\HttpRoute\ErrorHandling doesn't exist,
+		// so it just returns NotFoundException. For ServerException, we need a namespace whose trimmed name
+		// is a class that exists but doesn't extend HttpController.
+		// BrokenControllers\NotAController exists and is NOT an HttpController.
+		// We need namespace = 'Tests\Fixtures\HttpRoute\BrokenControllers\NotAController\'
+		// so rtrim gives 'Tests\Fixtures\HttpRoute\BrokenControllers\NotAController'
+		$route = $this->createRoute('Tests\\Fixtures\\HttpRoute\\BrokenControllers\\NotAController\\');
+
+		$routeRef = new \ReflectionClass($route);
+
+		$uriProp = $routeRef->getProperty('uri');
+		$uriProp->setValue($route, '/');
+
+		$uriPartsProp = $routeRef->getProperty('uriParts');
+		$uriPartsProp->setValue($route, ['']);
+
+		$methodProp = $routeRef->getProperty('method');
+		$methodProp->setValue($route, 'get');
+
+		$nsProp = $routeRef->getProperty('namespace');
+		$nsProp->setValue($route, 'Tests\\Fixtures\\HttpRoute\\BrokenControllers\\NotAController\\');
+
+		$this->expectException(ServerException::class);
 		$exec = new ReflectionMethod($route, 'exec');
 		$exec->invoke($route);
 	}

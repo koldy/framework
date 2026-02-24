@@ -33,6 +33,20 @@ use Throwable;
  * 2. `splendido-solutions`  → `App\Http\Companies\__` (dynamic match takes precedence)
  * 3. `invoices`             → `App\Http\Companies\__\Invoices` → `get()` is called (last segment)
  *
+ * ## Root route
+ *
+ * The root route (`/`) is handled by a class whose fully qualified name matches the configured namespace
+ * without the trailing backslash. For example, if `namespace` is `App\Http\`, the root handler is the
+ * class `App\Http` (i.e. class `Http` in namespace `App`). This class must extend {@see HttpController}.
+ *
+ * ```php
+ * // App/Http.php
+ * namespace App;
+ * class Http extends HttpController {
+ *     public function get(): mixed { return /* homepage * /; }
+ * }
+ * ```
+ *
  * ## Dynamic vs static matching
  *
  * For each segment, the router first tries a **dynamic match** — a class named `__` (double underscore) in the
@@ -211,6 +225,11 @@ class HttpRoute extends AbstractRoute
 	 */
 	private function exec(): mixed
 	{
+		// Handle root route "/" — uriParts is [''] in this case
+		if (count($this->uriParts) === 1 && $this->uriParts[0] === '') {
+			return $this->execRoot();
+		}
+
 		// let's iterate every segment
 		$classPath = $this->namespace;
 		$count = count($this->uriParts);
@@ -310,6 +329,63 @@ class HttpRoute extends AbstractRoute
 
 		if ($this->debugFailure) {
 			Log::debug("HTTP: no response content found for {$this->uri}");
+		}
+
+		throw new NotFoundException('Endpoint not found');
+	}
+
+	/**
+	 * Handle the root route "/". The root handler class is the namespace itself without the trailing backslash.
+	 * For example, if the namespace is "App\Http\", the root handler class is "App\Http".
+	 *
+	 * @return mixed
+	 * @throws NotFoundException
+	 * @throws ServerException
+	 */
+	private function execRoot(): mixed
+	{
+		$rootClassName = rtrim($this->namespace, '\\');
+
+		if (!class_exists($rootClassName)) {
+			if ($this->debugFailure) {
+				Log::debug("HTTP: no root handler class {$rootClassName} found for /");
+			}
+
+			throw new NotFoundException('Endpoint not found');
+		}
+
+		if (!is_subclass_of($rootClassName, HttpController::class)) {
+			throw new ServerException("Class {$rootClassName} exists but does not extend HttpController");
+		}
+
+		try {
+			$instance = new $rootClassName($this->constructConstructor(null));
+		} catch (\Error $e) {
+			if (str_contains($e->getMessage(), 'Cannot instantiate')) {
+				if ($this->debugFailure) {
+					Log::debug("HTTP: skip {$rootClassName}, cannot instantiate: {$e->getMessage()}");
+				}
+
+				throw new NotFoundException('Endpoint not found');
+			}
+
+			throw $e;
+		}
+
+		if ($this->debugSuccess) {
+			Log::debug("HTTP: root {$rootClassName}->__construct()");
+		}
+
+		if (method_exists($instance, $this->method)) {
+			if ($this->debugSuccess) {
+				Log::debug("HTTP: exec {$rootClassName}->{$this->method}()");
+			}
+
+			return $instance->{$this->method}();
+		}
+
+		if ($this->debugFailure) {
+			Log::debug("HTTP: fail {$rootClassName}->{$this->method}() not found");
 		}
 
 		throw new NotFoundException('Endpoint not found');
