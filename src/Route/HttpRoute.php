@@ -226,68 +226,72 @@ class HttpRoute extends AbstractRoute
 			$dynamicClassName = "{$classPath}__";
 			$staticClassName = "{$classPath}{$name}";
 
+			$instance = null;
+
 			// rule 1: dynamic match
-			if (class_exists($dynamicClassName)) {
-				if (!is_subclass_of($dynamicClassName, HttpController::class)) {
-					throw new ServerException("Class {$dynamicClassName} must extend " . HttpController::class);
-				}
+			if (class_exists($dynamicClassName) && is_subclass_of($dynamicClassName, HttpController::class)) {
+				try {
+					$instance = new $dynamicClassName($this->constructConstructor($segment));
+					$classPath .= '__\\';
 
-				$classPath .= '__\\';
-
-				if ($this->debugSuccess) {
-					Log::debug("HTTP: via  {$dynamicClassName}->__construct()");
-				}
-
-				/** @var HttpController $instance */
-				$instance = new $dynamicClassName($this->constructConstructor($segment));
-				$this->context = $instance->context;
-
-				if ($isLast) {
-					if (method_exists($instance, $this->method)) {
-						if ($this->debugSuccess) {
-							Log::debug("HTTP: exec {$dynamicClassName}->{$this->method}()");
-						}
-
-						return $instance->{$this->method}();
-					} else {
+					if ($this->debugSuccess) {
+						Log::debug("HTTP: via  {$dynamicClassName}->__construct()");
+					}
+				} catch (\Error $e) {
+					if (str_contains($e->getMessage(), 'Cannot instantiate')) {
 						if ($this->debugFailure) {
-							Log::debug("HTTP: fail {$dynamicClassName}->{$this->method}() not found");
+							Log::debug("HTTP: skip {$dynamicClassName}, cannot instantiate: {$e->getMessage()}");
 						}
-
-						throw new NotFoundException('Endpoint not found');
+						$instance = null;
+					} else {
+						throw $e;
 					}
 				}
-			} else if (class_exists($staticClassName)) {
-				// rule 2: static match
-				if (!is_subclass_of($staticClassName, HttpController::class)) {
-					throw new ServerException("Class {$staticClassName} must extend " . HttpController::class);
-				}
+			}
 
-				if ($this->debugSuccess) {
-					Log::debug("HTTP: via  {$staticClassName}->__construct()");
-				}
+			// rule 2: static match (if dynamic didn't work)
+			if ($instance === null && class_exists($staticClassName) && is_subclass_of($staticClassName, HttpController::class)) {
+				try {
+					$instance = new $staticClassName($this->constructConstructor($segment));
+					$classPath .= $name . '\\';
 
-				$instance = new $staticClassName($this->constructConstructor($segment));
+					if ($this->debugSuccess) {
+						Log::debug("HTTP: via  {$staticClassName}->__construct()");
+					}
+				} catch (\Error $e) {
+					if (str_contains($e->getMessage(), 'Cannot instantiate')) {
+						if ($this->debugFailure) {
+							Log::debug("HTTP: skip {$staticClassName}, cannot instantiate: {$e->getMessage()}");
+						}
+						$instance = null;
+					} else {
+						throw $e;
+					}
+				}
+			}
+
+			if ($instance !== null) {
 				$this->context = $instance->context;
-				$classPath .= $name . '\\';
 
 				if ($isLast) {
 					if (method_exists($instance, $this->method)) {
 						if ($this->debugSuccess) {
-							Log::debug("HTTP: exec {$staticClassName}->{$this->method}()");
+							$cls = get_class($instance);
+							Log::debug("HTTP: exec {$cls}->{$this->method}()");
 						}
 
 						return $instance->{$this->method}();
 					} else {
 						if ($this->debugFailure) {
-							Log::debug("HTTP: fail {$staticClassName}->{$this->method}() not found");
+							$cls = get_class($instance);
+							Log::debug("HTTP: fail {$cls}->{$this->method}() not found");
 						}
 
 						throw new NotFoundException('Endpoint not found');
 					}
 				}
 			} else {
-				// neither found — advance class path and continue
+				// neither found or neither could be instantiated — advance class path and continue
 				if ($this->debugFailure) {
 					Log::debug("HTTP: miss {$staticClassName}");
 				}
