@@ -154,6 +154,38 @@ class Companies extends AuthenticatedUsers
 }
 ```
 
+### HTTP Method Dispatch
+
+When the **last** URI segment's controller is resolved, the router dispatches to the matching HTTP method handler using this precedence. This applies **only to the final controller** in the chain — intermediate controllers (those handling non-terminal segments) are never dispatched via `__call`.
+
+1. **Exact method** — if the controller defines a method matching the HTTP verb (e.g. `get()`, `post()`), it is called directly.
+2. **`__call` fallback** — if the exact method does not exist but the controller implements PHP's `__call` magic method, the router invokes it instead. This allows a single controller to handle any HTTP method generically.
+3. **404 Not Found** — if neither an exact method nor `__call` exists, a `NotFoundException` is thrown.
+
+```php
+class Orders extends HttpController
+{
+    // Called for GET /orders
+    public function get(): Json
+    {
+        return Json::create(['orders' => Order::fetch()]);
+    }
+
+    // Catches any HTTP method that doesn't have its own handler (e.g. OPTIONS, HEAD, PATCH, ...)
+    public function __call(string $method, array $args): mixed
+    {
+        return (new Plain())->setCode(405);
+    }
+}
+```
+
+When `debugSuccess` logging is enabled, the router logs both the missed method and the `__call` invocation:
+
+```
+HTTP: miss App\Http\Orders->delete()
+HTTP: exec App\Http\Orders->__call()
+```
+
 ### Exception Handling
 
 If an `ExceptionHandler` class exists in the configured root namespace (e.g. `App\Http\ExceptionHandler`) with an `exec()` method, it handles exceptions. Otherwise, the framework's `ResponseExceptionHandler` is used.

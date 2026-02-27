@@ -273,7 +273,8 @@ class HttpRoute extends AbstractRoute
 			}
 
 			// rule 2: static match (if dynamic didn't work)
-			if ($instance === null && class_exists($staticClassName) && !is_subclass_of($staticClassName, HttpController::class)) {
+			if ($instance === null && class_exists($staticClassName) && !is_subclass_of($staticClassName,
+					HttpController::class)) {
 				throw new ServerException("Class {$staticClassName} exists but does not extend HttpController");
 			}
 
@@ -305,6 +306,14 @@ class HttpRoute extends AbstractRoute
 						if ($this->debugSuccess) {
 							$cls = get_class($instance);
 							Log::debug("HTTP: exec {$cls}->{$this->method}()");
+						}
+
+						return $instance->{$this->method}();
+					} else if (method_exists($instance, '__call')) {
+						if ($this->debugSuccess) {
+							$cls = get_class($instance);
+							Log::debug("HTTP: miss {$cls}->{$this->method}()");
+							Log::debug("HTTP: exec {$cls}->__call()");
 						}
 
 						return $instance->{$this->method}();
