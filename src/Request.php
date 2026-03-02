@@ -235,6 +235,7 @@ class Request
 		}
 
 		$uri = explode('/', $_SERVER['REQUEST_URI']);
+		array_shift($uri);
 		return array_key_exists($index, $uri) ? $uri[$index] : null;
 	}
 
