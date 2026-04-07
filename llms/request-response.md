@@ -7,14 +7,102 @@
 ### IP & Network
 
 ```php
-Request::ip();                 // real client IP (detects proxies)
-Request::host();               // reverse DNS lookup
-Request::hasProxy();           // detect proxy headers
-Request::proxySignature();     // HTTP_VIA header
-Request::ipWithProxy(',');     // "client_ip,proxy_ip"
-Request::httpXForwardedFor();  // X-Forwarded-For header
-Request::userAgent();          // User-Agent string
-Request::httpReferer();        // Referer header
+Request::ip();                         // real client IP (see Trusted Proxies below)
+Request::host();                       // reverse DNS lookup
+Request::hasProxy();                   // detect proxy headers
+Request::proxySignature();             // HTTP_VIA header
+Request::ipWithProxy(',');             // "client_ip,proxy_ip"
+Request::httpXForwardedFor();          // X-Forwarded-For header
+Request::userAgent();                  // User-Agent string
+Request::httpReferer();                // Referer header
+
+// Trusted proxy allowlist (see full section below)
+Request::setTrustedProxies(['10.0.0.1', '10.0.0.0/8']);
+Request::getTrustedProxies();          // string[]|null
+```
+
+### Trusted Proxies
+
+By default `Request::ip()` examines all forwarded-for headers
+(`HTTP_X_FORWARDED_FOR`, `HTTP_CLIENT_IP`, etc.) regardless of where the
+connection came from. This is fine when the application sits behind a known
+reverse proxy, but it means an attacker who connects directly can spoof their
+IP by setting those headers themselves.
+
+Configuring a trusted proxy allowlist restricts header inspection to
+connections that originate from IPs on the list. Any connection from an IP
+that is **not** on the list will have its forwarded-for headers ignored and
+`REMOTE_ADDR` will be returned as-is.
+
+#### Option 1 — application config (recommended)
+
+Add a `trusted_proxies` key to `configs/application.php`. The value is picked
+up automatically on the first call to `Request::ip()` or
+`Request::getTrustedProxies()` — no bootstrap code required:
+
+```php
+// configs/application.php
+return [
+    'key'             => '...',
+    'timezone'        => 'UTC',
+    // ...
+    'trusted_proxies' => [
+        '10.0.0.1',          // exact IP
+        '10.0.0.0/8',        // IPv4 CIDR range
+        '192.168.1.0/24',
+    ],
+];
+```
+
+#### Option 2 — explicit call at bootstrap
+
+```php
+// public/index.php, after Application::init() / Application::run()
+use Koldy\Request;
+
+Request::setTrustedProxies([
+    '10.0.0.1',
+    '192.168.1.0/24',
+]);
+```
+
+An explicit `setTrustedProxies()` call always wins over the config key, and
+calling it also clears the cached IP so the next `Request::ip()` call
+re-evaluates.
+
+#### Reading the current list
+
+```php
+$proxies = Request::getTrustedProxies(); // string[]|null
+// null  → no allowlist configured, all proxy headers are trusted
+// []    → empty allowlist, proxy headers are never trusted
+// [...] → only connections from listed IPs/CIDRs are trusted
+```
+
+#### Behaviour summary
+
+| REMOTE_ADDR | Trusted proxies configured | Forwarded-for header present | ip() returns |
+|---|---|---|---|
+| any | no (null) | yes | first public IP from the header |
+| any | no (null) | no | REMOTE_ADDR |
+| in allowlist | yes | yes | first public IP from the header |
+| **not** in allowlist | yes | yes | REMOTE_ADDR (header ignored) |
+| any | yes | no | REMOTE_ADDR |
+
+#### Subclassing
+
+`isTrustedProxy(string $ip): bool` is `protected`, so a subclass can replace
+the matching logic entirely:
+
+```php
+class MyRequest extends \Koldy\Request
+{
+    protected static function isTrustedProxy(string $ip): bool
+    {
+        // custom logic — e.g. look up a database allowlist
+        return MyAllowlist::contains($ip);
+    }
+}
 ```
 
 ### HTTP Method Detection
@@ -88,7 +176,26 @@ Request::doesntContainParams('admin', 'role');   // missing all listed params
 $files = Request::getAllFiles();  // UploadedFile[]
 ```
 
-`UploadedFile` provides methods for accessing uploaded file info (name, size, tmp path, error).
+`UploadedFile` provides methods for accessing uploaded file info:
+
+```php
+$file->getName();          // original filename as sent by the browser
+$file->getSize();          // file size in bytes
+$file->getExtension();     // extension derived from the original filename
+$file->hasError();         // bool — true if the upload failed
+
+// MIME type — three methods with different trust levels:
+$file->getDetectedMimeType();  // string|null — server-detected via mime_content_type();
+                                //   returns null when detection is unavailable or fails.
+                                //   Use this for any security-sensitive file type check.
+
+$file->getMimeType();           // string — server-detected when possible, falls back to the
+                                //   browser-declared value if mime_content_type() is
+                                //   unavailable or fails. Do NOT rely on this for security.
+
+$file->getClientMimeType();     // string — the raw value from $_FILES['type'], fully
+                                //   attacker-controlled. Never use for security decisions.
+```
 
 ---
 
