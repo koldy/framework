@@ -213,7 +213,7 @@ class Csrf
 		}
 
 		$storedToken = static::getStoredToken();
-		return $storedToken->getToken() === $token;
+		return hash_equals($storedToken->getToken(), $token);
 	}
 
 	/**

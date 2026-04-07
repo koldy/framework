@@ -225,7 +225,9 @@ class Mock
 				'rawData' => null,
 				'vars' => null,
 				'uploadedFiles' => null,
-				'parsedMultipartContent' => null
+				'parsedMultipartContent' => null,
+				'trustedProxies' => null,
+				'proxiesConfigLoaded' => false
 			];
 
 			foreach ($staticProps as $prop => $defaultValue) {

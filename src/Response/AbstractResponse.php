@@ -68,10 +68,16 @@ abstract class AbstractResponse
 	 */
 	public function setHeader(string $name, string|int|float|null $value = null): AbstractResponse
 	{
+		// Strip CR/LF to prevent HTTP response splitting / header injection
+		$safeName = str_replace(["\r", "\n"], '', $name);
+		$safeValue = ($value !== null && is_string($value))
+			? str_replace(["\r", "\n"], '', $value)
+			: $value;
+
 		$this->headers[] = [
 			'one-line' => ($value === null),
-			'name' => $name,
-			'value' => $value
+			'name' => $safeName,
+			'value' => $safeValue
 		];
 
 		return $this;

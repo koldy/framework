@@ -249,8 +249,10 @@ class UploadedFile
 	}
 
 	/**
-	 * Get detected mime type by looking into file. If option for checking it is not available, then standard mimeType
-	 * from $_FILES will be returned.
+	 * Get the MIME type by inspecting the file content (via mime_content_type()).
+	 * When content-based detection is unavailable or fails, falls back to the browser-declared
+	 * MIME type from $_FILES — which is client-controlled and MUST NOT be trusted for security
+	 * decisions. Use getDetectedMimeType() when you need a server-verified result only.
 	 *
 	 * @return string
 	 */
@@ -264,7 +266,7 @@ class UploadedFile
 			if (($mimeType = mime_content_type($this->location ?? $this->tmpName)) !== false) {
 				$this->detectedMimeType = $mimeType;
 			} else {
-				// unable to detect the real mime type based on content
+				// unable to detect the real mime type based on content — fall back to client-declared value
 				$this->detectedMimeType = $this->mimeType;
 			}
 		} else {
@@ -272,6 +274,37 @@ class UploadedFile
 		}
 
 		return $this->detectedMimeType;
+	}
+
+	/**
+	 * Return the server-detected MIME type (via mime_content_type()) without ever falling back
+	 * to the browser-declared value. Returns null when detection is impossible (extension missing
+	 * or detection failed), which the caller should treat as untrusted.
+	 *
+	 * Use this method instead of getMimeType() for any security-sensitive file type check.
+	 *
+	 * @return string|null server-detected MIME type, or null if detection was not possible
+	 */
+	public function getDetectedMimeType(): string|null
+	{
+		if (!function_exists('mime_content_type')) {
+			return null;
+		}
+
+		$mimeType = mime_content_type($this->location ?? $this->tmpName);
+
+		return $mimeType !== false ? $mimeType : null;
+	}
+
+	/**
+	 * Return the client-declared MIME type exactly as sent by the browser in $_FILES['type'].
+	 * This value is fully attacker-controlled and must never be used for security decisions.
+	 *
+	 * @return string
+	 */
+	public function getClientMimeType(): string
+	{
+		return $this->mimeType;
 	}
 
 }

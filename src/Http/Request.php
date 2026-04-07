@@ -97,8 +97,9 @@ class Request
 			$self->setHeaders($headers);
 		}
 
-		$self->setOption(CURLOPT_FOLLOWLOCATION, true);
-		$self->setOption(CURLOPT_MAXREDIRS, 10);
+		// Redirects are NOT followed by default to reduce Server-Side Request Forgery (SSRF) risk.
+		// If your use-case requires following redirects, call setOption(CURLOPT_FOLLOWLOCATION, true)
+		// on the Http\Request instance and limit redirects with CURLOPT_MAXREDIRS.
 
 		return $self->exec();
 	}

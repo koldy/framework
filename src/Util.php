@@ -148,8 +148,13 @@ class Util
 	 */
 	public static function a(string $text, string|null $target = null): string
 	{
-		return preg_replace('@((https?://)?([-\w]+\.[-\w\.]+)+\w(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)*)@',
-			"<a href=\"\$1\"" . ($target != null ? " target=\"{$target}\"" : '') . ">$1</a>", $text);
+		// Require an explicit https?:// scheme so bare hostnames and javascript: URIs are never linked
+		$targetAttr = $target !== null
+			? ' target="' . htmlspecialchars($target, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"'
+			: '';
+
+		return preg_replace('@(https?://([-\w]+\.[-\w\.]+)+\w(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)*)@',
+			"<a href=\"\$1\"{$targetAttr}>$1</a>", $text) ?? $text;
 	}
 
 	/**

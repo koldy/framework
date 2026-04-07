@@ -82,13 +82,10 @@ class Cookie
 			'expires' => $expire ?? 0,
 			'path' => $path ?? '/',
 			'domain' => $domain ?? '',
-			'secure' => $secure ?? false,
-			'httponly' => $httpOnly ?? false
+			'secure' => $secure ?? true,
+			'httponly' => $httpOnly ?? true,
+			'samesite' => $samesite ?? 'Lax'
 		];
-
-		if ($samesite !== null) {
-			$options['samesite'] = $samesite;
-		}
 
 		setcookie($name, $encryptedValue, $options);
 		return $encryptedValue;
@@ -124,13 +121,10 @@ class Cookie
 			'expires' => $expire ?? 0,
 			'path' => $path ?? '/',
 			'domain' => $domain ?? '',
-			'secure' => $secure ?? false,
-			'httponly' => $httpOnly ?? false
+			'secure' => $secure ?? true,
+			'httponly' => $httpOnly ?? true,
+			'samesite' => $samesite ?? 'Lax'
 		];
-
-		if ($samesite !== null) {
-			$options['samesite'] = $samesite;
-		}
 
 		setcookie($name, $value, $options);
 		return $value;
@@ -175,13 +169,10 @@ class Cookie
 			'expires' => time() - 3600 * 24,
 			'path' => $path ?? '/',
 			'domain' => $domain ?? '',
-			'secure' => $secure ?? false,
-			'httponly' => $httpOnly ?? false
+			'secure' => $secure ?? true,
+			'httponly' => $httpOnly ?? true,
+			'samesite' => $samesite ?? 'Lax'
 		];
-
-		if ($samesite !== null) {
-			$options['samesite'] = $samesite;
-		}
 
 		setcookie($name, '', $options);
 	}

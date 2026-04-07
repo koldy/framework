@@ -456,8 +456,8 @@ class Application
 		static::$env = $env;
 
 		$key = $configInstance->get('key');
-		if (!isset($key) || !is_string($key) || strlen($key) > 32) {
-			static::terminateWithError('Invalid unique key in main application config. It has to be max 32 chars long; please check the config received through Application::useConfig()');
+		if (!isset($key) || !is_string($key) || strlen($key) < 16 || strlen($key) > 32) {
+			static::terminateWithError('Invalid unique key in main application config. It has to be between 16 and 32 chars long; please check the config received through Application::useConfig()');
 		}
 
 		$timezone = $configInstance->get('timezone');
@@ -901,8 +901,8 @@ class Application
 			throw new ApplicationException('Please configure key \'key\' in main application config, it can\'t be _____ENTERSomeRandomKeyHere_____');
 		}
 
-		if (strlen($key) > 32) {
-			throw new ApplicationException('Please make sure your application key in application config is not longer then 32 chars');
+		if (strlen($key) < 16 || strlen($key) > 32) {
+			throw new ApplicationException('Please make sure your application key in application config is between 16 and 32 chars long');
 		}
 
 		return $key;

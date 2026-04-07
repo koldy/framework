@@ -29,6 +29,25 @@ class Request
 	protected static string|null $realIp = null;
 
 	/**
+	 * List of trusted proxy IP addresses. When set, forwarded-for headers are only trusted
+	 * if REMOTE_ADDR matches one of these IPs. When null, all proxy headers are trusted
+	 * (backwards-compatible default). Populated by setTrustedProxies() or lazily from
+	 * the 'trusted_proxies' key in the application config.
+	 *
+	 * @var string[]|null
+	 */
+	protected static array|null $trustedProxies = null;
+
+	/**
+	 * Whether the trusted proxies list has already been resolved (either set explicitly
+	 * via setTrustedProxies() or looked up from the application config). Prevents
+	 * repeated config lookups on every request.
+	 *
+	 * @var bool
+	 */
+	protected static bool $proxiesConfigLoaded = false;
+
+	/**
 	 * The raw data of the request
 	 *
 	 * @var string|null
@@ -84,7 +103,109 @@ class Request
 	}
 
 	/**
+	 * Explicitly configure the list of trusted proxy IP addresses or CIDR ranges.
+	 *
+	 * When set, proxy headers (HTTP_CLIENT_IP, HTTP_X_FORWARDED_FOR, etc.) are ONLY trusted
+	 * if the direct connecting IP (REMOTE_ADDR) is in this list. This prevents IP spoofing
+	 * by attackers who can freely set forwarded-for headers.
+	 *
+	 * Alternatively, define 'trusted_proxies' in the application config and the value will be
+	 * picked up automatically on first use (lazy loading).
+	 *
+	 * CIDR notation is supported for subnet ranges.
+	 *
+	 * @param string[] $proxies list of trusted proxy IPs or CIDR ranges
+	 *
+	 * @example Request::setTrustedProxies(['10.0.0.1', '192.168.1.0/24']);
+	 */
+	public static function setTrustedProxies(array $proxies): void
+	{
+		static::$trustedProxies = $proxies;
+		static::$proxiesConfigLoaded = true;
+		static::$realIp = null; // reset IP cache so next ip() call re-evaluates
+	}
+
+	/**
+	 * Return the currently configured list of trusted proxy IPs/CIDRs, or null when no
+	 * allowlist is configured (meaning all proxy headers are trusted).
+	 *
+	 * On the first call, if setTrustedProxies() has not been called, the method lazily
+	 * reads the 'trusted_proxies' key from the application config:
+	 *
+	 *   // configs/application.php
+	 *   'trusted_proxies' => ['10.0.0.1', '10.0.0.2', '192.168.1.0/24'],
+	 *
+	 * If the key is absent or the Application is not yet initialized, null is returned
+	 * and all proxy headers continue to be trusted (backwards-compatible behaviour).
+	 *
+	 * @return string[]|null
+	 */
+	public static function getTrustedProxies(): array|null
+	{
+		if (!static::$proxiesConfigLoaded) {
+			static::$proxiesConfigLoaded = true;
+
+			try {
+				$value = Application::getConfig('application')->get('trusted_proxies');
+
+				if (is_array($value)) {
+					static::$trustedProxies = $value;
+				}
+			} catch (\Throwable) {
+				// Application not initialised yet, or key absent — keep null (trust all)
+			}
+		}
+
+		return static::$trustedProxies;
+	}
+
+	/**
+	 * Check whether a given IP matches any entry in the trusted proxies list.
+	 * Supports both exact IP matches and IPv4 CIDR ranges (e.g. '192.168.1.0/24').
+	 *
+	 * Subclasses may override this method to implement custom matching logic.
+	 *
+	 * @param string $ip
+	 * @return bool
+	 */
+	protected static function isTrustedProxy(string $ip): bool
+	{
+		$proxies = static::getTrustedProxies();
+
+		if ($proxies === null) {
+			return true; // no allowlist configured — trust all (backwards-compatible)
+		}
+
+		foreach ($proxies as $proxy) {
+			if (str_contains($proxy, '/')) {
+				// CIDR range check
+				[$subnet, $bits] = explode('/', $proxy, 2);
+				$bits = (int) $bits;
+				if (inet_pton($ip) === false || inet_pton($subnet) === false) {
+					continue;
+				}
+				// IPv4 CIDR
+				if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
+					&& filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
+				) {
+					$mask = $bits === 0 ? 0 : (~0 << (32 - $bits));
+					if ((ip2long($ip) & $mask) === (ip2long($subnet) & $mask)) {
+						return true;
+					}
+				}
+			} elseif ($ip === $proxy) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get the real IP address of remote user. If you're looking for server's IP, please refer to Server::ip()
+	 *
+	 * When trusted proxies are configured via setTrustedProxies(), forwarded-for headers are only
+	 * respected if the direct connection IP (REMOTE_ADDR) is in the trusted list.
 	 *
 	 * @return string
 	 * @throws Exception
@@ -96,34 +217,40 @@ class Request
 			return static::$realIp;
 		}
 
-		$possibilities = [
+		$remoteAddr = $_SERVER['REMOTE_ADDR'] ?? null;
+		$proxyTrusted = $remoteAddr !== null && static::isTrustedProxy($remoteAddr);
+
+		// Proxy-forwarded headers — only examine when the connecting IP is a trusted proxy
+		$proxyHeaders = [
 			'HTTP_CLIENT_IP',
 			'HTTP_X_FORWARDED_FOR',
 			'HTTP_X_FORWARDED',
 			'HTTP_X_CLUSTER_CLIENT_IP',
 			'HTTP_FORWARDED_FOR',
 			'HTTP_FORWARDED',
-			'REMOTE_ADDR'
 		];
 
-		foreach ($possibilities as $key) {
-			if (isset($_SERVER[$key])) {
-				foreach (explode(',', $_SERVER[$key]) as $ip) {
-					$ip = trim($ip);
+		if ($proxyTrusted) {
+			foreach ($proxyHeaders as $key) {
+				if (isset($_SERVER[$key])) {
+					foreach (explode(',', $_SERVER[$key]) as $ip) {
+						$ip = trim($ip);
 
-					if (filter_var($ip, FILTER_VALIDATE_IP,
-							FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
-						static::$realIp = $ip;
-						return $ip;
+						if (filter_var($ip, FILTER_VALIDATE_IP,
+								FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+							static::$realIp = $ip;
+							return $ip;
+						}
 					}
 				}
 			}
 		}
 
-		if (defined('KOLDY_CLI') && KOLDY_CLI === true) {
+		if ($remoteAddr !== null) {
+			static::$realIp = $remoteAddr;
+		} else if (defined('KOLDY_CLI') && KOLDY_CLI === true) {
+			// CLI with no REMOTE_ADDR at all — default to localhost
 			static::$realIp = '127.0.0.1';
-		} else if (isset($_SERVER['REMOTE_ADDR'])) {
-			static::$realIp = $_SERVER['REMOTE_ADDR'];
 		} else {
 			throw new Exception('Unable to detect IP');
 		}

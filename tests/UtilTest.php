@@ -155,6 +155,27 @@ class UtilTest extends TestCase
 		$this->assertSame('no links here', Util::a('no links here'));
 	}
 
+	public function testASchemelessHostNotLinked(): void
+	{
+		// Bare hostnames without https?:// must not be wrapped in <a> (prevents javascript: injection)
+		$result = Util::a('Visit example.com today');
+		$this->assertStringNotContainsString('<a ', $result);
+	}
+
+	public function testAJavascriptProtocolNotLinked(): void
+	{
+		$result = Util::a('Click javascript:alert(1)');
+		$this->assertStringNotContainsString('<a ', $result);
+	}
+
+	public function testATargetIsEscaped(): void
+	{
+		// $target must be HTML-escaped to prevent attribute injection
+		$result = Util::a('Visit https://example.com', '"><script>alert(1)</script>');
+		$this->assertStringNotContainsString('<script>', $result);
+		$this->assertStringContainsString('&lt;script&gt;', $result);
+	}
+
 	// ── attributeValue ──
 
 	public function testAttributeValueEscapesAll(): void

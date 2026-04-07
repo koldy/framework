@@ -323,4 +323,24 @@ class Session
 		session_destroy();
 	}
 
+	/**
+	 * Regenerate the session ID to prevent session fixation attacks.
+	 * Should be called when user's privilege level changes (e.g., after successful login).
+	 *
+	 * @param bool $deleteOldSession if true, the old session data will be deleted
+	 *
+	 * @throws Exception
+	 * @throws SessionException
+	 */
+	public static function regenerateId(bool $deleteOldSession = true): void
+	{
+		if (static::$closed) {
+			throw new SessionException('Can not regenerate session ID because session has been already committed');
+		}
+
+		static::init();
+		session_regenerate_id($deleteOldSession);
+		static::$sessionId = session_id();
+	}
+
 }

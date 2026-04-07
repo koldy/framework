@@ -90,7 +90,9 @@ class PostgreSQL extends AbstractAdapter
 		}
 
 		if (isset($config['schema'])) {
-			$schemaSql = 'SET search_path TO ' . $config['schema'];
+			// Double-quote the identifier and escape any embedded double-quotes to prevent injection
+			$quotedSchema = '"' . str_replace('"', '""', (string) $config['schema']) . '"';
+			$schemaSql = 'SET search_path TO ' . $quotedSchema;
 			$this->pdo->exec($schemaSql);
 			Log::sql($schemaSql);
 		}
