@@ -246,13 +246,15 @@ return $json;
 
 PHP started as template engine, and it's still the best one, so we didn't re-invent the wheel. Simply make PHP files with "phtml", store them in application/views/ and use them.
 
-Renders a PHP view file with data passed as variables.
+Renders a PHP view file with data attached via the fluent `Data` trait API.
 
 ```php
 use Koldy\Response\View;
 
-return View::create('pages/home', ['title' => 'Welcome']); // /application/views/pages/home.phtml
+return View::create('pages/home')->set('title', 'Welcome'); // /application/views/pages/home.phtml
 ```
+
+**More docs:** see [`view.md`](view.md) for the full templating guide — passing data, sub-views, iteration, custom view roots, and rendering without flushing.
 
 ### Plain
 

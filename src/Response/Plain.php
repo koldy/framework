@@ -3,6 +3,7 @@
 namespace Koldy\Response;
 
 use Koldy\Application;
+use Stringable;
 
 /**
  * Class for printing plain text as response to HTTP request.
@@ -10,7 +11,7 @@ use Koldy\Application;
  * @link http://koldy.net/docs/plain
  * @phpstan-consistent-constructor
  */
-class Plain extends AbstractResponse
+class Plain extends AbstractResponse implements Stringable
 {
 
 	/**
@@ -117,4 +118,8 @@ class Plain extends AbstractResponse
 		$this->runAfterFlush();
 	}
 
+	public function __toString(): string
+	{
+		return $this->content;
+	}
 }

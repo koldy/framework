@@ -8,6 +8,7 @@ use Koldy\Application;
 use Koldy\Cookie;
 use Koldy\Crypt;
 use Koldy\Mock;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 class CookieTest extends TestCase
@@ -95,27 +96,21 @@ class CookieTest extends TestCase
 
     // ── rawSet ──
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testRawSetReturnsSameValue(): void
     {
         $result = Cookie::rawSet('test', 'hello');
         $this->assertSame('hello', $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testRawSetReturnsEmptyStringForEmptyValue(): void
     {
         $result = Cookie::rawSet('test', '');
         $this->assertSame('', $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testRawSetWithAllOptions(): void
     {
         $result = Cookie::rawSet(
@@ -168,9 +163,7 @@ class CookieTest extends TestCase
 
     // ── set (encrypted) ──
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testSetReturnsEncryptedValue(): void
     {
         $encrypted = Cookie::set('my_cookie', 'my_value');
@@ -179,9 +172,7 @@ class CookieTest extends TestCase
         $this->assertStringContainsString(':', $encrypted);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testSetEncryptedValueCanBeDecrypted(): void
     {
         $encrypted = Cookie::set('my_cookie', 'decryptable');
@@ -189,9 +180,7 @@ class CookieTest extends TestCase
         $this->assertSame('decryptable', $decrypted);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testSetWithAllOptions(): void
     {
         $encrypted = Cookie::set(
@@ -209,9 +198,7 @@ class CookieTest extends TestCase
         $this->assertSame('full_value', $decrypted);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testSetProducesDifferentEncryptedValuesEachTime(): void
     {
         $a = Cookie::set('cookie_a', 'same_value');
@@ -222,18 +209,14 @@ class CookieTest extends TestCase
 
     // ── delete ──
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testDeleteDoesNotThrow(): void
     {
         Cookie::delete('some_cookie');
         $this->assertTrue(true); // if we got here, no exception was thrown
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testDeleteWithAllOptions(): void
     {
         Cookie::delete(

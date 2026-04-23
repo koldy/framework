@@ -5,6 +5,7 @@ namespace Koldy\Response;
 use Koldy\Application;
 use Koldy\Data;
 use Koldy\Response\Exception as ResponseException;
+use Stringable;
 
 /**
  * The view class will properly serve prepared HTML to user.
@@ -19,7 +20,7 @@ use Koldy\Response\Exception as ResponseException;
  * @link http://koldy.net/docs/view
  * @phpstan-consistent-constructor
  */
-class View extends AbstractResponse
+class View extends AbstractResponse implements Stringable
 {
 
 	use Data;

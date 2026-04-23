@@ -5,6 +5,7 @@ namespace Koldy\Response;
 use Koldy\Application;
 use Koldy\Data;
 use Koldy\Json as KoldyJson;
+use Stringable;
 
 /**
  * The JSON class. Feel free to override it if you need to make it work different.
@@ -12,7 +13,7 @@ use Koldy\Json as KoldyJson;
  * @link http://koldy.net/docs/json
  * @phpstan-consistent-constructor
  */
-class Json extends AbstractResponse
+class Json extends AbstractResponse implements Stringable
 {
 
 	use Data;
@@ -23,6 +24,15 @@ class Json extends AbstractResponse
 	 * some advanced use case.
 	 */
 	private bool $isAssociative = true;
+
+	/**
+	 * Alternatively you can construct this object with a string that will just get flushed later on.
+	 * This is advanced usage of JSON that solves the problems of encode-decode-encode cases in PHP, during
+	 * which types could be lost (because both "{}" and "[]" encodes into "[]").
+	 *
+	 * If this value is set, it will take precedence over the internal array $data, which will be ignored in this case
+	 */
+	protected string|null $content = null;
 
 	/**
 	 * Json constructor.
@@ -41,11 +51,46 @@ class Json extends AbstractResponse
 	 * @param array $data [optional]
 	 *
 	 * @return static
-	 * @link http://koldy.net/docs/json#usage
+	 * @link http://koldy.net/docs/utilities
 	 */
 	public static function create(array $data = []): Json
 	{
 		return new static($data);
+	}
+
+	/**
+	 * Sets JSON string content directly, bypassing internal array $data structure. Should be used only in special cases
+	 *  when you want to preserve some special JSON types.
+	 *
+	 * @param string $jsonString
+	 *
+	 * @return static
+	 */
+	public static function fromString(string $jsonString): static
+	{
+		return static::create()->setContent($jsonString);
+	}
+
+	/**
+	 * Sets JSON string content directly, bypassing internal array $data structure. Should be used only in special cases
+	 * when you want to preserve some special JSON types.
+	 *
+	 * @param string $content
+	 *
+	 * @return $this
+	 */
+	public function setContent(string $content): static
+	{
+		$this->content = $content;
+		return $this;
+	}
+
+	/**
+	 * Returns internal content previously set with fromString() or with setContent() method.
+	 */
+	public function getContent(): string
+	{
+		return $this->content;
 	}
 
 	/**
@@ -67,7 +112,7 @@ class Json extends AbstractResponse
 	 *
 	 * @return string
 	 */
-	public function __toString()
+	public function __toString(): string
 	{
 		return json_encode($this->getData());
 	}
@@ -82,7 +127,7 @@ class Json extends AbstractResponse
 	}
 
 	/**
-	 * @link http://koldy.net/docs/json#usage
+	 * @link http://koldy.net/docs/utilities
 	 * @throws \Koldy\Exception
 	 */
 	public function flush(): void
@@ -90,7 +135,7 @@ class Json extends AbstractResponse
 		$this->prepareFlush();
 		$this->runBeforeFlush();
 
-		$content = KoldyJson::encode($this->getData());
+		$content = $this->content ?? KoldyJson::encode($this->getData());
 
 		$statusCode = $this->statusCode;
 		$statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
@@ -102,15 +147,20 @@ class Json extends AbstractResponse
 				$content = ''; // no matter if there's something in $content, we'll output nothing
 			} else {
 				// otherwise, there should be some content in application/json response
-				// PHP serializes empty array into "[]", so we'll return "{}" instead in that case
+				// PHP serializes empty array into "[]", so we'll return "{}" instead in that case, but depending on isAssociative flag
 
-				if (count($this->getData()) === 0) {
-					// if there is no data, then we'll output empty JSON object
-					$content = $this->isAssociative ? '{}' : '[]';
-					$this->setHeader('Content-Length', 2);
-				} else {
+				if ($this->content !== null) {
 					$size = mb_strlen($content, Application::getEncoding());
 					$this->setHeader('Content-Length', $size);
+				} else {
+					if (count($this->getData()) === 0) {
+						// if there is no data, then we'll output empty JSON object
+						$content = $this->isAssociative ? '{}' : '[]';
+						$this->setHeader('Content-Length', 2);
+					} else {
+						$size = mb_strlen($content, Application::getEncoding());
+						$this->setHeader('Content-Length', $size);
+					}
 				}
 			}
 		} // in case of 1XX status, you should handle specific headers by yourself
