@@ -43,6 +43,58 @@ class ResultCodeInfo implements Stringable
 		]);
 	}
 
+	/**
+	 * Whether this result code represents an infrastructure-level failure: the
+	 * memcached server is unreachable, the connection was lost, the operation
+	 * timed out, the server was marked dead, etc.
+	 *
+	 * Used by the cache failover proxy to decide whether to fall over to the
+	 * next adapter. Codes that signal "the caller did something wrong" (key
+	 * too big, invalid argument, …) are intentionally excluded — see
+	 * isDataError() for those.
+	 *
+	 * @return bool
+	 */
+	public function isConnectionError(): bool
+	{
+		return in_array($this->resultCode, [
+			/* Memcached::RES_HOST_LOOKUP_FAILURE */ 2,
+			/* Memcached::RES_CONNECTION_FAILURE */ 3,
+			/* Memcached::RES_WRITE_FAILURE */ 5,
+			/* Memcached::RES_READ_FAILURE */ 6,
+			/* Memcached::RES_UNKNOWN_READ_FAILURE */ 7,
+			/* Memcached::RES_CONNECTION_SOCKET_CREATE_FAILURE */ 11,
+			/* Memcached::RES_PARTIAL_READ */ 18,
+			/* Memcached::RES_NO_SERVERS */ 20,
+			/* Memcached::RES_ERRNO */ 26,
+			/* Memcached::RES_FAIL_UNIX_SOCKET */ 27,
+			/* Memcached::RES_TIMEOUT */ 31,
+			/* Memcached::RES_SERVER_MARKED_DEAD */ 35,
+			/* Memcached::RES_SERVER_TEMPORARILY_DISABLED */ 47,
+		], true);
+	}
+
+	/**
+	 * Whether this result code represents a caller-side error: the key is
+	 * malformed, the value is too big, the protocol mismatched, the arguments
+	 * were invalid, etc. These are application bugs, not infra problems, and
+	 * should not trigger failover.
+	 *
+	 * @return bool
+	 */
+	public function isDataError(): bool
+	{
+		return in_array($this->resultCode, [
+			/* Memcached::RES_PROTOCOL_ERROR */ 8,
+			/* Memcached::RES_DATA_EXISTS */ 12,
+			/* Memcached::RES_BAD_KEY_PROVIDED */ 33,
+			/* Memcached::RES_INVALID_HOST_PROTOCOL */ 34,
+			/* Memcached::RES_E2BIG */ 37,
+			/* Memcached::RES_INVALID_ARGUMENTS */ 38,
+			/* Memcached::RES_KEY_TOO_BIG */ 39,
+		], true);
+	}
+
 	public function __toString(): string
 	{
 		return "Memcached result code #{$this->resultCode}: {$this->getDescription()}";

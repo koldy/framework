@@ -4,6 +4,7 @@ namespace Koldy\Cache\Adapter;
 
 use Closure;
 use Koldy\Application;
+use Koldy\Cache\ConnectionException as CacheConnectionException;
 use Koldy\Cache\Exception as CacheException;
 use Koldy\Exception;
 use Koldy\Filesystem\Directory;
@@ -68,6 +69,25 @@ class Files extends AbstractCacheAdapter
 	}
 
 	/**
+	 * Read PHP's last error message (set by failing filesystem functions like
+	 * file_put_contents, mkdir, unlink) and return it as a human-readable
+	 * reason. Falls back to a generic message if no error has been captured —
+	 * which can happen if a previous error_clear_last() ran or the underlying
+	 * function did not emit a warning. Callers should call error_clear_last()
+	 * immediately before the operation they want to inspect, to guarantee
+	 * that any reported reason corresponds to the operation that just failed.
+	 *
+	 * @param string $fallback returned when error_get_last() has nothing useful
+	 *
+	 * @return string
+	 */
+	private function lastErrorReason(string $fallback = 'unknown reason'): string
+	{
+		$err = error_get_last();
+		return ($err !== null && $err['message'] !== '') ? $err['message'] : $fallback;
+	}
+
+	/**
 	 * Get the array of values from cache by given keys
 	 *
 	 * @param array $keys
@@ -106,6 +126,9 @@ class Files extends AbstractCacheAdapter
 	 * @param string $key
 	 *
 	 * @return bool
+	 * @throws CacheConnectionException when the underlying file exists but cannot
+	 *                                  be read; missing or corrupt files yield
+	 *                                  false (cache miss) without throwing
 	 */
 	public function has(string $key): bool
 	{
@@ -115,7 +138,11 @@ class Files extends AbstractCacheAdapter
 
 			try {
 				$object = $this->load($key);
+			} catch (CacheConnectionException $e) {
+				// infra failure — let it propagate so failover can take over
+				throw $e;
 			} catch (CacheException $ignored) {
+				// file missing or corrupt — treat as cache miss
 				return false;
 			}
 		} else {
@@ -141,47 +168,65 @@ class Files extends AbstractCacheAdapter
 	 *
 	 * @param string $key
 	 *
-	 * @return stdClass or false if cache doesn't exists
-	 * @throws CacheException
+	 * @return stdClass
+	 * @throws CacheConnectionException when the file exists but cannot be read
+	 *                                  (I/O error, permission denied, …) — these
+	 *                                  bubble up so the failover proxy can catch
+	 *                                  them and switch to the next adapter
+	 * @throws CacheException when the file does not exist (cache miss) or its
+	 *                        contents are corrupted
 	 */
 	protected function load(string $key): stdClass
 	{
 		$this->checkKey($key);
 		$path = $this->getPath($key);
 
-		if (is_file($path)) {
-			$object = new stdClass;
-			$object->path = $path;
-
-			$file = file_get_contents($path);
-
-			$pos = strpos($file, "\n");
-			if ($pos === false) {
-				// new line not found, means that file might be corrupted
-				throw new CacheException("Can not load data for cache key={$key}, file might be corrupted");
-			}
-
-			$firstLine = substr($file, 0, $pos);
-			$firstLine = explode(';', $firstLine);
-
-			$object->created = strtotime($firstLine[0]);
-			$object->seconds = $firstLine[1];
-			$object->data = substr($file, strpos($file, "\n") + 1);
-			$object->action = null;
-			$object->type = $firstLine[2];
-
-			switch ($object->type) {
-				case 'array':
-				case 'object':
-					$object->data = unserialize($object->data);
-					break;
-			}
-
-			$this->data[$key] = $object;
-			return $object;
+		if (!is_file($path)) {
+			// missing file is just a cache miss — has() catches this and returns false
+			throw new CacheException("Can not load data for cache key={$key}");
 		}
 
-		throw new CacheException("Can not load data for cache key={$key}");
+		error_clear_last();
+		// '@' suppresses the PHP warning that file_get_contents emits on
+		// failure; we explicitly read the reason via error_get_last() below
+		// and surface it in the exception message, so the warning would only
+		// add noise (and fails tests that run with failOnWarning=true).
+		$file = @file_get_contents($path);
+
+		if ($file === false) {
+			// file exists but read failed — likely permission denied, I/O error,
+			// or filesystem unmounted; let failover handle it
+			$reason = $this->lastErrorReason();
+			throw new CacheConnectionException("Cache file read failed for key '{$key}' at path '{$path}': {$reason}");
+		}
+
+		$pos = strpos($file, "\n");
+		if ($pos === false) {
+			// new line not found, means that file might be corrupted
+			throw new CacheException("Can not load data for cache key={$key}, file might be corrupted");
+		}
+
+		$object = new stdClass;
+		$object->path = $path;
+
+		$firstLine = substr($file, 0, $pos);
+		$firstLine = explode(';', $firstLine);
+
+		$object->created = strtotime($firstLine[0]);
+		$object->seconds = $firstLine[1];
+		$object->data = substr($file, $pos + 1);
+		$object->action = null;
+		$object->type = $firstLine[2];
+
+		switch ($object->type) {
+			case 'array':
+			case 'object':
+				$object->data = unserialize($object->data);
+				break;
+		}
+
+		$this->data[$key] = $object;
+		return $object;
 	}
 
 	/**
@@ -257,9 +302,12 @@ class Files extends AbstractCacheAdapter
 	 * @param mixed $value
 	 * @param int|null $seconds [optional]
 	 *
+	 * @throws CacheConnectionException when writing to disk fails (permission
+	 *                                  denied, no space left on device, read-only
+	 *                                  filesystem, …) or when the cache directory
+	 *                                  cannot be auto-created
 	 * @throws \Koldy\Config\Exception
 	 * @throws Exception
-	 * @throws FilesystemException
 	 */
 	public function set(string $key, mixed $value, int|null $seconds = null): void
 	{
@@ -297,10 +345,19 @@ class Files extends AbstractCacheAdapter
 			$directory = dirname($object->path);
 
 			if (!is_dir($directory)) {
+				// Directory::mkdir uses raw mkdir() which emits a PHP warning on
+				// failure (e.g. "Permission denied", "No space left on device").
+				// error_get_last() captures that warning so we can include the
+				// real underlying reason in the exception message rather than a
+				// generic "filesystem level" line. The '@' suppresses the
+				// warning's display since we surface it via the exception.
+				error_clear_last();
+
 				try {
-					Directory::mkdir($directory, 0755);
+					@Directory::mkdir($directory, 0755);
 				} catch (FilesystemException $e) {
-					throw new CacheException("Couldn't store value(s) to cache key \"{$key}\" because it failed on filesystem level: {$e->getMessage()}",
+					$reason = $this->lastErrorReason($e->getMessage());
+					throw new CacheConnectionException("Couldn't store cache key \"{$key}\" because target directory \"{$directory}\" doesn't exist and could not be created: {$reason}",
 						$e->getCode(), $e);
 				}
 			}
@@ -308,10 +365,14 @@ class Files extends AbstractCacheAdapter
 			$this->checkedFolder = true;
 		}
 
-		if (file_put_contents($object->path,
-				sprintf("%s;%d;%s\n%s", gmdate('r', $object->created), $object->seconds, $object->type,
-					$data)) === false) {
-			throw new CacheException("Couldn't store value(s) to cache key \"{$key}\" because it failed on filesystem level: Couldn't write to path {$object->path}");
+		error_clear_last();
+		$payload = sprintf("%s;%d;%s\n%s", gmdate('r', $object->created), $object->seconds, $object->type, $data);
+
+		// '@' suppresses the PHP warning on write failure; we read the underlying
+		// reason via error_get_last() and surface it in the exception below.
+		if (@file_put_contents($object->path, $payload) === false) {
+			$reason = $this->lastErrorReason();
+			throw new CacheConnectionException("Couldn't store cache key \"{$key}\" at path \"{$object->path}\": {$reason}");
 		}
 	}
 
@@ -335,7 +396,8 @@ class Files extends AbstractCacheAdapter
 	 *
 	 * @param string $key
 	 *
-	 * @throws CacheException
+	 * @throws CacheConnectionException when the file exists but cannot be unlinked
+	 *                                  (permission denied, read-only filesystem, …)
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
 	public function delete(string $key): void
@@ -343,27 +405,45 @@ class Files extends AbstractCacheAdapter
 		$this->checkKey($key);
 		$path = $this->getPath($key);
 
-		if (is_file($path)) {
-			if (isset($this->data[$key])) {
-				unlink($path);
-				unset($this->data[$key]);
-			} else {
-				$path = $this->getPath($key);
-				if (!@unlink($path)) {
-					throw new CacheException("Unable to delete cache item key={$key} on path={$path}");
-				}
-			}
+		if (!is_file($path)) {
+			// nothing to delete; deleting a non-existent key is not an error
+			unset($this->data[$key]);
+			return;
 		}
+
+		error_clear_last();
+
+		if (!@unlink($path)) {
+			$reason = $this->lastErrorReason();
+			throw new CacheConnectionException("Unable to delete cache key \"{$key}\" at path \"{$path}\": {$reason}");
+		}
+
+		unset($this->data[$key]);
 	}
 
 	/**
 	 * Delete all files under cached folder
 	 *
-	 * @throws FilesystemException
+	 * @throws CacheConnectionException when the directory cannot be emptied
+	 *                                  (permission denied, file in use, …)
 	 */
 	public function deleteAll(): void
 	{
-		Directory::emptyDirectory($this->path);
+		// Directory::emptyDirectory uses raw unlink()/rmdir() which emit PHP
+		// warnings on failure; error_get_last() captures the underlying reason.
+		// '@' suppresses the warning display since we surface it via the
+		// thrown exception.
+		error_clear_last();
+
+		try {
+			@Directory::emptyDirectory($this->path);
+		} catch (FilesystemException $e) {
+			$reason = $this->lastErrorReason($e->getMessage());
+			throw new CacheConnectionException("Couldn't empty cache directory \"{$this->path}\": {$reason}", $e->getCode(), $e);
+		}
+
+		// Drop any in-memory entries so they don't shadow the now-empty disk state
+		$this->data = [];
 	}
 
 	/**

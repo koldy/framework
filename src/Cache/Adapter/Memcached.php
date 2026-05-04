@@ -4,6 +4,8 @@ namespace Koldy\Cache\Adapter;
 
 use Closure;
 use Koldy\Adapter\Memcached\ResultCodeInfo;
+use Koldy\Cache\ConnectionException as CacheConnectionException;
+use Koldy\Cache\DataException as CacheDataException;
 use Koldy\Cache\Exception as CacheException;
 use Koldy\Config\Exception as ConfigException;
 use Memcached as NativeMemcached;
@@ -42,8 +44,33 @@ class Memcached extends AbstractCacheAdapter
 
 		if ($this->getInstance()->set($key, $value, ($seconds ?? $this->defaultDuration)) === false) {
 			$info = new ResultCodeInfo($this->getInstance()->getResultCode());
-			throw new CacheException("Memcached error #{$info->getResultCode()}: storing key [{$key}] failed with a reason: {$info->getDescription()}");
+			throw $this->exceptionFor($info, "Memcached error #{$info->getResultCode()}: storing key [{$key}] failed with a reason: {$info->getDescription()}");
 		}
+	}
+
+	/**
+	 * Build the right CacheException subclass for a given Memcached result.
+	 * Routes infra failures (timeouts, connection refused, server marked dead)
+	 * to CacheConnectionException so the failover proxy can catch them, and
+	 * caller-side errors (bad key, value too big) to CacheDataException so
+	 * they propagate as bugs instead of silently triggering failover.
+	 *
+	 * @param ResultCodeInfo $info
+	 * @param string $message
+	 *
+	 * @return CacheException
+	 */
+	protected function exceptionFor(ResultCodeInfo $info, string $message): CacheException
+	{
+		if ($info->isConnectionError()) {
+			return new CacheConnectionException($message);
+		}
+
+		if ($info->isDataError()) {
+			return new CacheDataException($message);
+		}
+
+		return new CacheException($message);
 	}
 
 	/**
@@ -128,7 +155,7 @@ class Memcached extends AbstractCacheAdapter
 
 		if ($this->getInstance()->setMulti($serverKeyValuePairs, ($seconds ?? $this->defaultDuration)) === false) {
 			$info = new ResultCodeInfo($this->getInstance()->getResultCode());
-			throw new CacheException("Memcached error #{$info->getResultCode()}: storing multiple keys failed with a reason: {$info->getDescription()}");
+			throw $this->exceptionFor($info, "Memcached error #{$info->getResultCode()}: storing multiple keys failed with a reason: {$info->getDescription()}");
 		}
 	}
 
@@ -202,7 +229,7 @@ class Memcached extends AbstractCacheAdapter
 
 		if (($serverValues = $this->getInstance()->getMulti($serverKeys)) === false) {
 			$info = new ResultCodeInfo($this->getInstance()->getResultCode());
-			throw new CacheException("Memcached error #{$info->getResultCode()}: getting multiple keys from cache failed with a reason: {$info->getDescription()}");
+			throw $this->exceptionFor($info, "Memcached error #{$info->getResultCode()}: getting multiple keys from cache failed with a reason: {$info->getDescription()}");
 		}
 
 		foreach ($keys as $key) {
@@ -240,7 +267,7 @@ class Memcached extends AbstractCacheAdapter
 
 		$info = new ResultCodeInfo($code);
 		// otherwise, we're dealing with unknown error here, so we should throw an exception
-		throw new CacheException("Memcached error #{$code}: {$info->getDescription()}");
+		throw $this->exceptionFor($info, "Memcached error #{$code}: getting key [{$key}] failed: {$info->getDescription()}");
 	}
 
 	/**
@@ -249,13 +276,30 @@ class Memcached extends AbstractCacheAdapter
 	 * @param string $key
 	 *
 	 * @return boolean
+	 * @throws CacheException
 	 * @throws ConfigException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
 	public function has(string $key): bool
 	{
 		$key = $this->getKeyName($key);
-		return !($this->getInstance()->get($key) === false);
+		$value = $this->getInstance()->get($key);
+
+		if ($value !== false) {
+			return true;
+		}
+
+		// $value === false can mean either "key not found" or "connection failed";
+		// inspect the result code to tell them apart so failover can detect infra
+		// problems instead of silently treating them as cache misses.
+		$code = $this->getInstance()->getResultCode();
+
+		if ($code === NativeMemcached::RES_SUCCESS || $code === NativeMemcached::RES_NOTFOUND) {
+			return false;
+		}
+
+		$info = new ResultCodeInfo($code);
+		throw $this->exceptionFor($info, "Memcached error #{$code}: checking existence of key [{$key}] failed: {$info->getDescription()}");
 	}
 
 	/**
@@ -277,7 +321,7 @@ class Memcached extends AbstractCacheAdapter
 			if (!($code === NativeMemcached::RES_SUCCESS || $code === NativeMemcached::RES_NOTFOUND)) {
 				$info = new ResultCodeInfo($code);
 				// otherwise, we're dealing with unknown error here, so we should throw an exception
-				throw new CacheException("Couldn't delete cache key \"{$key}\" because Memcached returned #{$code}: {$info->getDescription()}");
+				throw $this->exceptionFor($info, "Couldn't delete cache key \"{$key}\" because Memcached returned #{$code}: {$info->getDescription()}");
 			}
 		}
 	}
@@ -287,6 +331,7 @@ class Memcached extends AbstractCacheAdapter
 	 *
 	 * @param array $keys
 	 *
+	 * @throws CacheException
 	 * @throws ConfigException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
@@ -298,6 +343,19 @@ class Memcached extends AbstractCacheAdapter
 		}
 
 		$this->getInstance()->deleteMulti($serverKeys);
+		$code = $this->getInstance()->getResultCode();
+
+		// deleteMulti returns an array of per-key results, so we cannot use its
+		// return value to detect a wholesale failure. Instead inspect the last
+		// result code: success/not-found/end-of-result are normal; anything
+		// else (timeout, connection lost, …) needs to surface so failover can
+		// take over.
+		if ($code === NativeMemcached::RES_SUCCESS || $code === NativeMemcached::RES_NOTFOUND || $code === NativeMemcached::RES_END) {
+			return;
+		}
+
+		$info = new ResultCodeInfo($code);
+		throw $this->exceptionFor($info, "Memcached error #{$code}: deleting multiple keys failed: {$info->getDescription()}");
 	}
 
 	/**
@@ -311,7 +369,7 @@ class Memcached extends AbstractCacheAdapter
 			$code = $this->getInstance()->getResultCode();
 			$info = new ResultCodeInfo($code);
 			// otherwise, we're dealing with unknown error here, so we should throw an exception
-			throw new CacheException("Couldn't delete all cache keys because Memcached returned #{$code}: {$info->getDescription()}");
+			throw $this->exceptionFor($info, "Couldn't delete all cache keys because Memcached returned #{$code}: {$info->getDescription()}");
 		}
 	}
 
@@ -334,13 +392,22 @@ class Memcached extends AbstractCacheAdapter
 	 * @param int $howMuch [optional] default 1
 	 *
 	 * @return int
+	 * @throws CacheException
 	 * @throws ConfigException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
 	public function increment(string $key, int $howMuch = 1): int
 	{
 		$key = $this->getKeyName($key);
-		return $this->getInstance()->increment($key, $howMuch);
+		$value = $this->getInstance()->increment($key, $howMuch);
+
+		if ($value === false) {
+			$code = $this->getInstance()->getResultCode();
+			$info = new ResultCodeInfo($code);
+			throw $this->exceptionFor($info, "Memcached error #{$code}: incrementing key [{$key}] failed: {$info->getDescription()}");
+		}
+
+		return $value;
 	}
 
 	/**
@@ -350,12 +417,21 @@ class Memcached extends AbstractCacheAdapter
 	 * @param int $howMuch [optional] default 1
 	 *
 	 * @return int
+	 * @throws CacheException
 	 * @throws ConfigException
 	 * @link https://koldy.net/framework/docs/2.0/cache.md#working-with-cache
 	 */
 	public function decrement(string $key, int $howMuch = 1): int
 	{
 		$key = $this->getKeyName($key);
-		return $this->getInstance()->decrement($key, $howMuch);
+		$value = $this->getInstance()->decrement($key, $howMuch);
+
+		if ($value === false) {
+			$code = $this->getInstance()->getResultCode();
+			$info = new ResultCodeInfo($code);
+			throw $this->exceptionFor($info, "Memcached error #{$code}: decrementing key [{$key}] failed: {$info->getDescription()}");
+		}
+
+		return $value;
 	}
 }
