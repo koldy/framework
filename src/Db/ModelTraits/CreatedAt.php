@@ -25,7 +25,7 @@ trait CreatedAt
 	 * @return bool
 	 * @throws \Exception
 	 */
-	public function isCreatedInLast(int $seconds = 86400, string $timezone = null): bool
+	public function isCreatedInLast(int $seconds = 86400, ?string $timezone = null): bool
 	{
 		if (!$this->hasCreatedAt()) {
 			return false;
@@ -56,7 +56,7 @@ trait CreatedAt
 	 * @return DateTime|null
 	 * @throws \Exception
 	 */
-	public function getCreatedAtDatetime(string $timezone = null): ?DateTime
+	public function getCreatedAtDatetime(?string $timezone = null): ?DateTime
 	{
 		if ($this->created_at === null) {
 			return null;

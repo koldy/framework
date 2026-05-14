@@ -49,7 +49,7 @@ class Message
 	public function __construct(string $level, string|null $message = null)
 	{
 		$this->level = $level;
-		$this->time = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)));
+		$this->time = DateTime::createFromFormat('U.u', sprintf('%.6f', microtime(true)));
 
 		if ($message !== null) {
 			$this->messages[] = $message;

@@ -24,7 +24,7 @@ trait DeletedAt
 	 * @return DateTime|null
 	 * @throws \Exception
 	 */
-	public function getDeletedAtDatetime(string $timezone = null): ?DateTime
+	public function getDeletedAtDatetime(?string $timezone = null): ?DateTime
 	{
 		if (!$this->isDeleted()) {
 			return null;

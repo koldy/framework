@@ -24,7 +24,7 @@ trait UpdatedAt
 	 * @return DateTime|null
 	 * @throws \Exception
 	 */
-	public function getUpdatedAtDatetime(string $timezone = null): ?DateTime
+	public function getUpdatedAtDatetime(?string $timezone = null): ?DateTime
 	{
 		if (!$this->hasUpdatedAt()) {
 			return null;
