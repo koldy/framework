@@ -81,6 +81,10 @@ class ResponseExceptionHandler
 
 		} else if ($e instanceof MethodNotAllowedException) {
 			$response->statusCode(405);
+			$allowed = $e->getAllowedMethods();
+			if (count($allowed) > 0) {
+				$response->setHeader('Allow', implode(', ', $allowed));
+			}
 
 		} else {
 			try {
@@ -117,6 +121,10 @@ class ResponseExceptionHandler
 
 			} else if ($e instanceof MethodNotAllowedException) {
 				$view->statusCode(405);
+				$allowed = $e->getAllowedMethods();
+				if (count($allowed) > 0) {
+					$view->setHeader('Allow', implode(', ', $allowed));
+				}
 
 			} else {
 				try {
@@ -144,6 +152,10 @@ class ResponseExceptionHandler
 
 			} else if ($e instanceof MethodNotAllowedException) {
 				$plain->statusCode(405);
+				$allowed = $e->getAllowedMethods();
+				if (count($allowed) > 0) {
+					$plain->setHeader('Allow', implode(', ', $allowed));
+				}
 
 			} else {
 				try {

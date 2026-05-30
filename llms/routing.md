@@ -158,20 +158,22 @@ class Companies extends AuthenticatedUsers
 
 When the **last** URI segment's controller is resolved, the router dispatches to the matching HTTP method handler using this precedence. This applies **only to the final controller** in the chain — intermediate controllers (those handling non-terminal segments) are never dispatched via `__call`.
 
-1. **Exact method** — if the controller defines a method matching the HTTP verb (e.g. `get()`, `post()`), it is called directly.
-2. **`__call` fallback** — if the exact method does not exist but the controller implements PHP's `__call` magic method, the router invokes it instead. This allows a single controller to handle any HTTP method generically.
-3. **404 Not Found** — if neither an exact method nor `__call` exists, a `NotFoundException` is thrown.
+1. **Exact method** — if the controller defines a method matching the HTTP verb (e.g. `get()`, `post()`), it is called directly. This also covers `options()` if you want to handle OPTIONS yourself.
+2. **HEAD → GET fallback** — if the request is HEAD and the controller defines `get()` but not `head()`, the router invokes `get()` and strips the body before sending. See "HEAD requests" below.
+3. **`__call` fallback** — if no exact method exists (and the HEAD fallback doesn't apply) but the controller implements PHP's `__call` magic method, the router invokes it. This allows a single controller to handle any HTTP method generically.
+4. **405 Method Not Allowed** — if none of the above match, a `MethodNotAllowedException` is thrown. The exception carries the list of verbs the controller actually implements via `getAllowedMethods()`, and the default `ResponseExceptionHandler` uses it to populate the `Allow:` response header.
 
 ```php
 class Orders extends HttpController
 {
-    // Called for GET /orders
+    // Called for GET /orders (and HEAD /orders — body is stripped automatically)
     public function get(): Json
     {
         return Json::create(['orders' => Order::fetch()]);
     }
 
-    // Catches any HTTP method that doesn't have its own handler (e.g. OPTIONS, HEAD, PATCH, ...)
+    // Catches any HTTP method that doesn't have its own handler. Without this method,
+    // unsupported verbs return 405 with `Allow: GET, HEAD` automatically.
     public function __call(string $method, array $args): mixed
     {
         return (new Plain())->setCode(405);
@@ -182,8 +184,66 @@ class Orders extends HttpController
 When `debugSuccess` logging is enabled, the router logs both the missed method and the `__call` invocation:
 
 ```
-HTTP: miss App\Http\Orders->delete()
-HTTP: exec App\Http\Orders->__call()
+HTTP: miss App\Http\Orders->delete(), exec __call()
+```
+
+### 404 vs 405
+
+The router distinguishes between two failure modes:
+
+- **404 `NotFoundException`** — no controller class resolves for the URI path (the resource doesn't exist).
+- **405 `MethodNotAllowedException`** — a controller is resolved but doesn't implement the requested verb (the resource exists, this method doesn't).
+
+The 405 exception carries the implemented verbs (uppercased) via `getAllowedMethods()`. The default `ResponseExceptionHandler` reads that list and sets `Allow:` on the response, e.g. `Allow: GET, POST, HEAD`. `HEAD` is automatically included whenever `GET` is implemented, reflecting the implicit HEAD fallback.
+
+### HEAD Requests
+
+HEAD is handled automatically — you don't need to define `head()` on your controllers. When a HEAD request arrives:
+
+1. If the controller defines `head()`, it is called as you'd expect.
+2. Otherwise, if `get()` is defined, the router invokes `get()` and discards the response body before sending; only headers reach the client. The body is captured in an output buffer with a discard callback (chunk size 1), so streaming responses don't accumulate in memory.
+3. Otherwise, 405 is returned.
+
+You only need an explicit `head()` if you want to skip the cost of generating the body (e.g. expensive DB queries or rendering). Otherwise, the automatic fallback gives you correct HTTP semantics for free.
+
+```php
+class LargeReport extends HttpController
+{
+    public function get(): View
+    {
+        // expensive — runs heavy queries, renders a large view
+        return View::create('report')->with(...);
+    }
+
+    // Optional optimization: respond to HEAD without doing the expensive work.
+    // The Content-Length will be unknown to the client, but in exchange you skip
+    // generating the body entirely.
+    public function head(): Plain
+    {
+        return Plain::create()->setHeader('Cache-Control', 'no-cache');
+    }
+}
+```
+
+OPTIONS is treated like any other verb — define `options()` if you want to handle it. The router does **not** auto-respond to OPTIONS; CORS preflight is expected to be handled at the web server (e.g. nginx) or in an explicit `options()` method.
+
+### Encoded Slash in Segments
+
+URI segments are extracted from the still-encoded path first, then each segment is `rawurldecode`'d individually. This means an encoded slash (`%2F`) inside a single segment decodes to a literal `/` **within that segment** instead of splitting it into two segments.
+
+For example, `/files/foo%2Fbar/meta` yields three segments — `files`, `foo/bar`, `meta` — and the literal `/` is passed verbatim to the matching `__` controller via `$this->segment`:
+
+```php
+namespace App\Http\Files;
+
+class __ extends HttpController
+{
+    public function get(): Json
+    {
+        // For /files/foo%2Fbar/meta, $this->segment is the string "foo/bar"
+        return Json::create(['path' => $this->segment]);
+    }
+}
 ```
 
 ### Exception Handling
@@ -192,7 +252,7 @@ If an `ExceptionHandler` class exists in the configured root namespace (e.g. `Ap
 
 ### Trailing Slash Behavior
 
-GET/HEAD requests with a trailing slash are 301-redirected to the canonical URL without the trailing slash.
+GET/HEAD requests with a trailing slash are 301-redirected to the canonical URL without the trailing slash. The redirect is returned as a `Koldy\Response\Redirect` response through the normal lifecycle, so registered `afterAnyResponse` callbacks, session writes, and log flushers all run — the router never calls `exit()`.
 
 ---
 

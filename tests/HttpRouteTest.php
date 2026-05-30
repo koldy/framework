@@ -7,6 +7,7 @@ namespace Tests;
 use InvalidArgumentException;
 use Koldy\Application;
 use Koldy\Mock;
+use Koldy\Response\Exception\MethodNotAllowedException;
 use Koldy\Response\Exception\NotFoundException;
 use Koldy\Response\Exception\ServerException;
 use Koldy\Route\HttpRoute;
@@ -251,7 +252,7 @@ class HttpRouteTest extends TestCase
 		$exec->invoke($route);
 	}
 
-	public function testNotFoundForExistingRouteButWrongMethod(): void
+	public function testMethodNotAllowedForExistingRouteButWrongMethod(): void
 	{
 		$this->setRequestMethod('DELETE');
 		$route = $this->createRoute(self::NS_STATIC);
@@ -272,9 +273,19 @@ class HttpRouteTest extends TestCase
 		$nsProp = $routeRef->getProperty('namespace');
 		$nsProp->setValue($route, self::NS_STATIC);
 
-		$this->expectException(NotFoundException::class);
 		$exec = new ReflectionMethod($route, 'exec');
-		$exec->invoke($route);
+		try {
+			$exec->invoke($route);
+			$this->fail('Expected MethodNotAllowedException was not thrown');
+		} catch (\ReflectionException $e) {
+			throw $e;
+		} catch (MethodNotAllowedException $e) {
+			$allowed = $e->getAllowedMethods();
+			$this->assertContains('GET', $allowed);
+			$this->assertContains('POST', $allowed);
+			$this->assertContains('HEAD', $allowed, 'HEAD must be implicit when GET is defined');
+			$this->assertNotContains('DELETE', $allowed);
+		}
 	}
 
 	// ── ServerException for non-HttpController classes ──
@@ -538,7 +549,7 @@ class HttpRouteTest extends TestCase
 
 	// ── gap: NotFoundException on dynamic __ with wrong HTTP method — line 277 ──
 
-	public function testDynamicMatchNotFoundForWrongMethod(): void
+	public function testDynamicMatchMethodNotAllowedForWrongMethod(): void
 	{
 		$this->setRequestMethod('DELETE');
 		$route = $this->createRoute(self::NS_DYNAMIC);
@@ -559,8 +570,8 @@ class HttpRouteTest extends TestCase
 
 		// 'users' → no dynamic DynamicRoutes\__ → static match Users (valid, not last)
 		// 'abc-123' → try dynamic Users\__ first → exists, isLast,
-		// but delete() doesn't exist → NotFoundException
-		$this->expectException(NotFoundException::class);
+		// but delete() doesn't exist → MethodNotAllowedException (resource resolved, verb missing)
+		$this->expectException(MethodNotAllowedException::class);
 		$exec = new ReflectionMethod($route, 'exec');
 		$exec->invoke($route);
 	}
@@ -583,7 +594,7 @@ class HttpRouteTest extends TestCase
 		$this->assertSame('homepage-post', $result);
 	}
 
-	public function testRootRouteNotFoundForUnsupportedMethod(): void
+	public function testRootRouteMethodNotAllowedForUnsupportedMethod(): void
 	{
 		$this->setRequestMethod('DELETE');
 		$route = $this->createRoute(self::NS_ROOT);
@@ -602,7 +613,8 @@ class HttpRouteTest extends TestCase
 		$nsProp = $routeRef->getProperty('namespace');
 		$nsProp->setValue($route, self::NS_ROOT);
 
-		$this->expectException(NotFoundException::class);
+		// root class resolves; delete() is not defined → 405, not 404
+		$this->expectException(MethodNotAllowedException::class);
 		$exec = new ReflectionMethod($route, 'exec');
 		$exec->invoke($route);
 	}
@@ -671,6 +683,80 @@ class HttpRouteTest extends TestCase
 		$this->expectException(ServerException::class);
 		$exec = new ReflectionMethod($route, 'exec');
 		$exec->invoke($route);
+	}
+
+	// ── encoded slash inside a segment ──
+
+	public function testEncodedSlashInSegmentDoesNotSplit(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_DYNAMIC);
+		// `%2F` must decode to a literal `/` inside the second segment, not split it.
+		// The Users\__ dynamic controller echoes back its segment.
+		$result = $route->start('/users/foo%2Fbar');
+		$this->assertSame('user-detail-foo/bar', $result);
+	}
+
+	// ── HEAD falls back to GET ──
+
+	public function testHeadFallsBackToGetWhenNoExplicitHeadMethod(): void
+	{
+		$this->setRequestMethod('HEAD');
+		$route = $this->createRoute(self::NS_STATIC);
+
+		// Users defines get() but not head(). The router should invoke get() and
+		// strip the body via output buffering. start() returns null because the
+		// response was flushed inside executeHeadAsGet.
+		ob_start();
+		try {
+			$result = $route->start('/users');
+		} finally {
+			$captured = ob_get_clean();
+		}
+
+		$this->assertNull($result);
+		// The string 'users-list' returned by get() must have been discarded by the
+		// ob_start callback in executeHeadAsGet — nothing should reach our outer buffer.
+		$this->assertSame('', $captured);
+	}
+
+	// ── trailing-slash redirect returns a Redirect response, no exit() ──
+
+	public function testTrailingSlashGetReturnsRedirectResponse(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_STATIC);
+		$result = $route->start('/users/');
+		$this->assertInstanceOf(\Koldy\Response\Redirect::class, $result);
+	}
+
+	public function testTrailingSlashHeadReturnsRedirectResponse(): void
+	{
+		$this->setRequestMethod('HEAD');
+		$route = $this->createRoute(self::NS_STATIC);
+		$result = $route->start('/users/');
+		$this->assertInstanceOf(\Koldy\Response\Redirect::class, $result);
+	}
+
+	// ── OPTIONS is treated like any other verb (no auto-response) ──
+
+	public function testOptionsWithoutHandlerReturnsMethodNotAllowed(): void
+	{
+		$this->setRequestMethod('OPTIONS');
+		$route = $this->createRoute(self::NS_STATIC);
+
+		$routeRef = new \ReflectionClass($route);
+		$routeRef->getProperty('uri')->setValue($route, '/users');
+		$routeRef->getProperty('uriParts')->setValue($route, ['users']);
+		$routeRef->getProperty('method')->setValue($route, 'options');
+		$routeRef->getProperty('namespace')->setValue($route, self::NS_STATIC);
+
+		try {
+			(new ReflectionMethod($route, 'exec'))->invoke($route);
+			$this->fail('Expected MethodNotAllowedException');
+		} catch (MethodNotAllowedException $e) {
+			$this->assertSame(['GET', 'POST', 'HEAD'], $e->getAllowedMethods());
+		}
 	}
 
 }
