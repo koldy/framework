@@ -487,7 +487,9 @@ class HttpRoute extends AbstractRoute
 		ob_start(static fn(string $_buffer): string => '', 1);
 
 		try {
-			$response = $instance->get();
+			// dynamic dispatch — caller has already confirmed method_exists($instance, 'get');
+			// call_user_func keeps PHPStan from demanding get() on the HttpController base class.
+			$response = call_user_func([$instance, 'get']);
 			if ($response instanceof AbstractResponse) {
 				$response->flush();
 			} elseif ($response !== null) {
