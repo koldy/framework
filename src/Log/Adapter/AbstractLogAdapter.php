@@ -220,10 +220,13 @@ abstract class AbstractLogAdapter
 
 				if ($memoryLimit !== '0B') {
 					$limitInt = Convert::stringToBytes($memoryLimit);
-					$limit = ", limit: {$memoryLimit}";
 
-					$spent = round($peak / $limitInt * 100, 2);
-					$peakSpent = " ({$spent}% of limit)";
+					if ($limitInt > 0) {
+						$spent = round($peak / $limitInt * 100, 2);
+						$peakSpent = " ({$spent}% of limit)";
+					}
+
+					$limit = ', limit: ' . ($limitInt === -1 ? 'unlimited' : $memoryLimit);
 				}
 
 				$this->logMessage(new Message('notice',
