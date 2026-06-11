@@ -162,7 +162,7 @@ class Mock
 
 						if ($reflection->hasProperty('vars')) {
 							$property = $reflection->getProperty('vars');
-							$property->setAccessible(true);
+							// setAccessible() is unnecessary since PHP 8.1 (reflection grants access by default) and is deprecated as of PHP 8.5
 							$property->setValue(null, $params);
 						}
 					} catch (ReflectionException $e) {
@@ -334,7 +334,7 @@ class Mock
 
 			if ($reflection->hasProperty('rawData')) {
 				$property = $reflection->getProperty('rawData');
-				$property->setAccessible(true);
+				// setAccessible() is unnecessary since PHP 8.1 (reflection grants access by default) and is deprecated as of PHP 8.5
 				$property->setValue(null, $data);
 			}
 		} catch (ReflectionException $e) {

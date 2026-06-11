@@ -34,10 +34,17 @@ class MySQL extends AbstractAdapter
 	{
 		$config = $this->getConfig();
 
+		// PDO::MYSQL_ATTR_USE_BUFFERED_QUERY is deprecated as of PHP 8.5 in favour of Pdo\Mysql::ATTR_USE_BUFFERED_QUERY.
+		// The replacement is fetched via constant() so static analysis doesn't require the Pdo\Mysql class, which is
+		// absent on PHP < 8.5; the old constant stays in use on 8.3/8.4 where it is not deprecated.
+		$bufferedQueryAttr = PHP_VERSION_ID >= 80500
+			? (int)constant('Pdo\Mysql::ATTR_USE_BUFFERED_QUERY')
+			: PDO::MYSQL_ATTR_USE_BUFFERED_QUERY;
+
 		$pdoConfig = [
 			PDO::ATTR_EMULATE_PREPARES => false,
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-			PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false,
+			$bufferedQueryAttr => false,
 			PDO::ATTR_PERSISTENT => $config['persistent'] ?? true,
 			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
 		];

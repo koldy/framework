@@ -73,7 +73,10 @@ class Response
 
 	public function __destruct()
 	{
-		curl_close($this->ch);
+		// curl_close() is deprecated as of PHP 8.5 and the handle is freed automatically when the CurlHandle object is destroyed
+		if (PHP_VERSION_ID < 80500) {
+			curl_close($this->ch);
+		}
 	}
 
 	/**
