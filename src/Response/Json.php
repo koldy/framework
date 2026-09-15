@@ -2,7 +2,6 @@
 
 namespace Koldy\Response;
 
-use Koldy\Application;
 use Koldy\Data;
 use Koldy\Json as KoldyJson;
 use Stringable;
@@ -150,7 +149,7 @@ class Json extends AbstractResponse implements Stringable
 				// PHP serializes empty array into "[]", so we'll return "{}" instead in that case, but depending on isAssociative flag
 
 				if ($this->content !== null) {
-					$size = mb_strlen($content, Application::getEncoding());
+					$size = strlen($content);
 					$this->setHeader('Content-Length', $size);
 				} else {
 					if (count($this->getData()) === 0) {
@@ -158,7 +157,7 @@ class Json extends AbstractResponse implements Stringable
 						$content = $this->isAssociative ? '{}' : '[]';
 						$this->setHeader('Content-Length', 2);
 					} else {
-						$size = mb_strlen($content, Application::getEncoding());
+						$size = strlen($content);
 						$this->setHeader('Content-Length', $size);
 					}
 				}

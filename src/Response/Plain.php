@@ -2,7 +2,6 @@
 
 namespace Koldy\Response;
 
-use Koldy\Application;
 use Stringable;
 
 /**
@@ -106,7 +105,7 @@ class Plain extends AbstractResponse implements Stringable
 		$statusCodeIs1XX = $statusCode >= 100 && $statusCode <= 199;
 
 		if (!$statusCodeIs1XX && $statusCode !== 204) {
-			$size = mb_strlen($this->content, Application::getEncoding());
+			$size = strlen($this->content);
 			$this->setHeader('Content-Length', $size);
 		}
 
