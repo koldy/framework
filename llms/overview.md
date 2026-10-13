@@ -41,7 +41,7 @@ Major subsystems use a pluggable adapter architecture configured via PHP config 
 
 | Subsystem | Adapters |
 |-----------|----------|
-| Database  | MySQL, PostgreSQL, SQLite |
+| Database  | MySQL, MariaDB, PostgreSQL, SQLite |
 | Cache     | Runtime, Files, Db, Memcached, DevNull |
 | Log       | File, Db, Email, Out, Other |
 | Session   | File, Db |

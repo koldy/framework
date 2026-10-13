@@ -1,0 +1,58 @@
+# Database servers for the dbunit test suite (tests/dbunit).
+#
+#   ./dev.sh dbunit          starts these containers (waits until healthy) and runs the suite on PHP 8.3, 8.4, 8.5
+#   ./dev.sh dbunit-down     stops and removes them
+#
+# Host ports are deliberately non-default so databases already installed on the developer machine are left alone.
+# Data directories live on tmpfs: fast, and every "up" starts from a clean database.
+# Connection details can be overridden with KOLDY_DBUNIT_* environment variables, see tests/dbunit/config.php.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: koldy
+      POSTGRES_PASSWORD: koldy
+      POSTGRES_DB: koldy
+    ports:
+      - "54329:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U koldy -d koldy"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mariadb:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: koldy
+      MARIADB_USER: koldy
+      MARIADB_PASSWORD: koldy
+      MARIADB_DATABASE: koldy
+    ports:
+      - "33069:3306"
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: koldy
+      MYSQL_USER: koldy
+      MYSQL_PASSWORD: koldy
+      MYSQL_DATABASE: koldy
+    ports:
+      - "33068:3306"
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -pkoldy --silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 30

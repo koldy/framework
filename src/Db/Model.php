@@ -56,6 +56,25 @@ abstract class Model implements Stringable
 	protected static string|bool $autoIncrement = true;
 
 	/**
+	 * Which columns should the database send back when create() or save() inserts a row, using INSERT ... RETURNING.
+	 * This is opt-in: the default false never uses RETURNING, so the model holds the submitted values plus the primary
+	 * key read with lastInsertId(), exactly as before 3.5.0.
+	 *
+	 * true means all columns (RETURNING *): the model instantly holds the generated primary key, database defaults and
+	 * values exactly as stored, without a second query. An array means explicitly these columns - useful for tables
+	 * with bytea/blob columns, which PDO returns as stream resources.
+	 *
+	 * Before opting in, mind that values come back typed by the driver (the primary key becomes int instead of the
+	 * string lastInsertId() gives) and that PostgreSQL requires SELECT privilege on the returned columns (and a SELECT
+	 * policy under row-level security), otherwise the INSERT itself fails.
+	 *
+	 * Ignored on adapters without RETURNING support (MySQL), where the framework always falls back to lastInsertId().
+	 *
+	 * @var bool|array
+	 */
+	protected static bool|array $returning = false;
+
+	/**
 	 * The data holder in this object
 	 *
 	 * @var array|null
@@ -186,8 +205,14 @@ abstract class Model implements Stringable
 	public static function create(array $data): static
 	{
 		$insert = new Insert(static::getTableName(), $data, static::getAdapterConnection());
-		$insert->exec();
+		$merged = self::execInsertReturning($insert, $data);
 
+		if ($merged !== null) {
+			// the database sent the inserted row back (RETURNING), so this is exactly what is stored
+			return new static($merged);
+		}
+
+		// no RETURNING (adapter doesn't support it or $returning is false): fetch the generated primary key separately
 		if (static::$autoIncrement) {
 			// ID should be fetched if $data contains ID, so, let's check
 			if (is_string(static::$primaryKey) && isset($data[static::$primaryKey])) {
@@ -204,6 +229,40 @@ abstract class Model implements Stringable
 		}
 
 		return new static($data);
+	}
+
+	/**
+	 * Execute the given Insert, asking the database to return the inserted row according to static::$returning.
+	 *
+	 * Returns the submitted data with the database row layered over it - database values win, so the result carries
+	 * the generated primary key, defaults, database-typed values and resolved expressions. Returns null when RETURNING
+	 * wasn't used ($returning is false or the adapter doesn't support the clause); the caller then has to fetch the
+	 * generated primary key by itself.
+	 *
+	 * @param Insert $insert
+	 * @param array $submitted
+	 *
+	 * @return array|null
+	 * @throws Exception
+	 * @throws Query\Exception
+	 * @throws \Koldy\Exception
+	 */
+	private static function execInsertReturning(Insert $insert, array $submitted): array|null
+	{
+		if (static::$returning !== false) {
+			$insert->returning(...(static::$returning === true ? [] : static::$returning));
+		}
+
+		$insert->exec();
+		$row = $insert->getReturnedRow();
+
+		if ($row === null) {
+			return null;
+		}
+
+		// database row first (keeps the table's column order), then whatever was submitted but not returned, which
+		// happens when $returning lists only some columns
+		return $row + $submitted;
 	}
 
 	/**
@@ -1073,9 +1132,16 @@ abstract class Model implements Stringable
 				} else {
 					// we don't have pk value, so lets insert
 					$insert = new Insert(static::getTableName(), $toUpdate, static::getAdapterConnection());
-					$insert->exec();
-					$this->data[static::$primaryKey] = Db::getAdapter(static::getAdapterConnection())
-						->getLastInsertId();
+					$merged = self::execInsertReturning($insert, $data);
+
+					if ($merged !== null) {
+						// RETURNING: hold the row exactly as stored, same as create() does
+						$this->data = $merged;
+					} else {
+						$this->data[static::$primaryKey] = Db::getAdapter(static::getAdapterConnection())
+							->getLastInsertId();
+					}
+
 					$this->originalData = $this->data;
 					return 0;
 				}

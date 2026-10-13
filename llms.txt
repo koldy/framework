@@ -11,7 +11,7 @@
 
 - [Application](https://koldy.net/llms/application.md): Central orchestrator — config management, path resolution, environment detection, module system, and response lifecycle hooks
 - [Request & Response](https://koldy.net/llms/request-response.md): HTTP request parsing (parameters, headers, files, IP detection) and response types (JSON, View, Plain, Redirect, FileDownload, ContentDownload)
-- [Database & ORM](https://koldy.net/llms/database.md): Database facade, ActiveRecord Model, query builder (Select, Insert, Update, Delete), transactions, and adapter system (MySQL, PostgreSQL, SQLite)
+- [Database & ORM](https://koldy.net/llms/database.md): Database facade, ActiveRecord Model, query builder (Select, Insert, Update, Delete), INSERT ... RETURNING (opt-in on models), transactions, and adapter system (MySQL, MariaDB, PostgreSQL, SQLite)
 - [Validation](https://koldy.net/llms/validation.md): Rule-based data validation engine with 25+ built-in rules, strict mode, and automatic request parameter validation
 
 ## Subsystems

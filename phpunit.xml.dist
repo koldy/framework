@@ -6,10 +6,16 @@
          cacheDirectory=".phpunit.cache"
          executionOrder="depends,defects"
          failOnRisky="true"
-         failOnWarning="true">
+         failOnWarning="true"
+         defaultTestSuite="phpunit">
     <testsuites>
-        <testsuite name="default">
-            <directory>tests</directory>
+        <!-- Unit tests: no external services required -->
+        <testsuite name="phpunit">
+            <directory>tests/phpunit</directory>
+        </testsuite>
+        <!-- Database tests: require running database servers (see tests/dbunit/compose.yaml and ./dev.sh dbunit) -->
+        <testsuite name="dbunit">
+            <directory>tests/dbunit</directory>
         </testsuite>
     </testsuites>
 
@@ -19,4 +25,3 @@
         </include>
     </source>
 </phpunit>
-

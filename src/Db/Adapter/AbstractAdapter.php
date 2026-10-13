@@ -275,6 +275,18 @@ abstract class AbstractAdapter
 	}
 
 	/**
+	 * Does this adapter support the INSERT ... RETURNING clause? When it does, Insert::exec() fetches the returned
+	 * rows right after execution and exposes them through Insert::getReturnedRows(). When it does not, the query
+	 * builder silently omits the clause, so the same code stays portable across database engines.
+	 *
+	 * @return bool
+	 */
+	public function supportsReturning(): bool
+	{
+		return false;
+	}
+
+	/**
 	 * @param string|null $keyName
 	 *
 	 * @return string

@@ -3,7 +3,7 @@
 namespace Koldy;
 
 use Koldy\Config\Exception as ConfigException;
-use Koldy\Db\Adapter\{AbstractAdapter, MySQL, PostgreSQL, Sqlite};
+use Koldy\Db\Adapter\{AbstractAdapter, MariaDB, MySQL, PostgreSQL, Sqlite};
 use Koldy\Db\Exception as DbException;
 use Koldy\Db\Expr;
 use Koldy\Db\Query;
@@ -23,6 +23,7 @@ class Db
 	 */
 	protected static $types = [
 		'mysql' => MySQL::class,
+		'mariadb' => MariaDB::class,
 		'postgres' => PostgreSQL::class,
 		'postgresql' => PostgreSQL::class,
 		'sqlite' => Sqlite::class

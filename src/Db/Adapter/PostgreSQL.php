@@ -17,15 +17,17 @@ class PostgreSQL extends AbstractAdapter
 	 *
 	 * If you pass null as parameter, you'll get null back.
 	 *
-	 * @param null|string $input
+	 * Rows coming from INSERT ... RETURNING or SELECT may already carry a real PHP bool, which is returned as is.
+	 *
+	 * @param string|bool|null $input
 	 *
 	 * @return bool|null
 	 * @throws LanguageException
 	 */
-	public static function isBoolTrue(?string $input): ?bool
+	public static function isBoolTrue(string|bool|null $input): bool|null
 	{
-		if ($input === null) {
-			return null;
+		if ($input === null || is_bool($input)) {
+			return $input;
 		}
 
 		$input = strtolower($input);
@@ -96,6 +98,16 @@ class PostgreSQL extends AbstractAdapter
 			$this->pdo->exec($schemaSql);
 			Log::sql($schemaSql);
 		}
+	}
+
+	/**
+	 * PostgreSQL supports INSERT ... RETURNING on every version this framework can connect to.
+	 *
+	 * @return bool
+	 */
+	public function supportsReturning(): bool
+	{
+		return true;
 	}
 
 	/**

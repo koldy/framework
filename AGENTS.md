@@ -9,7 +9,7 @@ Koldy PHP Framework (`koldy/framework`) is a zero-dependency near-core PHP frame
 - **Namespace**: `Koldy\` — all source code in `src/`, PSR-4 autoloaded
 - **Minimum PHP**: 8.3
 - **Dependencies**: Zero production dependencies. Only PHP extensions are suggested as optional (`ext-pdo`, `ext-mbstring`, `ext-memcached`, `ext-openssl`, `ext-iconv`, `ext-json`, `ext-curl`, `ext-ctype`, `ext-bcmath`)
-- **Tests**: PHPUnit 12, in `tests/` under the `Tests\` namespace
+- **Tests**: PHPUnit 12, two suites: `tests/phpunit/` (`Tests\PhpUnit\` namespace, no external services) and `tests/dbunit/` (`Tests\DbUnit\` namespace, needs the database containers from `tests/dbunit/compose.yaml`)
 - **Static analysis**: PHPStan
 
 ## Commands
@@ -33,11 +33,23 @@ Koldy PHP Framework (`koldy/framework`) is a zero-dependency near-core PHP frame
 # Run with a specific PHP version
 ./dev.sh php 8.3 test
 ./dev.sh php 8.3 phpstan
+
+# Database tests (dbunit suite): starts PostgreSQL, MariaDB and MySQL in Docker (tests/dbunit/compose.yaml),
+# waits until they are healthy, then runs the suite on PHP 8.3, 8.4 and 8.5. Also covers SQLite (in-memory).
+./dev.sh dbunit
+./dev.sh dbunit --filter PostgreSQLInsertReturningTest
+./dev.sh php 8.4 dbunit
+
+# Stop and remove the database containers
+./dev.sh dbunit-down
 ```
+
+`./dev.sh test` runs only the `phpunit` suite, so it never needs Docker. Connection details for `dbunit` default to the compose file and can be overridden with `KOLDY_DBUNIT_*` environment variables (see `tests/dbunit/config.php`).
 
 Direct commands (without PHP version switching):
 ```bash
-php bin/phpunit --configuration phpunit.xml.dist
+php bin/phpunit --configuration phpunit.xml.dist                       # phpunit suite (default)
+php bin/phpunit --configuration phpunit.xml.dist --testsuite dbunit    # database suite, containers must be running
 php bin/phpstan analyse -c phpstan.neon --memory-limit 4G --level 5
 ```
 
@@ -65,7 +77,7 @@ Major subsystems use a pluggable adapter architecture configured via PHP config 
 
 | Subsystem | Abstract Base | Adapters |
 |-----------|--------------|----------|
-| Database (`Db`) | `Db\Adapter\AbstractAdapter` | MySQL, PostgreSQL, SQLite |
+| Database (`Db`) | `Db\Adapter\AbstractAdapter` | MySQL, MariaDB, PostgreSQL, SQLite |
 | Cache (`Cache`) | `Cache\Adapter\AbstractCacheAdapter` | Runtime, Files, Db, Memcached, DevNull |
 | Log (`Log`) | `Log\Adapter\AbstractLogAdapter` | File, Db, Email, Out, Other |
 | Session (`Session`) | `Session\Adapter\AbstractSessionAdapter` | File, Db |
@@ -130,10 +142,11 @@ HTTP exception classes under `Response\Exception\`: `BadRequestException` (400),
 ### Database (`src/Db.php`, `src/Db/`)
 
 - `Db` — static facade for database operations, adapter management, transactions
-- `Db\Model` — ActiveRecord ORM base class. Extend it, set `$table`, `$primaryKey`, `$autoIncrement`, `$adapter`
+- `Db\Model` — ActiveRecord ORM base class. Extend it, set `$table`, `$primaryKey`, `$autoIncrement`, `$adapter`, optionally `$returning` (opt-in, default `false` = plain INSERT + `lastInsertId()`; `true` = read the whole row back via `INSERT ... RETURNING`, array = only these columns)
   - CRUD: `User::create([...])`, `User::fetchOne(5)`, `User::fetch([...])`, `$user->save()`, `$user->destroy()`, `User::delete(5)`
   - Data: `$user->name` (magic get/set), `$user->getData()`, `$user->isDirty()`
 - `Db\Query\Select`, `Insert`, `Update`, `Delete` — query builders with PDO prepared statements
+- `Insert::returning(...)` + `getReturnedRows()` / `getReturnedRow()` — `INSERT ... RETURNING`, supported on PostgreSQL, MariaDB 10.5+ and SQLite 3.35+ (`AbstractAdapter::supportsReturning()`); silently dropped on MySQL. `Model::create()` and inserting `save()` use it only when the model opts in via `$returning`, and then hold the stored row (defaults included) without a second query
 - `Db\Where` — where clause builder, used by Select, Update, Delete
 - Postgres GIN: use `??` instead of `?` operator (auto-converted, avoids PDO placeholder conflict)
 

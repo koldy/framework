@@ -13,7 +13,9 @@ use Koldy\Json;
 class Insert
 {
 
-	use Statement;
+	use Statement {
+		exec as private statementExec;
+	}
 
 	/**
 	 * The table on which insert will be executed
@@ -42,6 +44,21 @@ class Insert
 	 * @var Select|string|null
 	 */
 	protected Select|string|null $select = null;
+
+	/**
+	 * Columns requested through the INSERT ... RETURNING clause, already stringified. Null means the clause was not
+	 * requested at all.
+	 *
+	 * @var string[]|null
+	 */
+	protected array|null $returning = null;
+
+	/**
+	 * Rows returned by the database for the RETURNING clause of the last exec()
+	 *
+	 * @var array
+	 */
+	private array $returnedRows = [];
 
 	/**
 	 * Construct the object
@@ -187,6 +204,104 @@ class Insert
 	}
 
 	/**
+	 * Request the INSERT ... RETURNING clause so the database sends back the inserted row(s) in the same roundtrip.
+	 * Call it without arguments to get all columns (RETURNING *), or pass column names and/or expressions.
+	 *
+	 * The clause is emitted only when the adapter supports it (PostgreSQL, MariaDB 10.5+, SQLite 3.35+); on other
+	 * adapters (MySQL) it is silently dropped and getReturnedRows() stays empty, so the calling code remains portable.
+	 * Because of that, once returning() was called, getSQL(), debug() and __toString() resolve the adapter from config
+	 * (and, for SQLite, open the connection) to decide whether the clause is part of the SQL.
+	 *
+	 * Column names are interpolated into SQL as-is, exactly like fields(); never pass user input here.
+	 *
+	 * @param string|Expr ...$fields
+	 *
+	 * @return static
+	 * @link http://koldy.net/docs/database/query-builder#insert
+	 */
+	public function returning(string|Expr ...$fields): static
+	{
+		if (count($fields) === 0) {
+			$this->returning = ['*'];
+		} else {
+			$this->returning = array_map(static fn (string|Expr $field): string => (string)$field, $fields);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Get all rows the database returned for the RETURNING clause of the last exec(). Empty when exec() wasn't called
+	 * yet, when returning() wasn't requested, or when the adapter doesn't support RETURNING.
+	 *
+	 * @return array
+	 */
+	public function getReturnedRows(): array
+	{
+		return $this->returnedRows;
+	}
+
+	/**
+	 * Get the first row the database returned for the RETURNING clause of the last exec(), or null if there's none
+	 *
+	 * @return array|null
+	 */
+	public function getReturnedRow(): array|null
+	{
+		return $this->returnedRows[0] ?? null;
+	}
+
+	/**
+	 * Execute the query and, if RETURNING was requested and the adapter supports it, fetch the returned rows right
+	 * away. The rows must be read eagerly: the PDO statement lives on the shared adapter and would be replaced by the
+	 * next query on the same connection, and MySQL-compatible adapters run unbuffered.
+	 *
+	 * Like in other query builders, passing $adapter runs this one execution on that adapter; the Insert keeps its own
+	 * adapter afterwards (use setAdapter() to re-target it permanently).
+	 *
+	 * @param string|null $adapter
+	 *
+	 * @return static
+	 * @throws Exception
+	 * @throws \Koldy\Exception
+	 */
+	public function exec(string|null $adapter = null): static
+	{
+		// getQuery() asks this Insert's adapter whether RETURNING is supported, so the one-off adapter has to be in
+		// place while the query is built and executed; the Insert's own adapter is restored afterwards
+		$ownAdapter = $this->adapter;
+
+		if ($adapter !== null) {
+			$this->adapter = $adapter;
+		}
+
+		try {
+			$fetchReturned = $this->returning !== null && $this->getAdapter()->supportsReturning();
+			$this->returnedRows = [];
+
+			$this->statementExec();
+
+			$lastQuery = $this->getLastQuery();
+			if ($fetchReturned && $lastQuery !== null) {
+				$this->returnedRows = $lastQuery->fetchAll();
+			}
+		} finally {
+			$this->adapter = $ownAdapter;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * A cloned Insert can be executed again, so forget the previous execution and its returned rows
+	 */
+	public function __clone()
+	{
+		$this->resetLastQuery();
+		$this->returnedRows = [];
+	}
+
+	/**
 	 * Get the Query string
 	 *
 	 * @return Query
@@ -273,6 +388,10 @@ class Insert
 			}
 
 			$query = substr($query, 0, -2);
+		}
+
+		if ($this->returning !== null && $this->getAdapter()->supportsReturning()) {
+			$query .= "\nRETURNING " . implode(', ', $this->returning);
 		}
 
 		return new Query($query, $bindings, $this->getAdapterConnection());
