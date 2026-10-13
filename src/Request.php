@@ -29,10 +29,10 @@ class Request
 	protected static string|null $realIp = null;
 
 	/**
-	 * List of trusted proxy IP addresses. When set, forwarded-for headers are only trusted
-	 * if REMOTE_ADDR matches one of these IPs. When null, all proxy headers are trusted
-	 * (backwards-compatible default). Populated by setTrustedProxies() or lazily from
-	 * the 'trusted_proxies' key in the application config.
+	 * List of trusted proxy IP addresses or CIDR ranges (IPv4 and IPv6). When set, X-Forwarded-For is
+	 * only read if REMOTE_ADDR matches one of these entries, and it is walked from the right, skipping
+	 * every trusted hop. When null, all proxy headers are trusted (backwards-compatible default, spoofable).
+	 * Populated by setTrustedProxies() or lazily from the 'trusted_proxies' key in the application config.
 	 *
 	 * @var string[]|null
 	 */
@@ -105,18 +105,20 @@ class Request
 	/**
 	 * Explicitly configure the list of trusted proxy IP addresses or CIDR ranges.
 	 *
-	 * When set, proxy headers (HTTP_CLIENT_IP, HTTP_X_FORWARDED_FOR, etc.) are ONLY trusted
-	 * if the direct connecting IP (REMOTE_ADDR) is in this list. This prevents IP spoofing
-	 * by attackers who can freely set forwarded-for headers.
+	 * When set, X-Forwarded-For is ONLY read if the direct connecting IP (REMOTE_ADDR) is in this
+	 * list, and ip() returns the right-most X-Forwarded-For hop that is not in this list. Every other
+	 * proxy header (Client-IP, X-Forwarded, X-Cluster-Client-IP, Forwarded-For, Forwarded) is ignored.
+	 * This prevents IP spoofing by attackers who can freely set forwarded-for headers. List every
+	 * proxy in front of the app, e.g. load balancer subnets.
 	 *
 	 * Alternatively, define 'trusted_proxies' in the application config and the value will be
 	 * picked up automatically on first use (lazy loading).
 	 *
-	 * CIDR notation is supported for subnet ranges.
+	 * CIDR notation is supported for IPv4 and IPv6 subnet ranges.
 	 *
 	 * @param string[] $proxies list of trusted proxy IPs or CIDR ranges
 	 *
-	 * @example Request::setTrustedProxies(['10.0.0.1', '192.168.1.0/24']);
+	 * @example Request::setTrustedProxies(['10.0.0.1', '192.168.1.0/24', '2001:db8::/32']);
 	 */
 	public static function setTrustedProxies(array $proxies): void
 	{
@@ -161,9 +163,13 @@ class Request
 
 	/**
 	 * Check whether a given IP matches any entry in the trusted proxies list.
-	 * Supports both exact IP matches and IPv4 CIDR ranges (e.g. '192.168.1.0/24').
+	 * Supports exact IPs and CIDR ranges for both IPv4 ('192.168.1.0/24') and IPv6 ('2001:db8::/32').
+	 * Addresses are compared in binary form, so '::1' matches '0:0:0:0:0:0:0:1'. An IPv4 entry
+	 * never matches an IPv6 address and vice versa. Malformed entries and CIDR entries with an
+	 * invalid prefix length are skipped.
 	 *
-	 * Subclasses may override this method to implement custom matching logic.
+	 * Subclasses may override this method to implement custom matching logic. ip() calls it for
+	 * REMOTE_ADDR and, when an allowlist is configured, for every X-Forwarded-For hop.
 	 *
 	 * @param string $ip
 	 * @return bool
@@ -176,24 +182,47 @@ class Request
 			return true; // no allowlist configured — trust all (backwards-compatible)
 		}
 
+		$ipBin = inet_pton($ip);
+
+		if ($ipBin === false) {
+			return false;
+		}
+
+		$ipLength = strlen($ipBin);
+
 		foreach ($proxies as $proxy) {
 			if (str_contains($proxy, '/')) {
-				// CIDR range check
+				// CIDR range check, works on the binary form so IPv4 and IPv6 share the same path
 				[$subnet, $bits] = explode('/', $proxy, 2);
-				$bits = (int) $bits;
-				if (inet_pton($ip) === false || inet_pton($subnet) === false) {
+				$subnetBin = inet_pton($subnet);
+
+				if ($subnetBin === false || strlen($subnetBin) !== $ipLength || preg_match('/^\d{1,3}$/D', $bits) !== 1) {
 					continue;
 				}
-				// IPv4 CIDR
-				if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
-					&& filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
-				) {
-					$mask = $bits === 0 ? 0 : (~0 << (32 - $bits));
-					if ((ip2long($ip) & $mask) === (ip2long($subnet) & $mask)) {
-						return true;
-					}
+
+				$bits = (int) $bits;
+
+				if ($bits > $ipLength * 8) {
+					continue;
 				}
-			} elseif ($ip === $proxy) {
+
+				$fullBytes = intdiv($bits, 8);
+				$remainingBits = $bits % 8;
+
+				if (substr($ipBin, 0, $fullBytes) !== substr($subnetBin, 0, $fullBytes)) {
+					continue;
+				}
+
+				if ($remainingBits === 0) {
+					return true;
+				}
+
+				$mask = (0xFF << (8 - $remainingBits)) & 0xFF;
+
+				if ((ord($ipBin[$fullBytes]) & $mask) === (ord($subnetBin[$fullBytes]) & $mask)) {
+					return true;
+				}
+			} elseif (inet_pton($proxy) === $ipBin) {
 				return true;
 			}
 		}
@@ -204,8 +233,17 @@ class Request
 	/**
 	 * Get the real IP address of remote user. If you're looking for server's IP, please refer to Server::ip()
 	 *
-	 * When trusted proxies are configured via setTrustedProxies(), forwarded-for headers are only
-	 * respected if the direct connection IP (REMOTE_ADDR) is in the trusted list.
+	 * With a trusted proxy allowlist (setTrustedProxies() or the 'trusted_proxies' application config key):
+	 * - when REMOTE_ADDR is not a trusted proxy, REMOTE_ADDR is returned and all headers are ignored
+	 * - otherwise only X-Forwarded-For is read; the hops [X-Forwarded-For entries..., REMOTE_ADDR] are
+	 *   walked from the right, trusted proxies are skipped and the first untrusted hop is returned,
+	 *   private ranges included; when every hop is trusted, the leftmost entry is returned
+	 * - a malformed entry stops the walk and the hop to its right is returned, never the malformed value
+	 * - Client-IP, X-Forwarded, X-Cluster-Client-IP, Forwarded-For and Forwarded are ignored
+	 *
+	 * Without an allowlist (null), the first public IP found in any of those headers is returned. Clients
+	 * can spoof that, so it's only safe when the app is reachable exclusively through a proxy that
+	 * overwrites these headers.
 	 *
 	 * @return string
 	 * @throws Exception
@@ -218,31 +256,19 @@ class Request
 		}
 
 		$remoteAddr = $_SERVER['REMOTE_ADDR'] ?? null;
-		$proxyTrusted = $remoteAddr !== null && static::isTrustedProxy($remoteAddr);
 
 		// Proxy-forwarded headers — only examine when the connecting IP is a trusted proxy
-		$proxyHeaders = [
-			'HTTP_CLIENT_IP',
-			'HTTP_X_FORWARDED_FOR',
-			'HTTP_X_FORWARDED',
-			'HTTP_X_CLUSTER_CLIENT_IP',
-			'HTTP_FORWARDED_FOR',
-			'HTTP_FORWARDED',
-		];
+		if ($remoteAddr !== null && static::isTrustedProxy($remoteAddr)) {
+			if (static::getTrustedProxies() !== null) {
+				static::$realIp = static::ipFromForwardedFor($remoteAddr);
+				return static::$realIp;
+			}
 
-		if ($proxyTrusted) {
-			foreach ($proxyHeaders as $key) {
-				if (isset($_SERVER[$key])) {
-					foreach (explode(',', $_SERVER[$key]) as $ip) {
-						$ip = trim($ip);
+			$ip = static::ipFromAnyProxyHeader();
 
-						if (filter_var($ip, FILTER_VALIDATE_IP,
-								FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
-							static::$realIp = $ip;
-							return $ip;
-						}
-					}
-				}
+			if ($ip !== null) {
+				static::$realIp = $ip;
+				return $ip;
 			}
 		}
 
@@ -256,6 +282,73 @@ class Request
 		}
 
 		return static::$realIp;
+	}
+
+	/**
+	 * Resolve the client IP from X-Forwarded-For when REMOTE_ADDR is a trusted proxy and an allowlist
+	 * is configured. Proxies append the address they received the request from, so only the right end
+	 * of the header can be trusted: walk [X-Forwarded-For entries..., REMOTE_ADDR] from the right, skip
+	 * trusted proxies and return the first hop that is not trusted. When every hop is trusted, the
+	 * leftmost entry is returned. A malformed entry stops the walk and the hop to its right is returned.
+	 *
+	 * @param string $remoteAddr REMOTE_ADDR, already verified as a trusted proxy
+	 *
+	 * @return string
+	 */
+	protected static function ipFromForwardedFor(string $remoteAddr): string
+	{
+		$header = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null;
+		$hops = is_string($header) ? explode(',', $header) : [];
+		$client = $remoteAddr;
+
+		for ($i = count($hops) - 1; $i >= 0; $i--) {
+			$hop = trim($hops[$i]);
+
+			if (filter_var($hop, FILTER_VALIDATE_IP) === false) {
+				break; // malformed: nothing left of it can be trusted
+			}
+
+			$client = $hop;
+
+			if (!static::isTrustedProxy($hop)) {
+				break; // the address the outermost trusted proxy actually saw
+			}
+		}
+
+		return $client;
+	}
+
+	/**
+	 * Legacy resolution used when no trusted proxy allowlist is configured: the first public IP found in
+	 * any of the proxy headers. Every one of these headers can be set by the client, so this is spoofable.
+	 *
+	 * @return string|null
+	 */
+	protected static function ipFromAnyProxyHeader(): string|null
+	{
+		$proxyHeaders = [
+			'HTTP_CLIENT_IP',
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_FORWARDED',
+			'HTTP_X_CLUSTER_CLIENT_IP',
+			'HTTP_FORWARDED_FOR',
+			'HTTP_FORWARDED',
+		];
+
+		foreach ($proxyHeaders as $key) {
+			if (isset($_SERVER[$key])) {
+				foreach (explode(',', $_SERVER[$key]) as $ip) {
+					$ip = trim($ip);
+
+					if (filter_var($ip, FILTER_VALIDATE_IP,
+							FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+						return $ip;
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**

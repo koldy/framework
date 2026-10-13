@@ -23,16 +23,71 @@ Request::getTrustedProxies();          // string[]|null
 
 ### Trusted Proxies
 
-By default `Request::ip()` examines all forwarded-for headers
-(`HTTP_X_FORWARDED_FOR`, `HTTP_CLIENT_IP`, etc.) regardless of where the
-connection came from. This is fine when the application sits behind a known
-reverse proxy, but it means an attacker who connects directly can spoof their
-IP by setting those headers themselves.
+How `Request::ip()` resolves the client address depends on whether a trusted
+proxy allowlist (`trusted_proxies`) is configured. Configure one whenever the
+app runs behind a load balancer or reverse proxy.
 
-Configuring a trusted proxy allowlist restricts header inspection to
-connections that originate from IPs on the list. Any connection from an IP
-that is **not** on the list will have its forwarded-for headers ignored and
-`REMOTE_ADDR` will be returned as-is.
+#### With an allowlist (recommended)
+
+1. If `REMOTE_ADDR` is **not** on the list, it is returned as-is and every
+   forwarded header is ignored.
+2. Otherwise only `X-Forwarded-For` is read. Each proxy *appends* the address
+   it received the request from, so the left part of the header is whatever the
+   client sent and only the right end can be trusted. `ip()` builds the hop
+   chain `[X-Forwarded-For entries…, REMOTE_ADDR]`, walks it **from the right**,
+   skips every hop on the allowlist and returns the first hop that is not on it:
+   the **right-most untrusted hop**, i.e. the address the outermost trusted
+   proxy actually saw.
+3. If every hop is trusted, the leftmost entry is returned.
+4. Private and reserved addresses are returned like any other, so a VPN or
+   intranet client gets its own `192.168.x.x` / `10.x.x.x` address, not the
+   proxy's. List only your proxies: a client inside a trusted range is skipped
+   as if it were a proxy.
+5. Every entry is trimmed and validated as an IP. A malformed entry (including
+   an empty one, as in `a,,b`) stops the walk because nothing to its left can be
+   trusted. The hop to its right is returned (`REMOTE_ADDR` when the malformed
+   entry is the last one), never the malformed value.
+
+```
+trusted_proxies:  ['10.0.0.0/16']
+REMOTE_ADDR:      10.0.1.7                   (load balancer node)
+X-Forwarded-For:  6.6.6.6, 203.0.113.9       (client sent "6.6.6.6", the LB appended the real address)
+
+hop chain:        6.6.6.6    203.0.113.9    10.0.1.7
+walk ←                       untrusted      trusted → skip
+ip()              = 203.0.113.9
+```
+
+Once an allowlist is set, these headers are **ignored**:
+
+| Header | `$_SERVER` key | Why |
+|---|---|---|
+| `Client-IP` | `HTTP_CLIENT_IP` | not set by any standard proxy, client-controlled |
+| `X-Forwarded` | `HTTP_X_FORWARDED` | not set by any standard proxy, client-controlled |
+| `X-Cluster-Client-IP` | `HTTP_X_CLUSTER_CLIENT_IP` | not set by any standard proxy, client-controlled |
+| `Forwarded-For` | `HTTP_FORWARDED_FOR` | not set by any standard proxy, client-controlled |
+| `Forwarded` (RFC 7239) | `HTTP_FORWARDED` | not parsed, see below |
+
+RFC 7239 `Forwarded` is not supported. If your proxy only emits `Forwarded`,
+configure it to append `X-Forwarded-For` as well. Using `Forwarded` only as a
+fallback when `X-Forwarded-For` is missing would let a client override such a
+proxy by sending its own `X-Forwarded-For`.
+
+#### Without an allowlist (legacy default)
+
+With no `trusted_proxies` key (`getTrustedProxies()` returns `null`), `ip()`
+keeps its original behaviour: it returns the first public IP found in
+`Client-IP`, `X-Forwarded-For`, `X-Forwarded`, `X-Cluster-Client-IP`,
+`Forwarded-For` or `Forwarded`, and falls back to `REMOTE_ADDR`.
+
+> **Warning:** every one of those headers can be set by the client, so in this
+> mode anyone can choose the IP your app logs, rate-limits and audits. It is
+> only safe when the app is never reachable except through a proxy that
+> **overwrites** (not appends to) all of them. Configure `trusted_proxies`
+> instead.
+
+An empty allowlist (`[]`) means "no proxy is trusted": `ip()` always returns
+`REMOTE_ADDR`.
 
 #### Option 1 — application config (recommended)
 
@@ -50,6 +105,7 @@ return [
         '10.0.0.1',          // exact IP
         '10.0.0.0/8',        // IPv4 CIDR range
         '192.168.1.0/24',
+        '2001:db8::/32',     // IPv6 CIDR range
     ],
 ];
 ```
@@ -70,24 +126,67 @@ An explicit `setTrustedProxies()` call always wins over the config key, and
 calling it also clears the cached IP so the next `Request::ip()` call
 re-evaluates.
 
+#### Example — AWS ALB + nginx
+
+An Application Load Balancer appends the client address to `X-Forwarded-For`
+and connects from node IPs that change as it scales, so list the **subnets the
+ALB lives in** (or the whole VPC CIDR) rather than individual IPs. With nginx
+and PHP-FPM on the same instance, `include fastcgi_params;` already sets
+`REMOTE_ADDR` to the ALB node and passes `X-Forwarded-For` through unchanged,
+so the subnet is all you need:
+
+```php
+// configs/application.php
+'trusted_proxies' => [
+    '10.0.0.0/16',   // VPC / ALB subnets
+],
+```
+
+If nginx runs as a separate reverse proxy (ALB → nginx → app server), make it
+append to the header, and add its address too unless it is already inside a
+listed range:
+
+```nginx
+location / {
+    proxy_pass http://app_backend;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+
+```php
+'trusted_proxies' => [
+    '10.0.0.0/16',   // ALB subnets
+    '172.31.5.20',   // nginx reverse proxy
+],
+```
+
+#### Matching rules
+
+- Exact IPs and CIDR ranges are supported for both IPv4 and IPv6.
+- Addresses are compared in binary form, so `::1` matches `0:0:0:0:0:0:0:1`.
+- An IPv4 entry never matches an IPv6 address and vice versa. That includes
+  IPv4-mapped addresses: `::ffff:10.0.0.1` does not match `10.0.0.0/8`.
+- Malformed entries, and CIDR entries with an invalid prefix length
+  (`10.0.0.0/33`, `10.0.0.0/abc`), are skipped.
+
 #### Reading the current list
 
 ```php
 $proxies = Request::getTrustedProxies(); // string[]|null
-// null  → no allowlist configured, all proxy headers are trusted
+// null  → no allowlist configured, all proxy headers are trusted (legacy, spoofable)
 // []    → empty allowlist, proxy headers are never trusted
-// [...] → only connections from listed IPs/CIDRs are trusted
+// [...] → only connections from listed IPs/CIDRs are trusted; X-Forwarded-For is walked from the right
 ```
 
 #### Behaviour summary
 
-| REMOTE_ADDR | Trusted proxies configured | Forwarded-for header present | ip() returns |
+| REMOTE_ADDR | `trusted_proxies` | X-Forwarded-For | ip() returns |
 |---|---|---|---|
-| any | no (null) | yes | first public IP from the header |
-| any | no (null) | no | REMOTE_ADDR |
-| in allowlist | yes | yes | first public IP from the header |
-| **not** in allowlist | yes | yes | REMOTE_ADDR (header ignored) |
-| any | yes | no | REMOTE_ADDR |
+| any | not set (null) | any | first public IP from any proxy header, else REMOTE_ADDR (**spoofable**) |
+| any | `[]` | any | REMOTE_ADDR |
+| **not** in allowlist | `[...]` | any | REMOTE_ADDR (all headers ignored) |
+| in allowlist | `[...]` | absent | REMOTE_ADDR |
+| in allowlist | `[...]` | present | right-most hop not in the allowlist (leftmost entry if every hop is trusted) |
 
 #### Subclassing
 
@@ -104,6 +203,12 @@ class MyRequest extends \Koldy\Request
     }
 }
 ```
+
+`ip()` calls `isTrustedProxy()` for `REMOTE_ADDR` and for every
+`X-Forwarded-For` hop. The right-to-left walk only runs when
+`getTrustedProxies()` returns an array, though. With `null`, `ip()` keeps the
+legacy behaviour. A subclass with its own matching should therefore also set
+`trusted_proxies` (any array, even `[]`) to opt in.
 
 ### HTTP Method Detection
 
