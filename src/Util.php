@@ -255,7 +255,8 @@ class Util
 			return '';
 		}
 
-		$s = strip_tags(trim($string));
+		// invalid UTF-8 (e.g. "%C0" in a URL) would make the /u regex below return null, so replace bad bytes first
+		$s = strip_tags(trim(mb_scrub($string, 'UTF-8')));
 
 		$table = [
 			'Š' => 'S',

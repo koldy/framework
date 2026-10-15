@@ -141,9 +141,24 @@ class HttpRouteTest extends TestCase
 	{
 		$this->setRequestMethod('GET');
 		$route = $this->createRoute(self::NS_DYNAMIC);
-		// //users is parsed as network path by parse_url (no path key), so use a path with internal double slashes
 		$result = $route->start('/users//abc-123');
 		$this->assertSame('user-detail-abc-123', $result);
+	}
+
+	public function testStartNormalizesLeadingDoubleSlash(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_STATIC);
+		// "//users" is a path, not a network path with host "users"
+		$this->assertSame('users-list', $route->start('//users'));
+	}
+
+	public function testStartLeadingDoubleSlashKeepsFirstSegment(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_DYNAMIC);
+		// must route to /users/abc-123, not to /abc-123 with "users" taken as the host
+		$this->assertSame('user-detail-abc-123', $route->start('//users/abc-123'));
 	}
 
 	// ── static routing ──
@@ -241,6 +256,31 @@ class HttpRouteTest extends TestCase
 
 		$uriPartsProp = $routeRef->getProperty('uriParts');
 		$uriPartsProp->setValue($route, ['nonexistent']);
+
+		$methodProp = $routeRef->getProperty('method');
+		$methodProp->setValue($route, 'get');
+
+		$nsProp = $routeRef->getProperty('namespace');
+		$nsProp->setValue($route, self::NS_STATIC);
+
+		$exec = new ReflectionMethod($route, 'exec');
+		$exec->invoke($route);
+	}
+
+	public function testNotFoundForInvalidUtf8Segment(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_STATIC);
+		// "/%c0" decodes to "\xC0" (invalid UTF-8) — must be a 404, not a TypeError from Util::slug()
+		$this->expectException(NotFoundException::class);
+
+		$routeRef = new \ReflectionClass($route);
+
+		$uriProp = $routeRef->getProperty('uri');
+		$uriProp->setValue($route, '/%c0');
+
+		$uriPartsProp = $routeRef->getProperty('uriParts');
+		$uriPartsProp->setValue($route, ["\xC0"]);
 
 		$methodProp = $routeRef->getProperty('method');
 		$methodProp->setValue($route, 'get');
@@ -356,6 +396,16 @@ class HttpRouteTest extends TestCase
 		$route = $this->createRoute(self::NS_STATIC);
 		$result = $route->start('/users?page=1&limit=10');
 		$this->assertSame('users-list', $result);
+
+		$uriProp = new \ReflectionProperty($route, 'uri');
+		$this->assertSame('/users', $uriProp->getValue($route));
+	}
+
+	public function testFragmentIsStrippedFromUri(): void
+	{
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_STATIC);
+		$this->assertSame('users-list', $route->start('/users?page=1#top'));
 
 		$uriProp = new \ReflectionProperty($route, 'uri');
 		$this->assertSame('/users', $uriProp->getValue($route));
@@ -507,16 +557,18 @@ class HttpRouteTest extends TestCase
 		$this->assertSame('12345', $context['invoice_id']);
 	}
 
-	// ── gap: InvalidArgumentException('Invalid URI given') — line 150 ──
+	// ── paths that a URL parser would misread as "host:port" ──
 
-	public function testStartThrowsInvalidUriGiven(): void
+	public function testStartPathLookingLikePortIsNotFound(): void
 	{
-		$route = $this->createRoute(self::NS_STATIC);
-		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('Invalid URI given');
-		// //users starts with / (passes line 143) but parse_url treats it as
-		// a network path with host=users and no 'path' key
-		$route->start('//users');
+		$this->setRequestMethod('GET');
+		$route = $this->createRoute(self::NS_ERROR);
+
+		// "/:27019" is a valid path to a nonexistent route — a 404, not an InvalidArgumentException
+		\Tests\PhpUnit\Fixtures\HttpRoute\ErrorHandling\ExceptionHandler::$called = false;
+		$result = $route->start('/:27019');
+		$this->assertNull($result);
+		$this->assertTrue(\Tests\PhpUnit\Fixtures\HttpRoute\ErrorHandling\ExceptionHandler::$called);
 	}
 
 	// ── gap: ServerException on dynamic __ that is not HttpController — line 256 ──

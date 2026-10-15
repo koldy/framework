@@ -306,6 +306,14 @@ class UtilTest extends TestCase
 		$this->assertStringNotContainsString('--', $result);
 	}
 
+	public function testSlugInvalidUtf8(): void
+	{
+		// e.g. "%C0" in a URL decodes to a byte that is never valid UTF-8
+		$this->assertSame('', Util::slug("\xC0"));
+		$this->assertSame('abc-def', Util::slug("abc\xC0def"));
+		$this->assertSame('vozac-napravio', Util::slug("Vozač\xC0 napravio"));
+	}
+
 	// ── camelCase ──
 
 	public function testCamelCaseBasic(): void

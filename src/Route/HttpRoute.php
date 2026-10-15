@@ -201,18 +201,15 @@ class HttpRoute extends AbstractRoute
 			throw new InvalidArgumentException('URI must start with slash');
 		}
 
-		// parse_url operates on the still-encoded URI — it does not decode percent-encoded characters in the path.
-		// This is required so that an encoded slash (%2F) inside a segment doesn't split into two segments.
-		$url = parse_url($uri);
-
-		if (!is_array($url) || !array_key_exists('path', $url)) {
-			throw new InvalidArgumentException('Invalid URI given');
-		}
+		// Split off the fragment and query string by hand. parse_url() is a full URL parser and misreads some valid
+		// request paths: "/:27019" fails as "host:port" and "//foo/bar" becomes host "foo" with path "/bar".
+		// The path stays percent-encoded, so an encoded slash (%2F) inside a segment doesn't split into two segments.
+		$uri = explode('#', $uri, 2)[0];
+		[$path, $query] = array_pad(explode('?', $uri, 2), 2, '');
 
 		// collapse runs of "/" in one pass (no loop required)
-		$path = preg_replace('#/+#', '/', $url['path']);
+		$path = preg_replace('#/+#', '/', $path);
 		$path = trim($path);
-		$query = $url['query'] ?? '';
 
 		$method = strtolower(Request::method());
 		$isGet = $method === 'get' || $method === 'head';
